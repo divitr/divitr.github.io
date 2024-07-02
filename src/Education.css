@@ -10,14 +10,12 @@
     text-align: center;
     margin-bottom: 1em;
     font-size: 2em;
-    /* Increase the font size for the projects heading */
 }
 
 .projects-list {
     display: flex;
     flex-wrap: wrap;
     gap: 2em;
-    /* Increase the gap between project cards */
     justify-content: center;
 }
 
@@ -26,7 +24,6 @@
     color: var(--card-text-color);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
-    /* Adjust shadow color to white */
     padding: 1em;
     width: calc(50% - 2em);
     max-width: 400px;
@@ -76,37 +73,28 @@
 
 .project-button {
     background-color: #333;
-    /* Darker background for both buttons */
     color: #fff;
     border: 2px solid #ccc;
-    /* Light grey border */
     border-radius: 4px;
     padding: 1em 1.5em;
-    /* Increase padding for buttons */
     cursor: pointer;
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    /* Add border color transition */
     display: flex;
     align-items: center;
 }
 
 .project-button:hover {
     background-color: #555;
-    /* Darker grey on hover */
     border-color: #ccc;
-    /* Light grey border on hover */
 }
 
 @media (max-width: 768px) {
     .project {
         width: calc(100% - 2em);
-        /* Adjust width to fit full width on mobile */
     }
 
     .button-container {
         flex-direction: column;
-        /* Stack buttons vertically on mobile */
         gap: 1em;
-        /* Add gap between buttons */
     }
 }

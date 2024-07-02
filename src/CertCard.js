@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Demo from './Demo'; // Import the Demo component
-import { FaGithub } from 'react-icons/fa'; // Import GitHub icon
+import Demo from './Demo';
+import { FaGithub } from 'react-icons/fa';
 import './ProjectCard.css';
 
 const ProjectCard = ({ title, description, link, githubLink, demoContent }) => {

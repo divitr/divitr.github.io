@@ -1,15 +1,15 @@
 // App.js
 import React from 'react';
-import { HashRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './Header'; // Import Header component
-import Home from './Home'; // Assuming you have a Home component
-import About from './About'; // Assuming you have an About component
-import Education from './Education'; // Assuming you have an Education component
-import Research from './Research'; // Assuming you have a Research component
-import Projects from './Projects'; // Assuming you have a Projects component
-import ProjectPage from './ProjectPage'; // Assuming you have a ProjectPage component
+import {Route, Routes } from 'react-router-dom';
+import Header from './Header';
+import Home from './Home';
+import About from './About';
+import Education from './Education';
+import Research from './Research';
+import Projects from './Projects';
+import ProjectPage from './ProjectPage';
 import ResearchPage from './ResarchPage';
-import './App.css'; // Import CSS file for styling
+import './App.css';
 
 import OpenSearchLogo from './imgs/opensearch_logo.png';
 import BurnInGraph from './imgs/mcmc_burnin.png';
@@ -24,7 +24,6 @@ import ZMasses from './imgs/Z_masses.png';
 
 const App = () => {
   return (
-    <Router>
       <div className="app-container">
         <Header />
         <div className="content-container">
@@ -102,7 +101,6 @@ const App = () => {
           </Routes>
         </div>
       </div>
-    </Router>
   );
 }
 
