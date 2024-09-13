@@ -35,7 +35,7 @@ const App = () => {
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/antichess" element={<ProjectPage
                       title="AntiChess Engine"
-                      description="Antichess is a variant of chess in which the goal is to have all your pieces captured by your opponent. I developed a PyPI package to play single and two player antichess games. The package supports multiple strategies, including implementations of Minimax with alpha beta pruning, Monte-Carlo Tree Search, and an ε-greedy Breadth First Search."
+                      description="Antichess is a variant of chess in which the goal is to have all your pieces captured by your opponent. I developed a PyPI package to play single and two player antichess games. The package supports multiple strategies, including implementations of Minimax with alpha beta pruning, Monte-Carlo Tree Search, and an ε-greedy Breadth First Search. I am also currently working on implementing a deep learning based agent using spatial attention."
                       githubLink="https://github.com/divitr/antichess"
                       demoContent={<img src={AntichessGame} alt="Antichess Game" style={{ maxWidth: '100%' }} />} />} />
             <Route path="/projects/opensearch" element={<ProjectPage

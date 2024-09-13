@@ -16,7 +16,7 @@ const projects = [
     demoContent: <img src={ColumbiaLogo} alt="Columbia Logo" />
   },
   {
-    title: 'Machine Learning Professional Certification',
+    title: 'Machine Learning',
     description: 'Theoretical and practical foundations of machine learning, with a focus on deep learning.',
     link: "https://www.coursera.org/account/accomplishments/professional-cert/KEEXCEXSVNTS",
     githubLink: null,

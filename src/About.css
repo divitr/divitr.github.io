@@ -31,6 +31,7 @@ h2 {
     width: 100%;
     aspect-ratio: 1 / 1;
     padding: 2%;
+    max-width: 300px;
 }
 
 .about-image img {
