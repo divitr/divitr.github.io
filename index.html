@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divit Rawal</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #f8f9fa;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--link-color);
+        }
+
+        .intro {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .profile-img {
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .bio h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .intro {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-img {
+                max-width: 250px;
+            }
+        }
+
+        .footer {
+        max-width: 800px;
+        margin: 4rem auto 2rem;
+        padding: 0 0.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            position: relative;
+        }
+
+        .contact-label {
+            font-size: 1.2rem;
+            color: #666;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            background-color: var(--background-color);
+            padding-right: 8px;
+        }
+
+        .contact-value {
+            font-size: 1.2rem;
+            color: #333;
+            margin-left: auto;
+            text-align: right;
+            position: relative;
+            z-index: 1;
+            background-color: var(--background-color);
+            padding-left: 8px;
+        }
+
+        .contact-value a {
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        .contact-value a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .dotted-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            border-bottom: 1px dotted #ccc;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">DR</div>
+        <nav>
+            <a href="/research">Research</a>
+            <a href="/projects">Projects</a>
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="intro">
+            <img src="dr.png" alt="Profile photo" class="profile-img">
+            <div class="bio">
+                <h1>Divit Rawal</h1>
+                <p>I'm an undergraduate studying Physics, Mathematics & Statistics, and Electrical Engineering & Computer Sciences (minor) at UC Berkeley.</p>
+                <p>Currently, I'm researching deep learning theory, advised by Dr. Michael DeWeese.</p>
+                <p>In my free time, I enjoy reading, playing guitar, and running.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="contact-item">
+            <div class="contact-label">GitHub</div>
+            <div class="dotted-line"></div>
+            <div class="contact-value">
+                <a href="https://github.com/divitr">@divitr</a>
+            </div>
+        </div>
+        <div class="contact-item">
+            <div class="contact-label">Email</div>
+            <div class="dotted-line"></div>
+            <div class="contact-value">
+                <a href="mailto:divit.rawal@berkeley.edu">divit.rawal@berkeley.edu</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

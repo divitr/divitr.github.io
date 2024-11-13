@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divit Rawal</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #f8f9fa;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--link-color);
+        }
+
+        .intro {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .profile-img {
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .bio h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .intro {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-img {
+                max-width: 250px;
+            }
+        }
+    
+        .research-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: minmax(200px, 1fr) 3fr;
+            gap: 2rem;
+            width: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .research-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .research-image {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            align-content: center;
+            justify-items: center;
+        }
+
+        .research-image img {
+            border: 1px solid #eee;
+        }
+
+        .research-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .research-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            color: #333;
+        }
+
+        .research-subtitle {
+            font-size: .8rem;
+            color: #666;
+            margin: 0 0 1rem 0;
+        }
+
+        .research-description {
+            font-size: .7rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 1rem;
+        }
+
+        .research-meta {
+            margin-top: auto;
+            color: #666;
+            font-size: 0.6rem;
+        }
+
+        .research-meta a {
+            color: #6B46C1;
+            text-decoration: none;
+        }
+
+        .research-meta a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .research-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .research-image {
+                max-width: 100%;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">DR</div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/research">Research</a>
+            <a href="/projects">Projects</a>
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Research</h1>
+        <section>
+            <h2>Current Focus</h2>
+            <p>My current research focus is in deep learning theory. Specifically, I'm interested in examining the in-context learning (ICL) ability of multi-layer perceptrons to determine whether ICL is facilitated by the underlying data distribution or if it arises as a feature learning phenomenon.</p>
+            <p>In the past, I have also worked on machine learning methods for high-energy physics.</p>
+        </section>
+
+        <section>
+            <div class="research-card">
+                <div class="research-image">
+                    <img src="/research/z_masses.png" alt="Research visualization" class="research-image">
+                </div>
+                <div class="research-content">
+                    <h2 class="research-title">Heavy Particle Reconstruction</h2>
+                    <h3 class="research-subtitle">Algorithmic particle reconstruction for many-jet collisions.</h3>
+                    <p class="research-description">
+                        In High-Energy Physics, particles often decay before they are recorded by detectors, making it difficult to study their properties and interactions. However, by examining the particles they decay into, the original particles can be "reconstructed". With the guidance of Dr. Daniel Whiteson and Dr. Michael
+                        Fenton at the UC Irvine Department of Physics and Astronomy, I simulated particle collisions and decays and wrote algorithms in C++ and Python to reconstruct heavy particles. I focused primarily on reconstructing Z0 bosons and top quarks. Using my algorithm (and a χ2 method), I was able to calculate the masses of these particles to within 2% error.
+                    </p>
+                    <div class="research-meta">
+                        This work was not published.
+                    </div>
+                </div>
+            </div>
+            <div class="research-card">
+                <div class="research-image">
+                    <img src="/research/rocs.png" alt="Research visualization" class="research-image">
+                </div>
+                <div class="research-content">
+                    <h2 class="research-title">High Momentum Collision Analysis</h2>
+                    <h3 class="research-subtitle">Deep learning methods for signal-background classification in high momentum collisions.</h3>
+                    <p class="research-description">
+                        Oftentimes, particle detectors pick up noise that hinders efforts to analyze the true data. Working with Dr. Daniel Whiteson and Dr. Aishik Ghosh at the UC Irvine Department of Physics and Astronomy, I developed deep neural networks to discriminate between signal and background data from detector readings. Because it is difficult to analyze high momentum collisions, training data is limited, and training machine learning models is challenging. To overcome this problem, we developed four identical models, trained them on low momentum data, and tested their ability to extrapolate to high momentum data, resulting in greater than 90% accuracy, significantly higher than previous methods.
+                    </p>
+                    <div class="research-meta">
+                        This work was not published.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>
