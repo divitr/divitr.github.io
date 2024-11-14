@@ -67,11 +67,12 @@
         }
     
         a {
-            color: var(--link-color);
+            color: var(--primary-color);
             text-decoration: none;
         }
     
         a:hover {
+            color: var(--link-color);
             text-decoration: underline;
         }
     
@@ -86,9 +87,15 @@
         }
 
         .blog-post {
-            margin-bottom: 2rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid #eee;
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        .blog-post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .blog-post:last-child {
@@ -115,16 +122,15 @@
 
     <main>
         <h1>Blog</h1>
-        <p>coming soon maybe</p>
-        <!-- <section class="blog-posts">
+        <section class="blog-posts">
             <article class="blog-post">
-                <h2><a href="/blog/post-1">Blog Post Title</a></h2>
-                <div class="post-date">January 1, 2024</div>
-                <p>Preview of the blog post content...</p>
-                <a href="/blog/post-1">Read more →</a>
+                <h2><a href="/blog/rubiks">Group Theory, God's Number, and Rubik's Cubes</a></h2>
+                <div class="post-date">November 13, 2024</div>
+                <p>How group theory helped researchers identify an upper bound for the number of moves required to solve a Rubik's cube.</p>
+                <a href="/blog/rubiks">Read more →</a>
             </article>
             <!-- More blog posts
-        </section> --->
+        </section> -
     </main>
 </body>
 
