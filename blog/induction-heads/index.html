@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Induction Heads and ICL</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf9;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--link-color);
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">DR</div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/research">Research</a>
+            <a href="/projects">Projects</a>
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="intro">
+            <h1>Induction Heads and In-Context Learning in Transformers</h1>
+            <p class="date">November 26, 2024</p>
+            <p>Some notes on the article "In-context Learning and Induction Heads" by Anthropic's Transformer Circuits Thread.</p>
+        </article>
+        <section>
+            <h2>Thesis</h2>
+            <p>A large fraction of the ICL ability of transformers can be attributed to "induction heads", which are responsible for pattern recognition and completion.</p>
+            <p>This claim is supported by 6 lines of evidence:</p>
+            <ul>
+                <li><em>(Macroscopic co-occurence)</em> Transformer language models go through a phase change in training, where induction heads and ICL improve dramatically (simultaneously).</li>
+                <li><em>(Macroscopic co-perturbation)</em> When the ability and timing of the formation of induction heads is shifted, ICL ability shifts in a precisely matching way.</li>
+                <li><em>(Direct abalation)</em> When induction heads are disabled during inference, the ICL ability of the model decreases dramatically.</li>
+                <li><em>(Specific examples of induction head generality)</em> Induction heads are not only responsible for copying literal sequences, they are able to implement more sophisticated types of ICL \(\implies\) it is plausible they explain a large fraction of ICL.</li>
+                <li><em>(Mechanistic plausibility of induction head generality)</em> For small models, it can be explained mechanistically how induction heads work and show how they contribute to ICL.</li>
+                <li><em>(Continuity from small to large models)</em> Many behaviors and data related to both induction heads and ICL are smoothly continuous from small to large models, suggesting that the mechanisms may be the same.</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Preliminaries</h2>
+            <h3>In-Context Learning</h3>
+            <p>In-Context Learning (ICL) appears as an emergent phenomenon in large language models (also in MLPs -- see <a href="https://arxiv.org/abs/2405.15618#:~:text=William%20L.%20Tong,%20Cengiz%20Pehlevan.">MLPs Learn In-Context on Regression and Classification Tasks</a>) where the model is able to better at predicting tokens later in the context than tokens earlier in the context. Notably, this is useful for tasks like prompt engineering and specifying tasks or instructions to elicit different behavior from models.</p>
+            <div class="example-box">
+                <strong class="example-box-title">In-Context Learning (Few-Shot Learning Conceptualization)</strong>
+                <p class="example-box-prompt">Prompt: Complete the sequence</p>
+                <pre class="code">
+France - Paris
+Germany - Berlin
+Italy - </pre>
+                <p class="example-box-completion">Model's Completion: Rome</p>
+                <small class="example-box-description">Here the model learns the pattern [country]-[capital] and uses it to conclude that the completion should be Rome.</small>
+            </div>
+            <p>Two main ways of conceptualizing and measuring ICL exist. The first is "few-shot learning", where the model is prompted with several instances of the target task framed in a next-token-prediction format (example above). The second observes the loss at different token indices, to measure how much better the model gets at prediction given more context. The article focuses more on the second formulation, as it provides more of a "macro" perspective on what it means to ICL. The authors compute the ICL score as the loss of the 500th token in context - loss of the 50th token in context.</p>
+            <h3>Induction Heads</h3>
+            <p>Induction heads were disovered in 2-layer attention-only models. They exist as two attention heads acting together, the first copying information from the previous token into the next token, and the second head (referred to as the "induction head") searches for a previous place in the context where the present token occurred and copying the token that appeared after it. This makes the model more likely to complete the sequence <code class="code">...[A][B]...[A]</code> with <code class="code">[B]</code>. It is important to note that the induction heads are not memorizing some preset list of patterns, but are able to complete this task regardless of the choice of <code class="code">[A]</code> and <code class="code">[B]</code>. In the paper, they define induction heads as the specific copying behavior, and show that they "(1) also serve a more expansive function that can be tied to in-context learning, and (2) coincide with the mechanistic
+            picture for small models".</p>
+            <p>An induction head is defined as one that exhibits the below properties on a repeated random sequence of tokens:</p>
+            <ul>
+                <li><strong>Prefix Matching:</strong> the head attends to the token which induction would suggest comes next.</li>
+                <li><strong>Copying:</strong> the head's output increases the logit correspondign to the attended-to token.</li>
+            </ul>
+            <div class="example-box">
+                <strong class="example-box-title">Induction Heads</strong>
+                <img style="width: 100%; border-radius: 5px" src="induction_head_diagram.png"/>
+                <small class="example-box-description">Source: Anthropic.</small>
+            </div>
+            <p>This means that induction heads are very good at memorizing and replicating large arbitrary sequences. The article also argues that in sufficiently large models and with sufficiently abstract representations, induction heads also do analogical sequnce copying: <code class="code">...[A*][B*]...[A]</code> \(\to\) <code class="code">[B]</code> for <code class="code">[A], [A*]</code> and <code class="code">[B], [B*]</code> similar in some embedding space. This "fuzzy nearest neighbor matching" can be thought of as something roughly of the form "man is to woman as king is to queen".</p>
+
+            <h3>Per-Token Loss Analysis</h3>
+            <p>This is a little weird, but summed up pretty decently in the graphic below. The PCA is applied to help visualize and compare training trajectories. Each direction can be thought of as a vector of log-likelihoods that the models are moving along.</p>
+            <div class="example-box">
+                <strong class="example-box-title">Per-Token Loss Analysis</strong>
+                <img style="width: 100%; border-radius: 5px" src="per-token_loss_analysis.png" />
+                <small class="example-box-description">Source: Anthropic.</small>
+            </div>
+        </section>
+        <section>
+            <h2>Arguments</h2>
+            <p>The authors provide strong evidence that induction heads contribute to the majority of ICL in small attention-only models, strong evidence that they contribute some to small models with MLPs (medium that they contribute a majority), and medium correlational evidence that they contribute some for large models.</p>
+            <h3>Argument 1: Macroscopic Co-Occurrence</h3>
+            <p>ICL develops abruptly in a narrow window warly in training and then is constant for the remainder of training. The authors also show that the derivative of loss w.r.t. logarithm token index in context is negative in 2 & 3 layer models, but goes to 0 in 1-layer models. They also show that the induction heads form during the same window that the ICL phase change occurs.</p>
+            <div class="example-box">
+                <strong class="example-box-title">ICL Ability Increases Dramatically and Induction Heads Form in the Same Window</strong>
+                <img style="width: 100%; border-radius: 5px" src="icl_ability_layers.png" />
+                <img style="width: 100%; border-radius: 5px" src="induction_heads_form.png" />
+                <small class="example-box-description">Source: Anthropic.</small>
+            </div>
+            <p>This is also visible as a bump on the training curves of the models; in fact in this window is the only time the loss curve is not monotonically decreasing. Applying PCA shows that the training trajectories abruptly pivot during this same window.</p>
+            <div class="example-box">
+                <strong class="example-box-title">Loss Diverges and Training Trajectories Pivot During the Phase Change</strong>
+                <img style="width: 100%; border-radius: 5px" src="loss_diverges.png" />
+                <img style="width: 100%; border-radius: 5px" src="pca_ortho.png" />
+                <small class="example-box-description">Source: Anthropic.</small>
+            </div>
+            <p>After the phase change the models are far more likely to predict sequences they have seen before. This indicates that the induction heads are developed during the phase change. However, it is important to note that although loss remains relatively constant after the phase change, that doesn't mean that the mechanisms facilitating ICL remain constant; it is possible thtat induction heads cause ICL around the phase change, but the mechanisms shift later.</p>
+
+            <h3>Argument 2: Macroscopic Co-Perturbation</h3>
+            <p>Argument 1 estabilshes that induction heads and ICL are correlated, but doesn't provide evidence of causation. In this section, the architecture is changed in a way that makes it easeir for induction heads to form, adn observes the effect on ICL. The authors introduce a "smeared key" architecture where in every head \(h\), there is a trainable parameter \(\alpha^h\) which is used as \(\sigma(\alpha^h) \in [0,1]\) to interpolate between the key for the current token and previous token:</p>
+            $$k^h_j = \sigma(\alpha^h)k^h_j + (1-\sigma(\alpha^h))k^h_{j-1}$$
+            <p>This modification allows ICL to form in 1-layer models and ICL forms earlier for 2 and 3-layer models.</p>
+
+            <h3>Argument 3: Direct Abalation</h3>
+            <p>Here, induction heads are removed at test-time (a given attention head is removed). The results show that almost all the ICL in small attention-only models comes from induction heads. However, it doesn't provide any information about models with MLPs as well, as they may have more complex mechanisms.</p>
+            <div class="example-box">
+                <strong class="example-box-title">Induction Heads Cause ICL</strong>
+                <img style="width: 100%; border-radius: 5px" src="abalation.png" />
+                <small class="example-box-description">Source: Anthropic.</small>
+            </div>
+
+            <h3>Argument 4: Specific Examples of Induction Head Generality</h3>
+            <p>In this section, the authors show that induction heads from larger transformers exhibit more complex behaviors of the "fuzzy nearest neighbors" variety. Certain example heads are described with several behaviors.</p>
+            <h4>Behavior 1: Literal Sequence Copying</h4>
+            <p>The original article provides a very good interactive demo of how this works, but the main takeaway here is that the head acts as an induction head.</p>
+            <h4>Behavior 2: Translation</h4>
+            <p>The article again provies a very good interactive demo of how this works, but the main takeaway is that induction heads are able to do translation, by attending to the same word in another language.</p>
+            <h4>Behavior 3: Pattern Matching</h4>
+            <p>Okay this section is easier to explain without the article's demo. The synthetic text is generated where each line follows one of 4 templates:</p>
+            <ul style="list-style-type:none">
+                <li>[month] [animal]: 0</li>
+                <li>[month] [fruit]: 1</li>
+                <li>[color] [animal]: 2</li>
+                <li>[color] [fruit]: 3</li>
+            </ul>
+            <p>Examining the attention pattern shows that the model attends more to lines matching the pattern it is asked to complete.</p>
+            <p>These behaviors are explained as a few possiblities: either the first behavior may be a special case of the second, and the induction head is learning the broader pattern, alternatively induction heads may implement literal copying when they take a path throughthe residual stream that includes only them but implement more abstract behaviors when they process the outputs of earlier layers that create more abstract representations (this reminds me a bit of conjugation in algebra).</p>
+
+            <h3>Argument 5: Mechanistic Plausibility of Induction Head Generality</h3>
+            <p>This section provides a logical argument as to why induction heads should contribute to ICL: the procedure that induction heads follow should improve a model's ability to predict tokens later in its context. Essentially, the previous context can be thought of as data points in a nearest-neighbor algorithm, and adding more data points naturally improves the accuracy of the nearest-neighbor algorithm.</p>
+        </section>
+
+        <footer>
+            <h2>References</h2>
+            <ul style="list-style-type: none;">
+                <li id="anthropic">[1] <a href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html"target="_blank">In-Context Learning and Induction Heads - Anthropic</a>.</li>
+            </ul>
+        </footer>
+    </main>
+</body>
+
+</html>
