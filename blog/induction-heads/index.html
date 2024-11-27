@@ -233,7 +233,14 @@ Italy - </pre>
             <p>These behaviors are explained as a few possiblities: either the first behavior may be a special case of the second, and the induction head is learning the broader pattern, alternatively induction heads may implement literal copying when they take a path throughthe residual stream that includes only them but implement more abstract behaviors when they process the outputs of earlier layers that create more abstract representations (this reminds me a bit of conjugation in algebra).</p>
 
             <h3>Argument 5: Mechanistic Plausibility of Induction Head Generality</h3>
-            <p>This section provides a logical argument as to why induction heads should contribute to ICL: the procedure that induction heads follow should improve a model's ability to predict tokens later in its context. Essentially, the previous context can be thought of as data points in a nearest-neighbor algorithm, and adding more data points naturally improves the accuracy of the nearest-neighbor algorithm.</p>
+            <p>This section provides a logical argument as to why induction heads should contribute to ICL: the procedure that induction heads follow should improve a model's ability to predict tokens later in its context. Essentially, the previous context can be thought of as data points in a nearest-neighbor algorithm, and adding more data points naturally improves the accuracy of the nearest-neighbor algorithm. This section heavily depends on their previous paper.</p>
+
+            <h3>Argument 6: Continuity From Small to Large Models</h3>
+            <p>This section provides evidence that Arguments 1-5 hold for larger models too. Namely, they note that both go through phase changes, both show the same sharp increase in ICL, both trace similar paths in PCA space, and both form induction heads. However, there are other considerations; namely with Q-composition and K-composition. (This is again based on their previous paper).</p>
+        </section>
+        <section>
+            <h2>Thoughts</h2>
+            <p>Clearly the induction head hypothesis makes sense for transformers, because they have attention heads, but given that MLPs learn in context as well, MLPs must be using another mechanism. This is further limited by the fact that single HL and 2 HL MLPs are able to ICL, so the mechanism must not be super complex/higher order?</p>
         </section>
 
         <footer>
