@@ -3,28 +3,165 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Miscellaneous Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <title>Notes</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #4a4a4a;
+            --background-color: #fffdf9;
+            --hover-color: #6B46C1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--hover-color);
+        }
+
+        .notes-container {
+            padding: 1.5rem;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .notes-section {
+            margin-bottom: 2rem;
+        }
+
+        .notes-section-title {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+        }
+
+        .notes-list {
+            list-style-type: "-";
+            padding: 0;
+            margin: 0;
+        }
+
+        .notes-list li {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .notes-list li a:hover {
+            color: var(--hover-color);
+            text-decoration: underline;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .notes-container {
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="note-bg">
+    <header>
+        <div class="logo">DR</div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/research">Research</a>
+            <a href="/projects">Projects</a>
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <div class="notes-container">
         <h1>Miscellaneous Notes</h1>
-        <ul>
-            <li><a href="/notes/61b.pdf" target="_blank" rel="noopener noreferrer">CS 61B (Data Structures)</a></li>
-            <li><a href="/notes/122.pdf" target="_blank" rel="noopener noreferrer">EE 122 (Communication Networks)</a></li>
-            <li><a href="/notes/89.pdf" target="_blank" rel="noopener noreferrer">PHYS 89 (Mathematical Physics)</a></li>
-            <li><a href="/notes/5a.pdf" target="_blank" rel="noopener noreferrer">PHYS 5A (Mechanics and Relativity)</a></li>
-            <li><a href="/notes/16a.pdf" target="_blank" rel="noopener noreferrer">EECS 16A (Information Devices and Systems)</a></li>
-            <li></li>
-            <li><a href="/notes/ibm.pdf" target="_blank" rel="noopener noreferrer">IBM ML Certification Notes</a></li>
-            <li><a href="/notes/rl.pdf" target="_blank" rel="noopener noreferrer">Reinforcement Learning Notes</a></li>
-            <li><a href="/notes/bio.pdf" target="_blank" rel="noopener noreferrer">AP Bio Notes</a></li>
-            <li><a href="/notes/csa.pdf" target="_blank" rel="noopener noreferrer">AP CSA Notes</a></li>
-            <li><a href="/notes/phys1.pdf" target="_blank" rel="noopener noreferrer">AP Physics 1 Notes</a></li>
-            <li><a href="/notes/ochem_naming.pdf" target="_blank" rel="noopener noreferrer">OChem Naming Conventions</a></li>
-            <li></li>
-            <li><a href="/notes/uci_abstract.pdf" target="_blank" rel="noopener noreferrer">UCI Abstract</a></li>
-        </ul>
+        <p>A collection of crib sheets and course notes.</p>
+
+        <div class="notes-section">
+            <h2 class="notes-section-title">Berkeley</h2>
+            <ul class="notes-list">
+                <li><a href="/notes/61b.pdf" target="_blank" rel="noopener noreferrer">CS 61B (Data Structures)</a></li>
+                <li><a href="/notes/122.pdf" target="_blank" rel="noopener noreferrer">EE 122 (Communication
+                        Networks)</a></li>
+                <li><a href="/notes/89.pdf" target="_blank" rel="noopener noreferrer">PHYS 89 (Mathematical Physics)</a>
+                </li>
+                <li><a href="/notes/5a.pdf" target="_blank" rel="noopener noreferrer">PHYS 5A (Mechanics and
+                        Relativity)</a></li>
+                <li><a href="/notes/16a.pdf" target="_blank" rel="noopener noreferrer">EECS 16A (Information Devices and
+                        Systems)</a></li>
+            </ul>
+        </div>
+
+        <div class="notes-section">
+            <h2 class="notes-section-title">High School</h2>
+            <ul class="notes-list">
+                <li><a href="/notes/bio.pdf" target="_blank" rel="noopener noreferrer">AP Bio Notes</a></li>
+                <li><a href="/notes/csa.pdf" target="_blank" rel="noopener noreferrer">AP CSA Notes</a></li>
+                <li><a href="/notes/phys1.pdf" target="_blank" rel="noopener noreferrer">AP Physics 1 Notes</a></li>
+                <li><a href="/notes/ochem_naming.pdf" target="_blank" rel="noopener noreferrer">OChem Naming
+                        Conventions</a></li>
+            </ul>
+        </div>
+
+        <div class="notes-section">
+            <h2 class="notes-section-title">Coursera</h2>
+            <ul class="notes-list">
+                <li><a href="/notes/ibm.pdf" target="_blank" rel="noopener noreferrer">IBM ML Certification Notes</a>
+                </li>
+                <li><a href="/notes/rl.pdf" target="_blank" rel="noopener noreferrer">Reinforcement Learning Notes</a>
+                </li>
+            </ul>
+        </div>
     </div>
 </body>
 
