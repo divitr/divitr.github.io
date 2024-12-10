@@ -115,6 +115,7 @@
 </head>
 
 <body>
+    <script src="../toc-generator.js"></script>
     <header>
         <div class="logo">DR</div>
         <nav>
@@ -169,7 +170,7 @@ Italy - </pre>
             </ul>
             <div class="example-box">
                 <strong class="example-box-title">Induction Heads</strong>
-                <img style="width: 100%; border-radius: 5px" src="induction_head_diagram.png"/>
+                <img style="width: 100%; border-radius: 5px" src="imgs/induction_head_diagram.png"/>
                 <small class="example-box-description">Source: Anthropic.</small>
             </div>
             <p>This means that induction heads are very good at memorizing and replicating large arbitrary sequences. The article also argues that in sufficiently large models and with sufficiently abstract representations, induction heads also do analogical sequnce copying: <code class="code">...[A*][B*]...[A]</code> \(\to\) <code class="code">[B]</code> for <code class="code">[A], [A*]</code> and <code class="code">[B], [B*]</code> similar in some embedding space. This "fuzzy nearest neighbor matching" can be thought of as something roughly of the form "man is to woman as king is to queen".</p>
@@ -178,7 +179,7 @@ Italy - </pre>
             <p>This is a little weird, but summed up pretty decently in the graphic below. The PCA is applied to help visualize and compare training trajectories. Each direction can be thought of as a vector of log-likelihoods that the models are moving along.</p>
             <div class="example-box">
                 <strong class="example-box-title">Per-Token Loss Analysis</strong>
-                <img style="width: 100%; border-radius: 5px" src="per-token_loss_analysis.png" />
+                <img style="width: 100%; border-radius: 5px" src="imgs/per-token_loss_analysis.png" />
                 <small class="example-box-description">Source: Anthropic.</small>
             </div>
         </section>
@@ -189,15 +190,15 @@ Italy - </pre>
             <p>ICL develops abruptly in a narrow window warly in training and then is constant for the remainder of training. The authors also show that the derivative of loss w.r.t. logarithm token index in context is negative in 2 & 3 layer models, but goes to 0 in 1-layer models. They also show that the induction heads form during the same window that the ICL phase change occurs.</p>
             <div class="example-box">
                 <strong class="example-box-title">ICL Ability Increases Dramatically and Induction Heads Form in the Same Window</strong>
-                <img style="width: 100%; border-radius: 5px" src="icl_ability_layers.png" />
-                <img style="width: 100%; border-radius: 5px" src="induction_heads_form.png" />
+                <img style="width: 100%; border-radius: 5px" src="imgs/icl_ability_layers.png" />
+                <img style="width: 100%; border-radius: 5px" src="imgs/induction_heads_form.png" />
                 <small class="example-box-description">Source: Anthropic.</small>
             </div>
             <p>This is also visible as a bump on the training curves of the models; in fact in this window is the only time the loss curve is not monotonically decreasing. Applying PCA shows that the training trajectories abruptly pivot during this same window.</p>
             <div class="example-box">
                 <strong class="example-box-title">Loss Diverges and Training Trajectories Pivot During the Phase Change</strong>
-                <img style="width: 100%; border-radius: 5px" src="loss_diverges.png" />
-                <img style="width: 100%; border-radius: 5px" src="pca_ortho.png" />
+                <img style="width: 100%; border-radius: 5px" src="imgs/loss_diverges.png" />
+                <img style="width: 100%; border-radius: 5px" src="imgs/pca_ortho.png" />
                 <small class="example-box-description">Source: Anthropic.</small>
             </div>
             <p>After the phase change the models are far more likely to predict sequences they have seen before. This indicates that the induction heads are developed during the phase change. However, it is important to note that although loss remains relatively constant after the phase change, that doesn't mean that the mechanisms facilitating ICL remain constant; it is possible thtat induction heads cause ICL around the phase change, but the mechanisms shift later.</p>
@@ -211,7 +212,7 @@ Italy - </pre>
             <p>Here, induction heads are removed at test-time (a given attention head is removed). The results show that almost all the ICL in small attention-only models comes from induction heads. However, it doesn't provide any information about models with MLPs as well, as they may have more complex mechanisms.</p>
             <div class="example-box">
                 <strong class="example-box-title">Induction Heads Cause ICL</strong>
-                <img style="width: 100%; border-radius: 5px" src="abalation.png" />
+                <img style="width: 100%; border-radius: 5px" src="imgs/abalation.png" />
                 <small class="example-box-description">Source: Anthropic.</small>
             </div>
 
@@ -238,10 +239,10 @@ Italy - </pre>
             <h3>Argument 6: Continuity From Small to Large Models</h3>
             <p>This section provides evidence that Arguments 1-5 hold for larger models too. Namely, they note that both go through phase changes, both show the same sharp increase in ICL, both trace similar paths in PCA space, and both form induction heads. However, there are other considerations; namely with Q-composition and K-composition. (This is again based on their previous paper).</p>
         </section>
-        <section>
+        <!-- <section>
             <h2>Thoughts</h2>
             <p>Clearly the induction head hypothesis makes sense for transformers, because they have attention heads, but given that MLPs learn in context as well, MLPs must be using another mechanism. This is further limited by the fact that single HL and 2 HL MLPs are able to ICL, so the mechanism must not be super complex/higher order?</p>
-        </section>
+        </section> -->
 
         <footer>
             <h2>References</h2>

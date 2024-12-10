@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    \(\require{physics}\)
     <meta charset="UTF-8">
     <link rel="icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -123,16 +124,101 @@
             <a href="/projects">Projects</a>
             <a href="/blog">Blog</a>
         </nav>
+       
     </header>
-
     <main>
         <article class="intro">
-            <h1>The Lazy (NTK) and Rich (\(\mu\)P) Regimes</h1>
+            <h1>Richness in Training Regimes</h1>
             <p class="date">November 26, 2024</p>
-            <p>Some notes on the paper by the same name by Dhruva Karkada.</p>
+            <p>Some notes on <a href="https://arxiv.org/abs/2404.19719">[arXiv:2404.19719]</a>.</p>
         </article>
         <section>
-
+            <h2>Introduction</h2>
+            <p>Training a neural net can be broken down into two processes: feedforward inference and backpropogating update. When training, we want to ensure that these processes are well-behaved i.e. feedforward outputs should move in the right direction in finite time and backpropagation should update the hidden representations that allow optimization to proceed stably (without stalling or exploding). To control these processes, we observe a single degree of freedom: richness defined as the size of the updates to the hidden representations.</p>
+            <div class="example-box">
+                <strong class="example-box-title">The Richness Scale</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/richness_scale.png" />
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
+        </section>
+        <section>
+            <h2>Notation</h2>
+            <p><ul>
+                <li>\(W^{(i,j)}_{\ell}\) refers to the \(i,j\) component of the \(\ell\)'th weight matrix</li>
+                <li>\(\mathbf{M}\) is "aligned" with \(\hat{v}\) if \(\norm{\mathbf{M}\hat{v}}\) typically dominates \(\norm{\mathbf{M}\hat{u}}\) for some random isotropic unit vector \(\hat{u}\)</li>
+                <li>Asympotic Notation<ul>
+                    <li>\(a \sim b \equiv a = \Theta(b)\)</li>
+                    <li>\(a \underset{\sim}{>} b \equiv a = \Omega(b)\)</li>
+                    <li>\(a \underset{\sim}{<} b \equiv a=\mathcal{O}(b)\)</li>
+                </ul></li>
+                <li>Einstein summation convention</li>
+            </ul></p>
+        </section>
+        <section>
+            <h2>Roadmap</h2>
+            <p>All analyses are conducted on a 3-layer linear model. As width grows, controlling the size of the gradient relative to the size of the feedforward representation becomes important, so weight matrices are factored into a scalar coefficient \(g\) and a trainable part \(\mathbf{W}\).</p>
+            <div class="example-box">
+                <strong class="example-box-title">Toy Model Details</strong>
+                <p>Train the model
+                    $$h_3 \overset{\mathrm{def}}{=}g_3W_3g_2W_2g_1W_1x$$
+                    by gradient descent with constant learning rate on loss function \(\mathcal{L}(y, h_3(x))\).
+                </p>
+                <p>\(W_\ell^{(i,j)} \sim \mathcal{N}(0, \sigma^2)\), and each \(W_\ell\) is paired to a fixed \(g_\ell\). Increasing \(g_\ell\) while keeping \(g_\ell\sigma_\ell\) fixed increases the size of the gradient recieved by \(W_\ell\) while keeping the size of the feedforward signal the same.</p>
+                <p>Some more definitions:
+                    $$\begin{equation}
+                    h_\ell(x) \overset{\mathrm{def}}{=} g_\ell W_\ell h_{\ell-1}(x) \text{ with } h_0(x) = x
+                    \quad\quad\quad \text{(Eqn. 1)}\end{equation}$$
+                    $$h_\ell \overset{\mathrm{def}}{=} h_\ell(x)$$
+                    $$n_\ell \overset{\mathrm{def}}{=} \text{dim }h_\ell$$
+                </p>
+                <p>Wide network limit: \(n \sim n_1 \sim n_2 \gg n_0 \sim n_3 \sim 1\) (\(n_0, n_3\) are defined by the learning task)</p>
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
+            After updating weights by some \(\Delta W_\ell\), the hidden representations are given by
+            $$h_\ell + \Delta h_\ell = g_\ell((W_\ell + \Delta W_\ell)(h_{\ell - 1} + \Delta h_{\ell - 1}))$$ Expanding and subtracting the original representation shows that the representation update is 
+            $$\Delta h_\ell = g_\ell \underbrace{\Delta W_\ell h_{\ell-1}}_{\text{layer}}
+            + g_\ell \underbrace{W_\ell \Delta h_{\ell-1}}_{\text{passthrough}}
+            + g_\ell \underbrace{\Delta W_\ell \Delta h_{\ell-1}}_{\text{interaction}} \quad\quad\quad\text{(Eqn. 2)}$$
+            In the above, the layer contribution is caused by the update to the current layer's weights, the passthrough contribution is caused by the update to the previous representation passing through new weights, and the interaction contribution is the interaction between the layer update and the previous representation update.
+            <div class="example-box">
+                <strong class="example-box-title">Criteria for Well-Behaved Training</strong>
+                <ol>
+                    <strong><li>Nontriviality Criterion (NTC)
+                        $$\norm{\Delta h_3} \sim 1$$
+                    </li></strong><p>The loss decreases at a width-independent rate.</p>
+                    <strong>
+                        <li>Useful Update Criterion (UUC)
+                            $$\abs{\pdv{\mathcal{L}}{x}^{\top} \Delta h_\ell} \sim 1 \quad \text{ for } \ell \geq 1$$
+                        </li>
+                    </strong>
+                    <p>Each update should contribute to minimizing the loss.</p>
+                    <strong>
+                        <li>Maximality Criterion (MAX)*
+                            $$\norm{g_\ell\Delta W_\ell h_{\ell - 1}} \sim \norm{\Delta h_\ell}$$
+                        </li>
+                    </strong>
+                    <p>A layer's weight update should contribute non-negligibly to the following representation
+                    update (i.e. the layer contribution should not be dominated).</p>
+                </ol>
+                <p>*Not strictly necessary for stable training, but is useful as it prevents "frozen" layers.</p>
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
+            <div class="example-box">
+                <strong class="example-box-title">Neural Net with NTC, UUC, and MAX Constraints</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/roadmap_diagram.png" />
+                <p>Note that the NTC is a single constraint that applies only to the last layer, the UUC provides one constraint per layer, and the MAX provides one constraint per layer (trivially satsified in the read-in layer).</p>
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
+            Counting constraints, the NTC, UUC, and MAX provide 6 constraints. Choosing \(g_\ell, \sigma_\ell\) provides 6 degrees of freedom, and choosing \(\norm{h_\ell}\) bumps us up to 9. Fixing two of the remaining 3 degrees of freedom (after satsifying the 6 constriants) by setting the initial \(\norm{h_1}, \norm{h_2}\) so that the activations are \(\Theta(1)\). Then, we are left with a single degree of freedom.
+        </section>
+        <section>
+            <h2>Deriving the Richness Scale</h2>
+            <p>Using the feedforward equations, enforce \(\norm{h_\ell}^2 \sim n_\ell\) for \(\ell = 1, 2\) (assuming the input satsifies \(\norm{h_0}^2 \sim n_0\)). Taking the square vector norm of \(\text{Eqn. 2}\) shows
+                $$g_\ell^2\sigma_\ell^2n_{\ell - 1} \overset{!}{\sim} 1 \text{ for } \ell = 1, 2 \text{ and } g_3^2\sigma_3^2n_2 \underset{\sim}{<} 1 \quad\quad\quad \text{(Eqn. 3)}$$
+            </p>
+            <p>In the first backward pass, we find that gradient descent causes the weights to align with their inputs:
+                $$\Delta W_\ell = -g_\ell \pdv{L}{h_\ell} \otimes h_{\ell - 1} \quad\quad\quad \text{(Eqn. 4)}$$ 
+            </p>
         </section>
         <footer>
             <h2>References</h2>
