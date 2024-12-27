@@ -116,24 +116,25 @@
 </head>
 
 <body>
+    <script src="../toc-generator.js"></script>
     <header>
-        <div class="logo">DR</div>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
         <nav>
-            <a href="/">Home</a>
             <a href="/research">Research</a>
             <a href="/projects">Projects</a>
+            <a href="/blog">Blog</a>
         </nav>
        
     </header>
     <main>
         <article class="intro">
             <h1>Richness in Training Regimes</h1>
-            <p class="date">November 26, 2024</p>
+            <p class="date">December 26, 2024</p>
             <p>Some notes on <a href="https://arxiv.org/abs/2404.19719">[arXiv:2404.19719]</a>.</p>
         </article>
         <section>
             <h2>Introduction</h2>
-            <p>Training a neural net can be broken down into two processes: feedforward inference and backpropogating update. When training, we want to ensure that these processes are well-behaved i.e. feedforward outputs should move in the right direction in finite time and backpropagation should update the hidden representations that allow optimization to proceed stably (without stalling or exploding). To control these processes, we observe a single degree of freedom: richness defined as the size of the updates to the hidden representations.</p>
+            <p>Training a neural net can be broken down into two processes: feedforward inference and backpropogating update. When training, we want to ensure that these processes are well-behaved i.e. feedforward outputs should move in the right direction in finite time and backpropagation should update the hidden representations that allow optimization to proceed stably (without stalling or exploding). To control these processes, we observe a single degree of freedom: richness, defined as the size of the updates to the hidden representations.</p>
             <div class="example-box">
                 <strong class="example-box-title">The Richness Scale</strong>
                 <img style="width: 100%; border-radius: 5px" src="imgs/richness_scale.png" />
@@ -144,7 +145,7 @@
             <h2>Notation</h2>
             <p><ul>
                 <li>\(W^{(i,j)}_{\ell}\) refers to the \(i,j\) component of the \(\ell\)'th weight matrix</li>
-                <li>\(\mathbf{M}\) is "aligned" with \(\hat{v}\) if \(\norm{\mathbf{M}\hat{v}}\) typically dominates \(\norm{\mathbf{M}\hat{u}}\) for some random isotropic unit vector \(\hat{u}\)</li>
+                <li>\({M}\) is "aligned" with \(\hat{v}\) if \(\norm{{M}\hat{v}}\) typically dominates \(\norm{{M}\hat{u}}\) for some random isotropic unit vector \(\hat{u}\)</li>
                 <li>Asympotic Notation<ul>
                     <li>\(a \sim b \equiv a = \Theta(b)\)</li>
                     <li>\(a \underset{\sim}{>} b \equiv a = \Omega(b)\)</li>
@@ -155,7 +156,7 @@
         </section>
         <section>
             <h2>Roadmap</h2>
-            <p>All analyses are conducted on a 3-layer linear model. As width grows, controlling the size of the gradient relative to the size of the feedforward representation becomes important, so weight matrices are factored into a scalar coefficient \(g\) and a trainable part \(\mathbf{W}\).</p>
+            <p>All analyses are conducted on a 3-layer linear model. As width grows, controlling the size of the gradient relative to the size of the feedforward representation becomes important, so weight matrices are factored into a scalar coefficient \(g\) and a trainable part \({W}\).</p>
             <div class="example-box">
                 <strong class="example-box-title">Toy Model Details</strong>
                 <p>Train the model
@@ -212,14 +213,105 @@
         </section>
         <section>
             <h2>Deriving the Richness Scale</h2>
+            <h3>Derivation</h3>
             <p>Using the feedforward equations, enforce \(\norm{h_\ell}^2 \sim n_\ell\) for \(\ell = 1, 2\) (assuming the input satsifies \(\norm{h_0}^2 \sim n_0\)). Taking the square vector norm of \(\text{Eqn. 2}\) shows
                 $$g_\ell^2\sigma_\ell^2n_{\ell - 1} \overset{!}{\sim} 1 \text{ for } \ell = 1, 2 \text{ and } g_3^2\sigma_3^2n_2 \underset{\sim}{<} 1 \quad\quad\quad \text{(Eqn. 3)}$$
             </p>
             <p>In the first backward pass, we find that gradient descent causes the weights to align with their inputs:
                 $$\Delta W_\ell = -g_\ell \pdv{L}{h_\ell} \otimes h_{\ell - 1} \quad\quad\quad \text{(Eqn. 4)}$$ 
             </p>
-            <p>From \(Eqn. 1\)</p>
-        </section>
+            <p>From \(\text{Eqn. 1}\), we derive a recursive expression of the derivative of the loss w.r.t. the representations:
+                $$\pdv{\mathcal{L}}{h_{\ell - 1}} = g_\ell W_\ell^\top \pdv{\mathcal{L}}{h_\ell} \implies \norm{\pdv{\mathcal{L}}{h_{\ell - 1}}}^2 \sim g_\ell^2 \sigma_\ell^2 n_{\ell - 1} \norm{\pdv{\mathcal{L}}{h_\ell}}^2 \quad\quad\quad \text{(Eqn. 5)}$$ where "the norm relation follows from applying the central-limit-style argument and using the fact
+                that the factors in the right hand side are uncorrelated".
+            </p>
+            <p>Now, using \(\text{Eqn. 5}\), we can revise \(\text{Eqn. 2}\):
+                $$\Delta h_\ell = \underbrace{-g_\ell^2\norm{h_{\ell - 1}}^2 \pdv{\mathcal{L}}{h_\ell}}_{\text{layer}} \underbrace{-g^2_\ell g^2_{\ell -1} \norm{h_{\ell - 2}}^2 W_\ell W_\ell^{\top}\pdv{\mathcal{L}}{h_\ell}}_{\text{passthrough (layer term)}} + \underbrace{\cdots}_{\text{passthrough (other terms)}} + \underbrace{\cdots}_{\text{interaction}}$$
+                $$\approx -g_\ell^2 \Big(\norm{h_{\ell - 1}}^2 + g^2_{\ell - 1}\norm{h_{\ell - 2}}^2 W_\ell W_\ell^{\top}\Big) \pdv{\mathcal{L}}{h_\ell} \quad\quad\quad \text{(Eqn. 6)}$$
+            </p>
+            <p>Some observations about the above: the first term in \(\text{Eqn. 6}\) is the layer contribution an the second term is the non-negligible part of the passthrough contribution. Using the MAX, the first term cannot be dominated by the second. This means that \(\Delta h_\ell\) has a large contribution in the direction of \(\pdv{\mathcal{L}}{h_\ell}\) i.e. the representation update is aligned with the loss gradient w.r.t. the representation. Using this alignment, we can express the UUC in another way:
+                $$\norm{\pdv{\mathcal{L}}{h_\ell}}\norm{\Delta h_\ell} \overset{!}{\sim} 1 \quad \text{for} \quad \ell \geq 1 \quad\quad\quad \text{(Eqn. 7)}$$
+            Applying this new form of the UUC to \(\text{Eqn. 5}\) gives a constraint relation:
+                $$\norm{\Delta h_\ell}^2 \overset{!}{\sim} g_\ell^2 \sigma^2_\ell n_{\ell - 1} \norm{\Delta h_{\ell -1}}^2 \quad \text{for} \quad \ell \geq 2 \quad\quad\quad \text{(Eqn. 8)}$$
+            Since the feedforward constraint (\(\text{Eqn. 3}\)) also applies to layer 2, we find that 
+            $$\norm{\Delta h_1} \sim \norm{\Delta h_2} \overset{\text{def}}{=} \norm{\Delta h} \quad\quad\quad \text{(Eqn. 9)}$$
+            Thus, the wide hidden representations all evolve at the same rate.
+            </p>
+            <p>Now, applying the UUC as expressed in \(\text{Eqn. 7}\) to \(\text{Eqn. 6}\) directly gives
+                $$1 \overset{!}{\sim} \pdv{\mathcal{L}}{h_\ell}^{\top} \Delta h_\ell \sim g_\ell^2\Bigg(\norm{h_{\ell - 1}}^2 \norm{\pdv{\mathcal{L}}{h_\ell}}^2 + g^2_{\ell -1}\norm{h_{\ell -2}}^2 \norm{W_\ell^{\top} \pdv{L}{h_\ell}}^2\Bigg)$$
+                $$\sim \frac{g^2_\ell}{\norm{\Delta h_\ell}^2} \Big(\norm{h_{\ell - 1}}^2 + g_{\ell - 1}^2 \norm{h_{\ell - 2}}^2\sigma_\ell^2 n_{\ell - 1}\Big) \quad\quad\quad \text{(Eqn. 10)}$$
+            where the passthrough term is zero for \(\ell = 1\).
+            </p>
+            <p>Now, using the MAX and the NTC,
+                $$
+                g_\ell \sim \frac{\norm{\Delta h_\ell}}{\sqrt{n_{\ell - 1}}} \sim
+                \begin{cases}
+                \frac{1}{\sqrt{n_2}}, & \ell = 3, \\
+                \frac{\norm{\Delta h_\ell}}{\sqrt{n_{\ell - 1}}}, & \ell \in \{1, 2\}
+                \end{cases} \quad\quad\quad \text{(Eqn. 11)}
+                $$
+            </p>
+            <p>Applying \(\text{Eqn. 11}\) to the other constraint relations (\(\text{Eqn. 3}\) and \(\text{Eqn. 8}\)) shows
+                $$\sigma_\ell \sim \frac{1}{\norm{\Delta h}} \quad\quad\quad \text{(Eqn. 12)}$$
+            </p>
+            <p>Finally, examining \(\text{Eqn. 10}\) shows the relative size of the passthrough contributions:
+                $$1 \sim \frac{g_\ell^2}{\norm{\Delta h_\ell}^2} \Big(\norm{h_{\ell-1}}^2 + g^2_{\ell-1}\norm{h_{\ell - 2}}^2 \sigma^2_\ell n_{\ell-1}\Big)$$
+                $$\sim 1 + g^2_{\ell-1}\norm{h_{\ell-2}}^2\sigma_\ell^2$$
+                $$\sim 1 + \norm{h_{\ell-1}}^2\sigma_\ell^2 \quad\quad\quad \text{(Eqn. 13)}$$
+            Plugging in values shows that the passthrough contributions for layers 2 and 3 matches the size of the layer contribution.
+            </p>
+            <div class="example-box">
+                <strong class="example-box-title">Passthrough Matches Layer Contribution</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/passthrough_layer_contribution.png" />
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
+            <p>From \(\text{Eqn. 11}\) and \(\text{Eqn. 12}\), all the constraints have determined the scaling of the initial hyperparameters in terms of a single degree of freedom: \(\norm{\Delta h}\).</p>
+            <div class="example-box">
+                <strong class="example-box-title">Choosing \(g_\ell, \sigma_\ell\) based on \(\norm{h_\ell}\)</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/table_1.png" />
+                <p>Note that \(n_1, n_2\) are abbreviated as \(n\).</p>
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
+            <h3>Richness Values</h3>
+            <p>From \(\text{Eqn. 3}\), \(\sigma^2_3 \underset{\sim}{<} 1 \implies \norm{\Delta h} \underset{\sim}{>} 1\). To ensure that the representation updates are not too large, we impose a criterion that \(\norm{\Delta h_2} \underset{\sim}{<} \norm{h_2} \sim \sqrt{n}\). These conditions together define a continuous scale of possible richenss of training:
+            $$\boxed{\norm{\Delta h} \sim n^r \quad\quad \text{where the richness \(r\) satisfies} \quad\quad 0 \leq r \leq \frac{1}{2}}$$</p>
+            </section>
+            <section>
+                <h2>Understanding the Richness Scale</h2>
+                <h3>Weights Update to Align with Their Input</h3>
+                <p>Deriving the weight update in \(\text{Eqn. 4}\) using gradient descent with learning rate \(\eta = 1\) shows
+                    $$\Delta W_\ell^{(i,j)} = -\pdv{\mathcal{L}}{W_\ell^{(i,j)}} = -\pdv{\mathcal{L}}{h_\ell^{(k)}}\pdv{h_\ell^{(k)}}{W_\ell^{(i,j)}}$$
+                    $$= - \pdv{\mathcal{L}}{h_\ell^{(k)}}\Big(\delta^{(i,k)}g_\ell h^{(j)}_{\ell-1}\Big)$$
+                    $$= -g_\ell \pdv{\mathcal{L}}{{h_\ell^{(i)}}}h_{\ell-1}^{(j)}$$
+                The Kronekcer Delta indicates that \(\pdv{h_\ell}{W_\ell}\) is a sparse tensor and its contraction with \(\pdv{\mathcal{L}}{h_\ell}\) results in a rank-1 update. Since the input \(h_{\ell-1}\) is the only nonzero right singular vector of the update, the update must be aligned.
+                </p>
+            <h3>Weight Alignment Does Not Magnify Gradients</h3>
+            <p>The upper bound on \(\norm{\Delta h}\) prevents the gradients being magnified and destabilizing training. Computing a second backward pass and examining the backpropagation equations shows this:
+                $$
+                    \pdv{\mathcal{L}}{h_{\ell-1}} = g_\ell (W_\ell + \Delta W_\ell)^{\top} \pdv{\mathcal{L}}{h_\ell}
+                $$
+            </p>
+            <p>To ensure that the gradient is not magnified, we require that the second term does not dominate. From \(\text{Eqn. 5}\), we know the squared norm of the first term is \(g_\ell^2\sigma^2_\ell n_{\ell-1}\norm{\pdv{\mathcal{L}}{h_\ell}}^2\). The squared norm of the second term is \(g_\ell^4 n_{\ell-1} \norm{\pdv{\mathcal{L}}{h_\ell}}^4\). Simplifying the desired inequality shows
+                $$
+                    \norm{\Delta h}^2 \underset{\sim}{<} \norm{\Delta h_\ell}^2 n_{\ell - 1} \quad \text{ for } \quad \ell \geq 2
+                $$</p>
+                <p>Clearly for \(\ell = 3\), choosing \(\norm{\Delta h} \underset{\sim}{<} \sqrt{n}\) prevents the updates from magnifying the gradient.</p>
+            <h3>Models Train Lazily iff They Are Linearized</h3>
+            <p>Some models are well approximated by their first-order Taylor approximation in parameter space:
+                $$
+                    f(x; \theta_0 + \Delta \theta) = f(x; \theta_0) + \Delta \theta^\top (\nabla_\theta f(x; \theta_0)) + \underbrace{\frac{1}{2}\Delta \theta^\top (\nabla^2_\theta f(x; \theta_0))\Delta \theta + \cdots}_{\text{negligible in the wide + lazy limit}}
+                $$
+            </p>
+            <p>If \(\Delta \theta\) is a gradient descent update, the first-order gradient term scales like \(\Delta \theta^\top (\nabla_\theta f(x; \theta_0)) \sim 1\), while the second-order curvature term scales like \(\nabla \theta^\top (\nabla^2_\theta f(x; \theta_0)) \Delta \theta \sim \frac{\norm{\Delta h}^2}{n}\). Then, as \(n \to \infty\), the curvature vanishes as long as \(\norm{\Delta h} \ll \sqrt{n}\), i.e. as long as we're not in the \(\mu \text{P}\) regime.</p>
+            <h3>Small Initial Outputs are Necessary for Representation Learning</h3>
+            <p>Since \(\norm{h_3} \sim \frac{1}{\norm{\Delta h}}\), in order to achieve feature learning in the \(n \to \infty\) limit, there must be small outputs at initialization. Conversely, if we desire the initial outputs to be \(\Theta(1)\), we must accept lazy training.</p>
+            <h3>Model Rescaling Emulates Training at Any Richness</h3>
+            <p>We can also initialize a network in the NTK regime and toggle rich training by rescaling only the final-layer gradient multiplier and global learning rate:
+                $$
+                    \text{optimize } \quad \mathcal{L}(\gamma^{-1} f^{\text{(NTK)}}(x), y) \quad \text{ with learning rate } \quad \eta = \gamma^2
+                $$
+            However, we can emulate training with richness \(r\) by choosing \(\gamma \overset{!}{=} n^r\). There's a short derivation here, but the main takeaway is that one should choose \(r\) first and set \(\gamma = n^r\).
+            </p>
+            </section>
         <footer>
             <h2>References</h2>
             <ul style="list-style-type: none;">
