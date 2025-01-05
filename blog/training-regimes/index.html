@@ -213,7 +213,7 @@
         </section>
         <section>
             <h2>Deriving the Richness Scale</h2>
-            <h3>Derivation</h3>
+            <h3>Derivation of the Richness Scale</h3>
             <p>Using the feedforward equations, enforce \(\norm{h_\ell}^2 \sim n_\ell\) for \(\ell = 1, 2\) (assuming the input satsifies \(\norm{h_0}^2 \sim n_0\)). Taking the square vector norm of \(\text{Eqn. 2}\) shows
                 $$g_\ell^2\sigma_\ell^2n_{\ell - 1} \overset{!}{\sim} 1 \text{ for } \ell = 1, 2 \text{ and } g_3^2\sigma_3^2n_2 \underset{\sim}{<} 1 \quad\quad\quad \text{(Eqn. 3)}$$
             </p>
@@ -308,9 +308,25 @@
             <p>We can also initialize a network in the NTK regime and toggle rich training by rescaling only the final-layer gradient multiplier and global learning rate:
                 $$
                     \text{optimize } \quad \mathcal{L}(\gamma^{-1} f^{\text{(NTK)}}(x), y) \quad \text{ with learning rate } \quad \eta = \gamma^2
-                $$
-            However, we can emulate training with richness \(r\) by choosing \(\gamma \overset{!}{=} n^r\). There's a short derivation here, but the main takeaway is that one should choose \(r\) first and set \(\gamma = n^r\).
+                $$ <a id="backlink-1" href="#footnote-1">[1]</a>
+             However, we can emulate training with richness \(r\) by choosing \(\gamma \overset{!}{=} n^r\). After implementing the global learning rate as global multipliers, we have $$
+                \eta = 1 \quad \quad g_\ell = \gamma g_\ell^{\text{(NTK)}} \quad \quad \sigma_\ell = \gamma^{-1}\sigma_\ell^{\text{(NTK)}}
+            $$
             </p>
+            <p>Multiplying the model rescaling coefficient into \(g_3\), we have \(g_3 = g_3^{\text{(NTK)}}\). From Table 1, setting \(\gamma = \norm{\Delta h}\) allows the rescaled model to achieve training at any richness.</p>
+
+            <p id="footnote-1"><a href="#backlink-1">[1]</a> At the time of writing, \(\gamma\) was interpreted as written in the equations above, but since then the notation has
+            changed. Now \(\gamma \overset{\text{def}}{=} \frac{\gamma_0}{\sqrt{n}}\), where \(\gamma_0\) denotes the gamma used in
+            the equations above.</p>
+            
+            <h3>Layerwise Learning Rates Introduce Families of Equivalent Parameterizations</h3>
+            <p>To change the size of the update, changing either the learning rate or the size of the gradient signal are equivalent.</p>
+            <div class="example-box">
+                <strong class="example-box-title">The Richness Transformation and Gauge Freedom</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/gauge_freedom.png" />
+                <p>Recall this uses the old definition of \(\gamma\) (the same one used in the equations above).</p>
+                <small class="example-box-description">Source: [arXiv:2404.19719].</small>
+            </div>
             </section>
         <footer>
             <h2>References</h2>
