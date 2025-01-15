@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Training Regimes</title>
+    <title>Eigenlearning</title>
     <style>
         :root {
             --primary-color: #4a4a4a;
@@ -129,11 +129,114 @@
     <main>
         <article class="intro">
             <h1>The Eigenlearning Framework</h1>
-            <p class="date">January 03, 2024</p>
+            <p class="date">January 14, 2025</p>
             <p>Some notes on <a href="https://arxiv.org/abs/2110.03922">[arXiv:2110.03922]</a>.</p>
         </article>
         <section>
-            <h2></h2>
+            <h2>Introduction</h2>
+            <p>Understanding generalization in neural networks is notoriously difficult. However, it has been shown that infinite-width networks are equivalent to Kernel Ridge Regression, and finite-width networks can be approximated by KRR as well. Under the Eigenlearning Framework, a conservation law for KRR is developed, where a kernel has a certain amount of "learnability" which it distributes amongst its eigenfunctions. The paper also shows that the eigenfunctions of the kernel corresponding to larger eigenvalues are learned before eigenfunctions of the kernel corresponding to smaller eigenvalues.</p>
+        </section>
+        <section>
+            <h2>Preliminaries</h2>
+            <h3>Notation</h3>
+            <p>The dataset is a supervised learning setting in which \(n\) training samples \(\mathcal{D} \equiv \{x_i\}_{i=1}^n\) are drawn i.i.d. from a distribution \(p\) over \(\mathbb{R}^d\). The goal is to learn a scalar target fucntion \(f\) given noisy evaluations \(\mathbf{y} \equiv (y_i)^n_{i=1}\) with \(y_i = f(x_i) + \eta_i\) with \(\eta_i \sim \mathcal{N}(0, \epsilon^2)\). Also assume this label noise is applied to test targets. For scalar functions \(g, h\), define \(\langle g, h \rangle \equiv \mathbb{E}_{x \sim p}[g(x)h(x)]\) and \(\norm{g}^2 \equiv\langle g, g\rangle\).</p>
+            <p>The paper considers the KRR predicted function \(\hat{f}\) given by 
+                $$
+                    \hat{f}(x) = \mathbf{k}_{x\mathcal{D}}(\mathbf{K}_{\mathcal{D}\mathcal{D}} + \delta\mathbf{I}_\mathcal{D})^{-1}\mathbf{y} \quad\quad\quad \text{(Eqn. 1)}
+                $$
+            where for a positive-semidefinite kernel \(K\), \(\mathbf{k}_{x\mathcal{D}}\) is a row vector with \([\mathbf{k}_{x\mathcal{D}}]_i = K(x,x_i)\) and the empirical kernel matrix \([\mathbf{K}_\mathcal{DD}]_{ij} = K(x_i, x_j)\) (which is assumed to be nonsingular) and \(\delta\) is a ridge parameter.
+            </p>
+            <p>The goal is to minimize test MSE \(\mathcal{E}^{(\mathcal{D})}(f) = \norm{f - \hat{f}}^2 + \epsilon^2\) and its expectation over training sets \(\mathcal{E}(f) = \mathbb{E}_{\mathcal{D}}[\mathcal{E}^{(\mathcal{D})}(f)]\) where \(\hat{f}\) is the KRR predictor in \(\text{Eqn. 1}\). Train MSE can also be defined as \(\mathcal{E}_{\text{tr}}(f) = \frac{1}{n} \sum_{i=1}^{n} (f(x_i) - \hat{f}(x_i))^2\). We also have bias \(\mathcal{B}(f) = \norm{f - \mathbb{E}_\mathcal{D}[\hat{f}]}^2 + \epsilon^2\) and variance \(\mathcal{V}(f) = \mathcal{E}(f) - \mathcal{B}(f)\).</p>
+            <h3>The Kernel Eigensystem</h3>
+            <p>We can decompose the kernel s.t. \(K(x, x') = \sum_i \lambda_i \phi_i(x)\phi_i(x')\) with \(\lambda_i \geq 0\) and a basis of eigenfunctions satisfying \(\langle \phi_i, \phi_j \rangle = \delta_{ij}\). Assume eigenvalues are indexed in descending order.</p>
+            <p>Since the eigenfunctions form a complete basis, we can decompose \(f\) and \(\hat{f}\) as
+                $$
+                    f(x) = \displaystyle\sum \mathbf{v}_i\phi_i(x) \quad\quad \hat{f}(x) = \displaystyle\sum \mathbf{\hat{v}}_i\phi_i(x) \quad\quad\quad \text{(Eqn. 2)}
+                $$
+            where \(\mathbf{v} \equiv (\mathbf{v}_i)_i\) and \(\mathbf{\hat{v}} \equiv (\mathbf{\hat{v}}_i)_i\) are vectors of eigencoefficients.
+            </p>
+        </section>
+        <section>
+            <h2>Learnability and its Conservation Law</h2>
+            <h3>Definition and Properties</h3>
+            <p>Learnability is a measure of \(\hat{f}\) similar to MSE, but linear instead of quadratic. For any function \(f\) s.t. \(\norm{f} = 1\), let
+                $$
+                    \mathcal{L}^{(\mathcal{D})}(f) \equiv \langle f, \hat{f} \rangle \quad\quad \text{and} \quad\quad \mathcal{L}(f) \equiv \mathbb{E}_\mathcal{D}[\mathcal{L}^{(\mathcal{D})}(f)] \quad\quad\quad \text{(Eqn. 3)}
+                $$
+            \(\mathcal{L}^{(\mathcal{D})}(f)\) is referred to as the \(\mathcal{D}\)-learnability of \(f\) w.r.t. the kernel and \(n\) and \(\mathcal{L}(f)\) is referred to as the learnability. "Up to normalization, this quantity is akin to cosine similarity between \(f\) and \(\hat{f}\)". For KRR, learnnability gives a useful indication of how well a fucntion (particularly a kernel eigenfunction) is learned.
+            </p>
+            <div class="example-box">
+                <strong class="example-box-title">Properties of Learnability</strong>
+                <p>For any \(f\) s.t. \(\norm{f} = 1\), the following properties of \(\mathcal{L}^{(\mathcal{D})}, \mathcal{L}, and \{\phi_i\}\) hold:
+                    <ol type="a">
+                        <li>\(\mathcal{L}(\phi_i), \mathcal{L}^{(\mathcal{D})}(\phi_i) \in [0,1]\)</li>
+                        <li>When \(n=0, \mathcal{L}^{(\mathcal{D})}(f) = \mathcal{L}(f) = 0\)</li>
+                        <li>Let \(\mathcal{D}_+\) be \(\mathcal{D}\cup x\), where \(x \in X, x \notin \mathcal{D}\) is a new data point. Then \(\mathcal{L}^{(\mathcal{D}_+)}(\phi_i) \geq \mathcal{L}^{(\mathcal{D})}(\phi_i)\)</li>
+                        <li>\(\frac{\partial}{\partial \lambda_i} \mathcal{L}^{(\mathcal{D})}(\phi_i) \geq 0, \frac{\partial}{\partial \lambda_i} \mathcal{L}^{(\mathcal{D})}(\phi_j) \leq 0, \) and \(\frac{\partial}{\partial \delta} \mathcal{L}^{(\mathcal{D})}(\phi_i) \leq 0\)</li>
+                        <li>\(\mathcal{E}(f) \geq \mathcal{B}(f) \geq (1 - \mathcal{L}(f))^2\)</li>
+                    </ol>
+                </p>
+            </div>
+            <p>From properties (a-c), we see that the learnability of each eigenfunction monotonically increases from zero as the training set grows, reaching a maximum of 1 in the ridgeless maximal data limit. Property (d) shows that the eigenfunctions are in competition for learnability and that regularization only harms eigenfunction learnability. Property (e) gives a lower bound on MSE in terms of learnability.</p>
+            <h3>Conservation of Learnability</h3>
+            <p>The conservation rule follows from "the view of KRR as a projection of \(f\) onto the \(n\)-dimensional subspace of the RKHS defined by the \(n\) samples and is closely related to the 'dimension bound' for linear learning rules".</p>
+            <div class="example-box">
+                <strong class="example-box-title">Conservation of Learnability</strong>
+                <p>For any complete basis of orthogonal functions \(\mathcal{F}\), when ridge parameter \(\delta = 0\),
+                    $$
+                        \displaystyle\sum_{f \in \mathcal{F}} \mathcal{L}^{(\mathcal{D})}(f) = \displaystyle\sum_{f \in \mathcal{F}} \mathcal{L}(f) = n \quad\quad\quad \text{(Eqn. 4)}
+                    $$
+                and when \(\delta > 0\),
+                    $$
+                        \displaystyle\sum_{f \in \mathcal{F}} \mathcal{L}^{(\mathcal{D})}(f) < n \quad\quad \text{and} \quad\quad \displaystyle\sum_{f \in \mathcal{F}}
+                        \mathcal{L}(f) < n \quad\quad\quad \text{(Eqn. 5)}
+                    $$
+                </p>
+            </div>
+            <p>This is a stronger version of the "no-free-lunch" theorem for learning algorithms which states that all models perform at a chance level when averaged over all target functions.</p>
+        </section>
+        <section>
+            <h2>Theory</h2>
+            <h3>Sketch of Derivation</h3>
+            <p>\(\mathbf{\hat{v}}\) depends linearly on \(\mathbf{v}\), so we can construct a "learning transfer matrix" \(\mathbf{T}^{(\mathcal{D})}\) s.t. \(\mathbf{\hat{v}} = \mathbf{T}^{(\mathcal{D})}\mathbf{v}\). \(\mathbf{T}^{(\mathcal{D})}\) is "equivalent to the 'KRR reconstruction operator' of Jacot et al. and viewing KRR as linear regression in eigenfeature space, is esentially the 'hat' matrix of linear regression". Then, using the universality assumption ("that the kernel features may be replaced by independent Gaussian features with the same statistics without changing
+            downstream generalization metrics") shows that \(\mathbb{E}[\mathbf{T}^{(\mathcal{D})}]\) is diagonal with diagonnal elements of the form \(\lambda_i / (\lambda_i + \kappa)\), where \(\kappa\) is a constant.</p>
+            <h3>Eigenlearning Equations</h3>
+            <div class="example-box">
+                <strong class="example-box-title">The Eigenlearning Equations</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/eqns.png" />
+                <small class="example-box-description">Source: [arXiv:2110.03922].</small>
+            </div>
+            <p>The learnability of an arbitrary normalized function can be computed as \(\mathcal{L}(f) = \sum_i \mathcal{L}_i \mathbf{v}^2_i\).</p>
+            <h3>Interpretation of the Eigenlearning Equations</h3>
+            <p>\(\text{Eqn. 6}\) gives a constant \(\kappa\) which decreases monotonically as \(n\) increases. \(\text{Eqn. 7}\) shows taht the learnability of eigenmode \(i\) is 0 when \(\kappa \gg \lambda_i\) and approaches 1 when \(\kappa \ll \lambda_i\) so that a mode is well-learned when \(\kappa \ll \lambda_i\). Putting \(\text{Eqn. 7}\) into \(\text{Eqn. 6}\) and setting \(\delta = 0\) gives the conservation law. From \(\text{Eqn. 9}\), modes with learnability 1 are fully learned adn do not contribute to the test risk. \(\mathcal{E}_0\) (defined in \(\text{Eqn. 8}\)) is the MSE when trained on pure-noise targets (\(\mathbf{v}_i = 0\) and \(\epsilon^2 = 1\)). \(\mathcal{E}_0 > 1\) and it can be interpreted as the factor by which pure noise is overfit. Following this interpretation, overfitting of noise is "overconfidence" on the part of the kernel that the target function lies in the top-\(n\) subspace.</p>
+            <p>Each new unit of learnability (from each new training example) is distributed among the set of eigenmodes as 
+                $$
+                    \frac{d\mathcal{L}_i}{dn} = n^{-1}\mathcal{E}_0r_i = \frac{r_i}{\sum_j r_j + \delta / \kappa}
+                $$
+            where \(r_i \equiv \mathcal{L}_i(1-\mathcal{L}_i)\) represetns the rate at which mode \(i\) is being learned. "As examples are added, each eigenmode's learnability grows in proportion to \(r_i\), with a fraction of the learnability budget proportional to \(\delta / \kappa\) sacrificed to the ridge parameter as a hedge against overfitting. This learning rate is highest when \(\mathcal{L}_i \approx \frac{1}{2}\), and thus it is the partially-learned eigenmodes which msot benefit from the addition of new training examples."
+            </p>
+            <h3>MSE at low n</h3>
+            <p>Some experimental results have shown the test MSE of KRR increasing w.r.t. \(n\) immediately (with no initial drop) without a subsequent peak. In these scenarios, having few samples is worse than having none.</p>
+            <p>Expanding \(\text{Eqn. 9}\) about \(n=0\) shows that \(\mathcal{E}( \phi_i)|_{n=0}=1\) and
+                $$
+                    \frac{d\mathcal{E}(\phi_i)}{dn}\Bigg|_{n=0} = \frac{1}{\sum_j \lambda_j + \delta}\Bigg[\frac{\sum_j \lambda^2_j}{\sum_j \lambda_j + \delta} -2\lambda_i\Bigg]
+                $$
+            so that at small \(n\), MSE increases as samples are added for all modes \(i\) s.t.
+                $$
+                    \lambda_i < \frac{\sum_j \lambda^2_j}{2(\sum_j \lambda_j + \delta)}
+                $$
+            This worsening MSE is due to overfitting: the model mistakes \(\phi_i\) for more learnable modes.
+            </p>
+            <p>This phenomenon is not the same as double descent. This phenomenon occurs with any spectrum when attempting to learn a mode with sufficiently small eigenvalue.</p>
+        </section>
+        <section>
+            <h2>Experimental Validity</h2>
+            The theory's predictions are verified experimentally.
+            <div class="example-box">
+                <strong class="example-box-title">Eigenlearning is Experimentally Verifiable</strong>
+                <img style="width: 100%; border-radius: 5px" src="imgs/exp.png" />
+                <small class="example-box-description">Source: [arXiv:2110.03922].</small>
+            </div>
         </section>
         <footer>
             <h2>References</h2>
@@ -141,6 +244,8 @@
                 <li id="paper">[1] <a href="https://arxiv.org/pdf/2110.03922" target="_blank">The Eigenlearning Framework:
                 A Conservation Law Perspective on
                 Kernel Regression and Wide Neural Networks - J. Simon et al.</a></li>
+                <li id="bair-blog">[2] <a href="https://bair.berkeley.edu/blog/2021/10/25/eigenlearning/" target="_blank">A First-Principles Theory of Neural Network Generalization - Jamie Simon</a></li>
+                
             </ul>
         </footer>
     </main>
