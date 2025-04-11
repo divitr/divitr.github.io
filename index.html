@@ -88,9 +88,9 @@
         }
 
         .footer {
-        max-width: 800px;
-        margin: 4rem auto 2rem;
-        padding: 0 0.5rem;
+            max-width: 800px;
+            margin: 4rem auto 2rem;
+            padding: 0 0.5rem;
         }
 
         .contact-item {
@@ -106,7 +106,6 @@
             color: #666;
             flex-shrink: 0;
             position: relative;
-            z-index: 1;
             background-color: var(--background-color);
             padding-right: 8px;
         }
@@ -117,7 +116,6 @@
             margin-left: auto;
             text-align: right;
             position: relative;
-            z-index: 1;
             background-color: var(--background-color);
             padding-left: 8px;
         }
@@ -134,13 +132,13 @@
         }
 
         .dotted-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
+            flex-grow: 1;
+            margin: 0 8px;
             border-bottom: 1px dotted #ccc;
-            z-index: 0;
+            height: 1px;
+            align-self: center;
         }
+
         .last-updated {
             text-align: center;
             font-size: .75rem;
@@ -168,7 +166,8 @@
             <div class="bio">
                 <h1>Divit Rawal</h1>
                 <p>I'm a second-year undergrad student @ Berkeley studying Statistics, Physics, and Mathematics.</p>
-                <p>I'm interested in the intersection of science and machine learning; specifically, how we can use ideas from statistical mechanics to better understand ML and how ML can be used in science.</p>
+                <p>I'm broadly interested in understanding the behavior and properties of machine learning models, using
+                    tools from statistics and physics. I'm also interested in computational methods for science.</p>
             </div>
         </section>
     </main>
@@ -178,7 +177,7 @@
             <div class="contact-label">Email</div>
             <div class="dotted-line"></div>
             <div class="contact-value">
-                <a target="_blank" href="mailto:divit.rawal@berkeley.edu">divit.rawal@berkeley.edu</a>
+                first.last@berkeley.edu
             </div>
         </div>
         <div class="contact-item">
@@ -195,14 +194,14 @@
                 <a target="_blank" href="https://linkedin.com/in/divit-rawal">/in/divit-rawal</a>
             </div>
         </div>
-        <div class="contact-item">
+        <!-- <div class="contact-item">
             <div class="contact-label">Resume</div>
             <div class="dotted-line"></div>
             <div class="contact-value">
                 <a href="https://raw.githubusercontent.com/divitr/resume_auto_update/main/main/Divit_Rawal.pdf"
                     target="_blank" rel="noopener noreferrer">PDF</a>
             </div>
-        </div>
+        </div> -->
         <div class="last-updated">
             <p>Last Updated Apr 11, 2025</p>
         </div>
