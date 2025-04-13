@@ -47,7 +47,8 @@
         }
 
         nav a:hover {
-            color: var(--link-color);
+            color: var(--primary-color);
+            text-decoration: underline;
         }
 
         .intro {
@@ -68,12 +69,17 @@
         }
 
         a {
-            color: var(--link-color);
-            text-decoration: none;
+           color: var(--primary-color); 
+            /* color: var(--link-color); */
+            text-decoration: underline;
+        }
+
+        a:visited {
+            color: var(--primary-color);
         }
 
         a:hover {
-            text-decoration: underline;
+            text-decoration: none;
         }
 
         @media (max-width: 768px) {
@@ -175,7 +181,8 @@
         <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
         <nav>
             <a href="/research">Research</a>
-            <a href="/projects">Projects</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
         </nav>
     </header>
 

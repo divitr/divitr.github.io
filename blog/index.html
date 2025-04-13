@@ -46,7 +46,8 @@
         }
     
         nav a:hover {
-            color: var(--link-color);
+            color: var(--primary-color);
+            text-decoration: underline;
         }
     
         .intro {
@@ -72,7 +73,7 @@
         }
     
         a:hover {
-            color: var(--link-color);
+            color: var(--primary-color);
             text-decoration: underline;
         }
     
@@ -87,7 +88,7 @@
         }
 
         .blog-post {
-            background: #fffefc;
+            background: #ebebeb2e;
             border-radius: 8px;
             padding: 1.5rem;
             transition: transform 0.2s;
@@ -111,18 +112,18 @@
 </head>
 
 <body>
-    <header>
+    <header style="min-height: 70px">
         <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
         <nav>
             <a href="/research">Research</a>
-            <a href="/projects">Projects</a>
+            <!-- <a href="/projects">Projects</a> -->
             <a href="/blog">Blog</a>
         </nav>
     </header>
 
     <main>
         <h1>Blog</h1>
-	<p>A collection of thoughts, notes, and small projects, updated infrequently. At the moment, there's only a few notes on some papers I've had to read for my research + a few ancient ML architectures I think are interesting, but I'm hoping to write about more things + more frequently. A list of things that are hopefully coming sooon (if and when I find the time):
+	<p>A collection of thoughts, notes, and small projects, updated infrequently. At the moment, there's only a few notes on some papers + a few ancient ML architectures I think are interesting, but I'm hoping to write about more things + more frequently. A list of things that are hopefully coming sooon (if and when I find the time):
         <ul>
             <li>Neural Tangent Kernels: what are they and why do we care</li>
             <li>Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry)</li>
@@ -136,40 +137,40 @@
             <li>A barebones guide to QM (just enough so that chemistry makes sense)</li>
             <li>Everything is a Markov process if your state is large enough</li>
             <li>Information theory and connections to stat mech</li>
-            <li>Reflections on my first two years at berkeley (?)</li>
+            <li>Information bottlenecks and relations to statistical learning theory</li>
         </ul><!--- Course notes can be found on the <a style="text-decoration: underline;" href="/notes/">notes</a> page.--->
-    In the meantime, some old (and poorly put together) posts are below:</p>
+    In the meantime, some old posts are below:</p>
         <section class="blog-posts">
+            <article class="blog-post">
+                <h2><a href="/blog/ntk">Neural Tangent Kernels (in progress)</a></h2>
+                <div class="post-date">April 11, 2025</div>
+                <p>A rough derivation of the neural tangent kernel.</p>
+            </article>
+            <br />
             <article class="blog-post">
                 <h2><a href="/blog/hopfield-networks">Hopfield Networks</a></h2>
                 <div class="post-date">January 19, 2025</div>
                 <p>A quick implementation of a Hopfield network in Python.</p>
-                <p>
-                    <a href="/blog/hopfield-networks">Read more →</a>
             </article>
             <br />
             <article class="blog-post">
                 <h2><a href="/blog/eigenlearning">The Eigenlearning Framework</a></h2>
                 <div class="post-date">January 14, 2025</div>
                 <p>A theory of generalization in Kernel Ridge Regression.</p>
-                <p>
-                    <a href="/blog/eigenlearning">Read more →</a>
             </article>
             <br />
             <article class="blog-post">
                 <h2><a href="/blog/training-regimes">Richness in Training Regimes</a></h2>
                 <div class="post-date">December 26, 2024</div>
                 <p>The richness scale (from NTK to μP).</p>
-                <p>
-                    <a href="/blog/training-regimes">Read more →</a>
             </article>
             <br/>
-            <article class="blog-post">
+            <!-- <article class="blog-post">
                 <h2><a href="/blog/induction-heads">Induction Heads and In-Context Learning in Transformers</a></h2>
                 <div class="post-date">November 26, 2024</div>
                 <p>In-context learning mechanisms in transformers.<p>
                 <a href="/blog/training-regimes">Read more →</a>
-            </article>
+            </article> -->
         </section>
     </main>
 </body>

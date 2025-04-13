@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eigenlearning</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../toc-generator.js"></script>
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+
+    </header>
+    <main>
+        <article class="intro">
+            <h1>Neural Tangent Kernels</h1>
+            <p class="date">April 11, 2025</p>
+        </article>
+        <section>
+            <p>Much of the structure and notation of this post is borrowed from Lilian Weng's fantastic blog post on the math behind NTKs. This post covers most of the same content as well - but with a bit less math and more (hopefully intuitive) explanation. For a more mathematical treatment of NTKs, Jacot's original paper and the aforementioned blog post are great resources (both linked in references).</p>
+        </section>
+        <section>
+            <h2>What Are They and Why Do We Care?</h2>
+            <p>It's long been known that overparameterized neural networks are easily able to achieve near-zero training loss, while still maintaining decent generalization performance. Even though models are initialized randomly, different initializations often converge to similarly good performance, especially when models are overparameterized (i.e. far more parameters than training data points).</p>
+            <p>Neural Tangent Kernels provide a method to explain the evolution of deep neural networks during training. By studying the NTK of a given architecture, we can understand why wide enough networks consistently converge to global minima.</p>
+        </section>
+        <section>
+            <h2>Some Preliminaries</h2>
+            <h3>Kernels</h3>
+            <p>A kernel \(K\) acts as a similarity measure between data points. Formally, we can define a kernel \(K: \mathcal{X} \times \mathcal{X} \to \mathbb{R}\), and intuitively, \(K(x, x^\prime)\) tells us how much the prediction of one data point (say \(x\)) depends on another (\(x^\prime\)). Generally, we can define some function \(\varphi\), and then the kernel is simply an inner product of the two data points after transformation so that \(K(x, x^\prime) = \langle\varphi(x), \varphi(x^\prime)\rangle\). Kernels provide a simple way to make predictions: interpreting the kernel as a measure of the similarity between two inputs, we can define a prediction for an unseen input \(x^\prime\) as:
+                $$
+                    \hat{y} = \sum_{i=1}^n K(x_i, x^\prime) y_i,
+                $$
+            for training data \(\{(x_i, y_i)\}_{i=1}^n\). It's worth noting that a kernel function is always symmetric, and its matrix representation is always SPSD.
+            </p>
+            <h3>Jacobians</h3>
+            <p>For some function \(f: \mathbb{R}^n \to \mathbb{R}^m\), we define its derivative w.r.t. an input vector \(\vec{x} \in \mathbb{R}^n\) via the Jacobian matrix \(J \in \mathbb{R}^{m \times n}\):
+                $$
+                    J = \pdv{f}{\vec{x}} = \begin{pmatrix} 
+                        \pdv{f_1}{x_1} & \cdots & \pdv{f_1}{x_n} \\
+                        \vdots & \ddots & \vdots \\
+                        \pdv{f_m}{x_1} & \cdots & \pdv{f_m}{x_n}
+                    \end{pmatrix}
+                $$
+            The derivative is then defined \(\nabla_\vec{x} f = J^\top\).
+            </p>
+            <h3>Gaussian Processes</h3>
+            <p>Gaussian processes are super interesting and probably deserve a post of their own, but here we just define the basics. Given a collection of data points \(\{x_i\}_{i=1}^n\), GPs fundamentally assume that they follow a jointly Gaussian distribution, defined by a mean vector \(\mu(x)\) and covariance matrix \(\Sigma(x)\), where the covariance matrix is defined entrywise as \(\Sigma_{i,j} = K(x_i, x_j)\), where \(K\) is some kernel of our choosing. Then, making predictions with a GP is the same thing as sampling from this distribution, conditioned on our known points.</p>
+        </section>
+        <section>
+            <h2>Setup</h2>
+            <p>Consider a fully connected network of width \(L\), with \(n_i\) neurons in each layer, where \(i \in \mathbb{Z}_{0 \leq i \leq L}\). Layer \(0\) and layer \(L\) are our read-in (input) and read-out (output) layers respectively. We define the action of the network as a function \(f_\theta: \mathbb{R}^{n_0} \to \mathbb{R}^{n_L}\), where the subscript \(\theta\) indicates the parameters of our model. Our training dataset contains \(n\) input-output pairs: \(\mathcal{D} = \{(x_i, y_i)\}^n_{i=1}\), and we denote all training inputs \(\mathcal{X}\), and all training outputs \(\mathcal{Y}\).</p>
+            <p>Let's also define the forward pass of our network:
+                $$
+                A^{(0)} = \vec{x},
+                $$
+                $$
+                \widetilde{A}^{(l+1)}(\vec{x}) = \frac{1}{\sqrt{n_l}}{W^{(l)}}^\top A^{(l)} + \beta b^{(l)},
+                $$
+                $$
+                A^{(l+1)}(\vec{x}) = \sigma(\widetilde{A}^{(l+1)}(\vec{x})),
+                $$
+            where \(\widetilde{A}^{(l+1)}(\vec{x})\) denotes pre-activations, and \({A}^{(l+1)}(\vec{x})\) denotes post-activations. We apply a \(1/\sqrt{n_l}\) scaling so that infinite width networks (where most of our analysis will take place) don't diverge. We initalize all paramters i.i.d. Gaussian \(\sim \mathcal{N}(0, 1)\).
+            </p>
+            <p>As always, our objective is to minimize some total loss function \(\mathcal{L}\) defined via a per-sample loss \(\ell\):
+                $$
+                \mathcal{L}(\theta) = \frac{1}{N} \sum_{i=1}^N \ell(f(x_i; \theta), y_i).
+                $$
+            Via chain rule, we have
+            $$
+                \nabla_\theta \mathcal{L}(\theta) = \frac{1}{N}\sum_{i=1}^N \nabla_\theta f(x_i; \theta) \nabla_f \ell(f, y_i).
+            $$
+            If we now take our step size as infinetesimally small, we can consider it a time derivative of \(\theta\), so that
+            $$
+                \dv{\theta}{t} = - \nabla_\theta \mathcal{L}(\theta) = -\frac{1}{N}\sum_{i=1}^N \nabla_\theta f(x_i; \theta) \nabla_f \ell(f, y_i),
+            $$
+            and using chain rule again,
+            $$
+            \dv{f(\vec{x}; \theta)}{t} = \dv{f(\vec{x}; \theta)}{\theta} \dv{\theta}{t} = -\frac{1}{N}\sum_{i=1}^N \nabla_\theta f(x; \theta)^\top \nabla_\theta f(x_i; \theta) \nabla_f \ell(f, y_i).
+            $$
+            Now, we see the Neural Tangent Kernel appear: \(K(x, x^\prime; \theta) = \nabla_\theta f(x; \theta)^\top \nabla_\theta f(x^\prime; \theta)\). Employing the intuition of taking an inner product of some transformation of the inputs, we can define \(\varphi(x) = \nabla_\theta f(x; \theta)\), and then our inner product is the standard dot product.
+            </p>
+        </section>
+        <section>
+            <h2>Infinite Width Networks</h2>
+        </section>
+        <footer>
+            <h2>References</h2>
+            <ul style="list-style-type: none;">
+                
+            </ul>
+        </footer>
+    </main>
+</body>
+
+</html>
