@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eigenlearning</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        figure figcaption {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.4;
+            margin-top: 0.5rem;
+        }
+
+        .image-flex {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .image-flex figure {
+            flex: 1;
+            text-align: center;
+        }
+
+        .image-flex img {
+            max-height: 300px;
+            width: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .image-flex figcaption {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .image-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .image-flex figure {
+                width: 100%;
+            }
+
+            .image-flex img {
+                max-width: 90%;
+                height: auto;
+            }
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <!-- <script src="../toc-generator.js"></script> -->
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+
+    </header>
+    <main>
+        <article class="intro">
+            <h1>Cookie Magic</h1>
+            <p>How I got ~$500 worth of cookies for free.</p>
+            <p class="date">April 19, 2025</p>
+        </article>
+        <section>
+            <p>A bit of a deviation from my usual (mostly) technical posts, but I was chatting with a friend about this earlier today and figured that since I won't get the chance to ever use it again, this is a good place to write about Cookie Magic.</p>
+            <p>During my freshman year of college, my friends and I were obsessed with cookies. Especially Insomnia Cookies, which were usually open until around 3 am, perfect for a midnight snack. It got to a point where we would visit Insomnia up to three times a day -- usually totalling ~$10.00 for the day.</p>
+            <p>Insomnia had (has?) 2 "tiers" of cookie: the regular, and the deluxe. The regular is about what you would expect from a cookie, but the deluxe is larger and generally a bit better (imo). Accordingly, it is also priced higher; back then, the regular cookies went for $2.50 per cookie, while the deluxe was priced at $5.00 per cookie. So, during the peak of this cookie obsession, we would have around 2 regular cookies and 1 deluxe cookie a day. Naturally this wasn't sustainable.</p>
+            <p>I forget exactly when, but at some point during our cookie obsession, Insomnia cookies started a promo called Cookie Magic. For $10.00 a month, you could get a free cookie every 24 hours. One of my friends bought Cookie Magic, and tried it out. It didn't take us long to figure out that Cookie Magic didn't do anything too advanced, it was just a 5 minute countdown on a screen with some text.</p>
+            <p>Since I was too cheap to buy Cookie Magic myself, I figured I'd write the screen in a standalone app and see if that'd work to get the cookie. After clearing enough space on my hard disk (so I could install Xcode), and an hour or so of GPTing, I finally had a working clone of the cookie magic app.</p>
+            <p>Finally, sometime in October (I think), we debuted my Cookie Magic app at the Berkeley Insomnia to get a free birthday cake cookie. After that first success, I became bolder; sometimes going back multiple times in a day when when a different staff member was on shift to get free cookies. I used the app at 3 Insomnia locations; Berkeley, UCLA, and UCI, and continued using it until we found out the promo was shut down early in my sophomore year. By rough estimate, I ate around 200 cookies in that time, which at $2.50 a cookie comes out to around ~$500 worth of cookies.</p>
+            <p>On top of that, I let a few friends download the app as well, so there's no telling how many cookies were taken from Insomnia during this time.</p>
+            <p></p>
+            <div class="image-flex">
+                <figure>
+                    <img src="insomnia.JPEG" alt="Insomnia.jpeg">
+                    <figcaption>
+                        The debut of my cookie magic app (I got hungry and ate the cookie inside the store, so that's just the empty
+                        sleeve).
+                    </figcaption>
+                </figure>
+                <figure>
+                    <img src="screen.jpeg" alt="screen.jpeg">
+                    <figcaption>
+                        The main screen of the (fake) cookie magic app.
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>
