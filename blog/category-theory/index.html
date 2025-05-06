@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Theory</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../toc-generator.js"></script>
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+
+    </header>
+    <main>
+        <article class="intro">
+            <h1>Category Theory</h1>
+            <p class="date">May 05, 2025</p>
+            <strong>in progress</strong>
+        </article>
+        <section>
+            <h2>Motivation</h2>
+            <p>Nearly a year ago, I took PHYSICS 89 (Mathematical Physics) at Berkeley. As part of our course material, we learned tensors, which, when first introduced were quite daunting. The topic was not made much more approachable by our GSI, who provided four interpretations of tensors, the first being that tensors are multidimensional arrays (simple enough), the fourth being that tensors are a symmetric monoidal structure on Vect (a very abstract way of thinking about tensors rooted in category theory). I remember being completely confused by this last interpretation. In Fall 2024, I took a course on Abstract Algebra (Berkeley's MATH 113), and was introduced to monoids -- one piece of the puzzle. A month or so ago, I attended a talk by Dr. Jasper Van DeKreeke on the algebra of punctured surfaces and saw category theory pop up again and I figured that if it had appeared so many times in so many places, surely this was something worth learning. The rest of this blog post will build up category theory from groups and discuss some interesting applications of this very abstract idea. Finally, we'll cover what it means to say that a tensor is a symmetric monoidal structure on Vect. -- the original motivation for this post.</p>
+        </section>
+        <section>
+            <h2>Groups and Group Homomorphisms</h2>
+            <p>Groups are the most familiar algebraic structure; a group consists of a set \(G\) together with a binary operation \(\cdot\) that satisfies the following axioms:
+                <ul>
+                    <li><strong>Closure</strong>:\(g \cdot h \in G\) for all \(g, h \in G\),</li>
+                    <li><strong>Associativity</strong>: \((a \cdot b) \cdot c = a \cdot (b \cdot c)\) for \(a, b, c \in G\),</li>
+                    <li><strong>Identity</strong>: there exists an element \(e \in G\) so that \(e \cdot g = g \cdot e = g\) for all \(g \in G\),</li>
+                    <li><strong>Inverses</strong>: there exists an inverse \(g^{-1} \in G\) for each \(g \in G\) so that \(g \cdot g^{-1} = g^{-1} \cdot g = e\).</li>
+                </ul>
+                Some common examples of groups include
+                <ul>
+                    <li>the integers under addition,</li>
+                    <li>permutations of a set of \(n\) distinguishable elements,</li>
+                    <li>the symmetries of a regular polygon.</li>
+                </ul>
+            </p>
+            <p>We also define group homomorphisms</p>
+        </section>
+        <footer>
+            <h2>References</h2>
+            <ul style="list-style-type: none;">
+                <li>[1] <a href="https://lilianweng.github.io/posts/2022-09-08-ntk/">https://lilianweng.github.io/posts/2022-09-08-ntk/</a></li>
+                <li>[2] <a href="https://arxiv.org/abs/1806.07572">https://arxiv.org/abs/1806.07572</a></li>
+                <li>[3] <a href="https://arxiv.org/abs/1711.00165">https://arxiv.org/abs/1711.00165</a></li>
+            </ul>
+        </footer>
+    </main>
+</body>
+
+</html>

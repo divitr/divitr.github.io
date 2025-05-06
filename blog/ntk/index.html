@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eigenlearning</title>
+    <title>Neural Tangent Kernels</title>
     <style>
         :root {
             --primary-color: #4a4a4a;
@@ -133,6 +133,7 @@
             <p class="date">April 11, 2025</p>
         </article>
         <section>
+            <strong>this post is in progress</strong>
             <p>Much of the structure and notation of this post is borrowed from Lilian Weng's fantastic blog post on the math behind NTKs. This post covers most of the same content as well - but with a bit less math and more (hopefully intuitive) explanation. For a more mathematical treatment of NTKs, Jacot's original paper and the aforementioned blog post are great resources (both linked in references).</p>
         </section>
         <section>
@@ -199,11 +200,40 @@
         </section>
         <section>
             <h2>Infinite Width Networks</h2>
+            <h3>NTKs as Gaussian Processes</h3>
+            <p>The output functions (\(f_i(x; \theta)\)) are i.i.d. centered Gaussian processes with covariance \(\Sigma^{(L)}\). We define this Gaussian process recursively:
+                $$
+                \Sigma^{(1)}(x, x^\prime) = \frac{1}{n_0}x^\top x^\prime + \beta^2
+                $$
+                $$
+                \lambda^{l+1}(x, x^\prime) = \begin{pmatrix}
+                \Sigma^{(l)}(x, x) & \Sigma^{(l)}(x, x^\prime)\\
+                \Sigma^{(l)}(x^\prime, x) & \Sigma^{(l)}(x^\prime, x^\prime)
+                \end{pmatrix}
+                $$
+                $$
+                \Sigma^{(l+1)}(x, x^\prime) = \mathbb{E}_{f \sim \mathcal{N}(0, \lambda^{(l)})} [\sigma(f(x))\sigma(f(x^\prime))] + \beta^2
+                $$
+            The proof of this statement is by induction, and is ommitted here, but is covered in Lee & Bahri et al. (linked in references). We refer to this as the Neural Network Gaussian Process (NNGP).
+            </p>
+            <p>Why is this useful? NNGPs let us do Bayesian inference using neural networks without every having to train them! We use the kernel to do GP regression, which allows us to analyze and predict generalization in the lazy learning regime.</p>
+            <h3>Deterministic NTK</h3>
+            <p>The main contribution of Jacot's original NTK paper is that as the network approaches the infinite width limit, the NTK does two very important things:
+                <strong>
+                    <ol>
+                        <li>it is deterministic at initialization (i.e. the initialization paramters don't affect the kernel, the kernel is solely determined by the architecture), and </li>
+                        <li>it stays constant during training</li>
+                    </ol>
+                </strong>
+
+            </p>
         </section>
         <footer>
             <h2>References</h2>
             <ul style="list-style-type: none;">
-                
+                <li>[1] <a href="https://lilianweng.github.io/posts/2022-09-08-ntk/">https://lilianweng.github.io/posts/2022-09-08-ntk/</a></li>
+                <li>[2] <a href="https://arxiv.org/abs/1806.07572">https://arxiv.org/abs/1806.07572</a></li>
+                <li>[3] <a href="https://arxiv.org/abs/1711.00165">https://arxiv.org/abs/1711.00165</a></li>
             </ul>
         </footer>
     </main>

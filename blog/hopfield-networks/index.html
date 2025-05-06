@@ -175,6 +175,11 @@
                 $$
                     \mathbf{W} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi^\mu \otimes \xi^\mu = \frac{1}{P} \displaystyle\sum_{\mu=1}^P {\xi^\mu}^\top \xi^\mu
                 $$
+            To understand why this is has each memorized vector as the stable point of the network dynamics, consider a transition:
+            $$
+            W \xi = (\xi \xi^\top) \xi = \xi (\xi^\top \xi) \propto \xi
+            $$
+            since \(\xi^\top \xi\) is a scalar. Then, we simply superimpose the contributions of each memorized vector \(\xi\).
             </p>
             <h3>Python Implementation</h3>
             <pre><code class="python" style="border-radius: 5px">class HopfieldNetwork:
