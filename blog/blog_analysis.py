@@ -54,11 +54,19 @@ def extract_blog_info(html_path: str) -> Dict:
     soup = BeautifulSoup(html_content, 'html.parser')
     
     logger.info("Extracting coming soon topics")
+    main = soup.find('main')
     coming_soon = []
-    intro_paragraph = soup.find('main').find('p')
-    if intro_paragraph:
-        coming_soon_list = intro_paragraph.find_all('li')
-        coming_soon = [item.text.strip() for item in coming_soon_list]
+    if main:
+        for p in main.find_all('p'):
+            if 'coming soon' in p.text:
+                # Try to find a <ul> inside the <p>
+                ul = p.find('ul')
+                if not ul:
+                    # If not found, try next sibling
+                    ul = p.find_next_sibling('ul')
+                if ul:
+                    coming_soon = [li.text.strip() for li in ul.find_all('li')]
+                break
     logger.info(f"Found {len(coming_soon)} coming soon topics")
     
     logger.info("Extracting blog posts")

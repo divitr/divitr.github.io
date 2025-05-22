@@ -133,8 +133,7 @@
             <p class="date">April 11, 2025</p>
         </article>
         <section>
-            <strong>this post is in progress</strong>
-            <p>Much of the structure and notation of this post is borrowed from Lilian Weng's fantastic blog post on the math behind NTKs. This post covers most of the same content as well - but with a bit less math and more (hopefully intuitive) explanation. For a more mathematical treatment of NTKs, Jacot's original paper and the aforementioned blog post are great resources (both linked in references).</p>
+            A rough derivation of the neural tangent kernel.
         </section>
         <section>
             <h2>What Are They and Why Do We Care?</h2>
@@ -177,7 +176,7 @@
                 $$
                 A^{(l+1)}(\vec{x}) = \sigma(\widetilde{A}^{(l+1)}(\vec{x})),
                 $$
-            where \(\widetilde{A}^{(l+1)}(\vec{x})\) denotes pre-activations, and \({A}^{(l+1)}(\vec{x})\) denotes post-activations. We apply a \(1/\sqrt{n_l}\) scaling so that infinite width networks (where most of our analysis will take place) don't diverge. We initalize all paramters i.i.d. Gaussian \(\sim \mathcal{N}(0, 1)\).
+            where \(\widetilde{A}^{(l+1)}(\vec{x})\) denotes pre-activations, and \({A}^{(l+1)}(\vec{x})\) denotes post-activations. We apply a \(1/\sqrt{n_l}\) scaling so that infinite width networks (where most of our analysis will take place) don't diverge. We initialize all paramters i.i.d. Gaussian \(\sim \mathcal{N}(0, 1)\).
             </p>
             <p>As always, our objective is to minimize some total loss function \(\mathcal{L}\) defined via a per-sample loss \(\ell\):
                 $$
@@ -187,7 +186,7 @@
             $$
                 \nabla_\theta \mathcal{L}(\theta) = \frac{1}{N}\sum_{i=1}^N \nabla_\theta f(x_i; \theta) \nabla_f \ell(f, y_i).
             $$
-            If we now take our step size as infinetesimally small, we can consider it a time derivative of \(\theta\), so that
+            If we now take our step size as infinitesimally small, we can consider it a time derivative of \(\theta\), so that
             $$
                 \dv{\theta}{t} = - \nabla_\theta \mathcal{L}(\theta) = -\frac{1}{N}\sum_{i=1}^N \nabla_\theta f(x_i; \theta) \nabla_f \ell(f, y_i),
             $$
@@ -214,7 +213,7 @@
                 $$
                 \Sigma^{(l+1)}(x, x^\prime) = \mathbb{E}_{f \sim \mathcal{N}(0, \lambda^{(l)})} [\sigma(f(x))\sigma(f(x^\prime))] + \beta^2
                 $$
-            The proof of this statement is by induction, and is ommitted here, but is covered in Lee & Bahri et al. (linked in references). We refer to this as the Neural Network Gaussian Process (NNGP).
+            The proof of this statement is by induction, and is omitted here, but is covered in Lee & Bahri et al. (linked in references). We refer to this as the Neural Network Gaussian Process (NNGP).
             </p>
             <p>Why is this useful? NNGPs let us do Bayesian inference using neural networks without every having to train them! We use the kernel to do GP regression, which allows us to analyze and predict generalization in the lazy learning regime.</p>
             <h3>Deterministic NTK</h3>
@@ -225,8 +224,45 @@
                         <li>it stays constant during training</li>
                     </ol>
                 </strong>
-
+                This is a pretty surprising result -- it tells us that in the infinite width limit, the network's behavior is entirely determined by its architecture, not the initialization parameters. In fact, this is observed in practice: we often see large enough networks converge to similar solutions.
             </p>
+            <h3>Convergence Analysis</h3>
+            <p>Since the NTK is deterministic and constant during training, we can analyze the convergence of the network. Let's consider the case of a linear network, where the output is a linear function of the input. We'll examine gradient flow (continuous-time gradient descent) with learning rate \(\eta\):</p>
+            <p>For a network with parameters \(\theta\), the evolution of the network's output on any input \(x\) follows:</p>  
+            <p>\[
+                \dv{f(x; \theta)}{t} = -\eta \sum_{i=1}^n K(x, x_i; \theta) \nabla_f \ell(f(x_i; \theta), y_i),
+            \]</p>
+            <p>a linear ODE in function space for which the solution can be written as</p>
+            <p>\[
+                f(x; \theta(t)) = f(x; \theta(0)) + \sum_{i=1}^n K(x, x_i; \theta(0)) \alpha_i(t)
+            \]</p>
+            <p>where \(\alpha_i(t)\) are time-dependent coefficients that depend on the loss function. Effectively, this equation tells us that the network's output evolves in some subspace spanned by the kernel functions \(K(x, x_i; \theta(0))\).</p>
+
+            <h3>Practical Implications</h3>
+            <p>Several useful implications follow from the NTK being deterministic and constant during training. For example, we can use the NTK to compare different architectures before training, or to understand generalization in the lazy learning regime (my research in BAIR).</p>
+            <ol>
+                <li><strong>Architecture Design:</strong>A "good" architecture should have a well-conditioned NTK that allows for efficient learning. (A well-conditioned NTK is one where the singular values are reasonably close to one another, and allows iterative algorithms (like gradient descent) to converge quickly.)</li>
+                <li><strong>Generalization:</strong> If the NTK is well-behaved, the network will generalize well even without explicit regularization.</li>
+                <li><strong>Training Dynamics:</strong> The constant NTK assumption helps explain why wide networks often train stably and predictably, unlike their narrower counterparts and lends some theoretical justification for the empirical observation that making neural networks bigger makes them easier to train.</li>
+            </ol>
+
+            <h3>Computing the NTK</h3>
+            <p>For a network with parameters \(\theta\), the NTK between two inputs \(x\) and \(x'\) is:</p>
+            <p>\[
+                K(x, x'; \theta) = \mathbb{E}_{\theta \sim \mathcal{N}(0, I)} \left[ \nabla_\theta f(x; \theta)^\top \nabla_\theta f(x'; \theta) \right]
+            \]</p>
+            <p>This is approximated by sampling multiple initializations and averaging the Jacobian products. I'm not super familar with this, but I know that <a href="https://github.com/google/neural-tangents">Google's neural-tangents library</a> has some tools for computing NTKs.</p>
+
+            <h3>Visualizing the NTK</h3>
+            <div class="example-box">
+                <span class="example-box-title">NTK Evolution Visualization</span>
+                <img src="ntk_evolution.png" alt="NTK Evolution with Network Width" style="width: 100%; max-width: 800px; margin: 20px 0;">
+                <p class="example-box-description">
+                    <strong>Figure:</strong> <br>
+                    <em>Top:</em> The training data consists of noisy samples from a sine function. <br>
+                    <em>Bottom:</em> The diagonal of the Neural Tangent Kernel (NTK), \(K(x, x)\), is plotted for various network widths. As the width increases, the NTK curves become smoother, larger in magnitude, and more similar to each other, illustrating convergence to a deterministic kernel in the infinite-width limit. Notably, the NTK is smallest near \(x=0\) and grows rapidly for large \(|x|\), especially for the widest networks. You can download the code used to generate this figure <a href="ntk_visualization.py">here</a>.
+                </p>
+            </div>
         </section>
         <footer>
             <h2>References</h2>

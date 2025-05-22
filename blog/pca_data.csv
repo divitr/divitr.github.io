@@ -1,17 +1,17 @@
 text,pc1,pc2,type,pc1_variance,pc2_variance
-Cookie Magic,0.07352121,-0.10161323,blog_post,0.13718045,0.13077404
-Neural Tangent Kernels (in progress),0.1262251,0.68336236,blog_post,0.13718045,0.13077404
-Hopfield Networks,0.75833803,-0.20456977,blog_post,0.13718045,0.13077404
-The Eigenlearning Framework,-0.3200034,0.39428306,blog_post,0.13718045,0.13077404
-Richness in Training Regimes,-0.28899136,0.08673424,blog_post,0.13718045,0.13077404
-Neural Tangent Kernels: what are they and why do we care,0.05590771,0.71009403,coming_soon,0.13718045,0.13077404
-Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry),0.04542514,-0.031062298,coming_soon,0.13718045,0.13077404
-Measure Theory and applications to probability theory,-0.3301897,-0.32944185,coming_soon,0.13718045,0.13077404
-RandNLA + applications,-0.060667787,-0.32158428,coming_soon,0.13718045,0.13077404
-Some older ML architectures not frequently studied,0.024230974,-0.056028318,coming_soon,0.13718045,0.13077404
-Hopfield networks,0.6650518,-0.08912183,coming_soon,0.13718045,0.13077404
-Boltzmann machines,0.11511101,-0.087076105,coming_soon,0.13718045,0.13077404
-A barebones guide to QM (just enough so that chemistry makes sense),0.09203262,-0.19274305,coming_soon,0.13718045,0.13077404
-Everything is a Markov process if your state is large enough,-0.23182267,-0.3203617,coming_soon,0.13718045,0.13077404
-Information theory and connections to stat mech,-0.44114363,-0.22299777,coming_soon,0.13718045,0.13077404
-Information bottlenecks and relations to statistical learning theory,-0.2830251,0.08212693,coming_soon,0.13718045,0.13077404
+Cookie Magic,0.10897879,-0.079091966,blog_post,0.13726325,0.13184495
+Neural Tangent Kernels,-0.17567284,0.67817324,blog_post,0.13726325,0.13184495
+Hopfield Networks,0.78268385,0.09484797,blog_post,0.13726325,0.13184495
+The Eigenlearning Framework,-0.43412328,0.24694131,blog_post,0.13726325,0.13184495
+Richness in Training Regimes,-0.2993264,-0.0046055457,blog_post,0.13726325,0.13184495
+Neural Tangent Kernels: what are they and why do we care,-0.20883392,0.67619634,coming_soon,0.13726325,0.13184495
+Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry),0.060014073,-0.027413443,coming_soon,0.13726325,0.13184495
+Measure Theory and applications to probability theory,-0.18501087,-0.43154553,coming_soon,0.13726325,0.13184495
+RandNLA + applications,0.06440594,-0.3335415,coming_soon,0.13726325,0.13184495
+Some older ML architectures not frequently studied,0.050892863,-0.045424763,coming_soon,0.13726325,0.13184495
+Hopfield networks,0.6525509,0.1782457,coming_soon,0.13726325,0.13184495
+Boltzmann machines,0.1394516,-0.0251755,coming_soon,0.13726325,0.13184495
+A barebones guide to QM (just enough so that chemistry makes sense),0.16239895,-0.17520547,coming_soon,0.13726325,0.13184495
+Everything is a Markov process if your state is large enough,-0.10092872,-0.37077442,coming_soon,0.13726325,0.13184495
+Information theory and connections to stat mech,-0.3275588,-0.36509246,coming_soon,0.13726325,0.13184495
+Information bottlenecks and relations to statistical learning theory,-0.2899221,-0.016534356,coming_soon,0.13726325,0.13184495
