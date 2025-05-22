@@ -1,0 +1,68 @@
+term,mapping
+neural,Neural Networks
+kernel,Kernel Methods
+theory,None
+network,Neural Networks
+physics,Theoretical Physics
+quantum,Quantum Mechanics
+information,Information Theory
+statistical,Statistical Learning
+learning,Learning Theory
+optimization,Optimization
+markov,Markov Processes
+category,Category Theory
+measure,Measure Theory
+entropy,Statistical Mechanics
+tensor,Tensor Algebra
+hopfield,Neural Network Architectures
+boltzmann,Neural Network Architectures
+eigenlearning,Eigenlearning Framework
+richness,Richness Theory
+ntk,Neural Tangent Kernels
+randnla,Randomized Numerical Linear Algebra
+statmech,Statistical Mechanics
+generalization,Learning Theory
+variance,Statistical Learning
+bias,Statistical Learning
+compression,Information Theory
+representation,Representation Learning
+monoidal,Category Theory
+homological,Algebraic Topology
+functor,Category Theory
+natural,Category Theory
+transformation,Category Theory
+probability,Probability Theory
+sigma,Measure Theory
+lebesgue,Measure Theory
+wave,Quantum Mechanics
+function,Mathematical Analysis
+regime,Training Dynamics
+scaling,Parameterization Theory
+μp,Parameterization Theory
+numerical,Numerical Analysis
+linear,Linear Algebra
+stochastic,Stochastic Processes
+state,State Space Analysis
+transition,Markov Processes
+energy,Statistical Mechanics
+partition,Statistical Mechanics
+ensemble,Statistical Mechanics
+thermodynamics,Statistical Mechanics
+mutual,Information Theory
+channel,Information Theory
+shannon,Information Theory
+kl,Information Theory
+divergence,Information Theory
+ridge,Kernel Methods
+regression,Statistical Learning
+spectral,Spectral Analysis
+eigenvalue,Spectral Analysis
+associative,Neural Network Architectures
+memory,Neural Network Architectures
+spin,Statistical Mechanics
+glass,Statistical Mechanics
+restricted,Neural Network Architectures
+rbm,Neural Network Architectures
+approximation,Numerical Analysis
+sketching,Randomized Algorithms
+sampling,Statistical Methods 

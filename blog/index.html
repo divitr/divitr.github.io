@@ -108,6 +108,32 @@
             color: #666;
             font-size: 0.875rem;
         }
+
+        .blog-analysis-section {
+            margin: 2rem 0;
+        }
+
+        .blog-analysis-section .toggle-analysis {
+            display: inline;
+        }
+
+        @media (max-width: 768px) {
+            .intro {
+                grid-template-columns: 1fr;
+            }
+    
+            .profile-img {
+                max-width: 250px;
+            }
+
+            .blog-analysis-section .toggle-analysis {
+                display: none;
+            }
+
+            .blog-analysis-section .analysis-section {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -123,7 +149,8 @@
 
     <main>
         <h1>Blog</h1>
-	<p>A collection of thoughts, notes, and small projects, updated infrequently. At the moment, there's only a few notes on some papers + a few ancient ML architectures I think are interesting, but I'm hoping to write about more things + more frequently. A list of things that are hopefully coming sooon (if and when I find the time):
+        <p>A collection of thoughts, notes, and small projects, updated infrequently.</p><div class="blog-analysis-section"></div>
+        <p>A list of things that are hopefully coming sooon (if and when I find the time):
         <ul>
             <li>Neural Tangent Kernels: what are they and why do we care</li>
             <li>Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry)</li>
@@ -138,7 +165,7 @@
             <li>Everything is a Markov process if your state is large enough</li>
             <li>Information theory and connections to stat mech</li>
             <li>Information bottlenecks and relations to statistical learning theory</li>
-        </ul><!--- Course notes can be found on the <a style="text-decoration: underline;" href="/notes/">notes</a> page.---></p>
+        </ul></p>
         <section class="blog-posts">
             <article class="blog-post">
                 <h2><a href="/blog/cookie-magic">Cookie Magic</a></h2>
@@ -171,13 +198,15 @@
                 <p>The richness scale (from NTK to μP).</p>
             </article>
             <br/>
-            <!-- <article class="blog-post">
-                <h2><a href="/blog/induction-heads">Induction Heads and In-Context Learning in Transformers</a></h2>
-                <div class="post-date">November 26, 2024</div>
-                <p>In-context learning mechanisms in transformers.<p>
-                <a href="/blog/training-regimes">Read more →</a>
-            </article> -->
         </section>
+        <script type="module">
+            import { init } from './analysis.js';
+            
+            // Initialize and insert the visualizations
+            init().then(container => {
+                document.querySelector('.blog-analysis-section').appendChild(container);
+            });
+        </script>
     </main>
 </body>
 
