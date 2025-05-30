@@ -141,13 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const subsectionsContainer = document.createElement('div');
         subsectionsContainer.className = 'toc-subsections';
         
-        const nextH2 = h2Elements[h2Index + 1];
-        const h3sInSection = Array.from(h3Elements).filter(h3 => {
-            const h3Parent = h3.closest('section');
-            const nextH2Parent = nextH2 ? nextH2.closest('section') : null;
-            return h3Parent === h2.closest('section') && 
-                   (!nextH2 || h3Parent !== nextH2Parent);
-        });
+        const h3sInSection = [];
+        let next = h2.nextElementSibling;
+        while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
+            if (next.tagName && next.tagName.toLowerCase() === 'h3') {
+                h3sInSection.push(next);
+            }
+            next = next.nextElementSibling;
+        }
         
         h3sInSection.forEach(h3 => {
             const subsectionLink = document.createElement('a');
@@ -171,23 +172,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function highlightCurrentSection() {
         const scrollPosition = window.scrollY;
-        
+        let h3Index = 0;
         h2Elements.forEach((h2, index) => {
             const sectionElement = tocMenu.children[index];
-            const nextElement = h2Elements[index + 1];
-            
+            const nextH2 = h2Elements[index + 1];
             const currentSectionTop = h2.offsetTop;
-            const nextSectionTop = nextElement ? nextElement.offsetTop : document.body.scrollHeight;
-            
-            if (scrollPosition >= currentSectionTop - 100 && 
-                scrollPosition < nextSectionTop - 100) {
+            const nextSectionTop = nextH2 ? nextH2.offsetTop : document.body.scrollHeight;
+
+            if (scrollPosition >= currentSectionTop - 100 && scrollPosition < nextSectionTop - 100) {
                 sectionElement.classList.add('active');
-                
                 const subsections = sectionElement.querySelectorAll('.toc-subsection');
-                subsections.forEach((subsection, subIndex) => {
-                    const h3 = h3Elements[subIndex];
-                    if (h3 && scrollPosition >= h3.offsetTop - 100 && 
-                        scrollPosition < (h3Elements[subIndex + 1]?.offsetTop || nextSectionTop) - 100) {
+                const h3sInSection = [];
+                let next = h2.nextElementSibling;
+                while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
+                    if (next.tagName && next.tagName.toLowerCase() === 'h3') {
+                        h3sInSection.push(next);
+                    }
+                    next = next.nextElementSibling;
+                }
+                subsections.forEach((subsection, subIdx) => {
+                    const h3 = h3sInSection[subIdx];
+                    const nextH3 = h3sInSection[subIdx + 1];
+                    if (h3 && scrollPosition >= h3.offsetTop - 100 && scrollPosition < (nextH3 ? nextH3.offsetTop : nextSectionTop) - 100) {
                         subsection.classList.add('active');
                     } else {
                         subsection.classList.remove('active');
