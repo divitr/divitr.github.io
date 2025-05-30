@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QM Primer</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../toc-generator.js"></script>
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+
+    </header>
+    <main>
+        <article class="intro">
+            <h1>Quantum Mechanics Primer</h1>
+            <p class="date">May 29, 2025</p>
+        </article>
+        <section>
+            <p>
+            A brief introduction to quantum mechanics as an answer to some lingering questions from AP Chemistry.
+            </p>
+            <p>
+            <strong>Note:</strong> Quantum mechanics is a very broad and deep field and after reading this post over after writing it, this is only a very basic introduction to the field and is a perhaps more technical than I had intended. This is not a comprehensive guide to quantum mechanics, but rather a quick primer and a somewhat hand-wavy explanation of some interesting results to clear up some of the rules of chemistry often accepted without question.</p>
+        </section>
+        <section>
+            <h2>Motivation</h2>
+            <p>When I took AP Chem in high school, I always felt that much of it was based on seemingly arbitrary rules. It wasn't until taking quantum mechanics that some of these rules started to make sense. This post is intended as a very quick introductory guide to quantum mechanics and atomic and molecular physics to clear up a few of the rules of chemistry.</p>
+        </section>
+        <section>
+            <h2>Wave Functions, Operators, and the Schrödinger Equation</h2>
+            <h3>Wave Functions</h3>
+            <p>
+            Quantum mechanics differs from the rest of physics in that it is inherently probabalistic. Namely, when we are not observing a particle directly or making some measurement on it, we have very little knowledge about the particle. We describe quantum particles via a complex-valued <em>wave function</em>; some function mapping position (or momentum if we are in momentum space) to a complex number. The wavefunction of a particle contains all possible information we could possibly know about the particle. We take all wavefunctions to be normalized, i.e. the inner product of any wavefunction with itself is 1. This is a bit of a vague description, but we'll be able to elaborate on this and consider a concrete example after a bit about operators and measurement.
+            </p>
+            <h3>Operators and Measurement</h3>
+            <p>
+            Since quantum mechanical particles are probabalistic and dont have predefined properties, we need some way to make measurements of their properties. For this, we have operators. Operators have certain eigenstates, each of which corresponds to an eigenvalue (if multiple eigenstates correspond to the same eigenvalue, this is called degeneracy -- this will be important later). For some operator \(\hat{O}\), \(\ket{\phi}\) (here we use what is refferred to as bra-ket notation, \(\ket{\,\cdot\,}\) denotes a wavefunction) is an eigenstate of the operator with eigenvalue \(o\) iff 
+            $$
+                \hat{O} \ket{\phi} = o \ket{\phi}.
+            $$
+            Whenever we make an measurement of a property of a wavefunction, it collapses instantly to one of the eigenstates of the operator, and the value we observe is the corresponding eigenvalue. It's also worth noting that an operator is always Hermitian, i.e. \(\hat{O} = \hat{O}^\dagger\), and that the eigenvalues of a Hermitian operator are real (this means that any value we measure is real).
+            </p>
+            <p>
+            Since wavefunctions exist in a Hilbert space (which is basically a nicely behaved inner product space), the set of eigenstates of an operator forms a complete orthonormal basis of the Hilbert space (which we denote \(\mathcal{H}\)). Thus, we may write any wavefucntion \(\ket{\psi}\) as a linear combination of the eigenstates of any operator acting on that Hilbert space. Formally written out, we have
+            $$
+                \ket{\psi} = \sum_i c_i \ket{\phi_i}, \quad c_i \in \mathbb{C}
+            $$
+            where  each coefficient \(c_i\) is a complex number. This is referred to as a superposition and from this decomposition we can extract the probabilities of getting certain measurements. The probability of the system beign in eigenstate \(\ket{\phi_i}\) after measurement is given by \(\abs{c_i}^2\). It is easy to verify this (but before doing so, we define \(\bra{\,\cdot\,} \doteq \ket{\,\cdot\,}^\dagger\) the conjugate transpose of \(\ket{\,\cdot\,}\), and the inner product of two wavefunctions \(\ket{a}, \ket{b}\) then becomes \(\bra{a}\ket{b}\)):
+            $$
+                \abs{\bra{\phi_j} \ket{\psi}}^2 = \abs{\bra{\phi_i}\left(\sum_j c_j \ket{\phi_j}\right)}^2 = \abs{\sum_j c_j \bra{\phi_i}\ket{\phi_j}}^2 = \abs{c_j}^2,
+            $$
+            where in the last equality we have used the orthonormality of eigenstates. From here, it is clear why we require all wavefunctions to be normalized; if a wavefunction were not normalized, the probabilities would not sum to unity.
+            </p>
+            <h3>Example</h3>
+            <p>So far, this is all very abstract. Let's consider the example of an electron that is either spin up (\(\ket{\uparrow} \doteq \begin{pmatrix}1 \\ 0\end{pmatrix}\)) or spin down (\(\ket{\downarrow} \doteq \begin{pmatrix}0 \\ 1\end{pmatrix}\)), where we have introduced the vector notation so that we may define the spin operator as a matrix \(S \doteq \frac{\hbar}{2}\begin{pmatrix}1 & 0 \\ 0 & -1\end{pmatrix}\). (It's worth noting that here we are only considering the spin in the \(z\) direction, if we wish to consider spins in multiple directions at once, it becomes a whole other thing which is not really worth exploring here.) From the definitions above, we can easily show that the eigenvalue of the spin up state is \(\frac{\hbar}{2}\) and the eigenvalue of the spin down state is \(-\frac{\hbar}{2}\). Now, we can construct a simple wavefunction 
+            $$
+                \ket{\psi} \doteq \frac{1}{\sqrt{2}}\left(\ket{\uparrow} + \ket{\downarrow}\right),
+            $$
+            and applying our rules for probabilities of measurements, we see that there is an equal chance of measuring the electron to be spin up and spin down, corresponding to measurements of \(\pm \frac{\hbar}{2}\) respectively. This matches our intuition and the math well -- they have the same coefficients so they shoudl have equal proability. If instead we had defined our wavefunction as \(\ket{\psi} \doteq \frac{2i}{\sqrt{3}}\ket{\uparrow} - \frac{1}{\sqrt{3}}\ket{\downarrow}\), we would observe that the probability of measuring spin up is twice that of spin down (note that the coefficient being complex or negative makes no difference as its modulus is the same \(\implies\) the probabilities are the same).
+            </p>
+            <h3>Schrödinger Equation</h3>
+            <p>The Schrödinger equation describes how the quantum state of a physical system changes over time. In its time-dependent form, it is written as:</p>
+            <p>\[ i\hbar \frac{\partial}{\partial t} \ket{\psi(t)} = \hat{H} \ket{\psi(t)} \]</p>
+            <p>Here, \(\hat{H}\) is the Hamiltonian operator, which gives the total energy of the system.</p>
+            <h3>The Hamiltonian</h3>
+            <p>The Hamiltonian operator \(\hat{H}\) is very important. Similarly to classical physics, it is defined as the sum of the kinetic and potential energy operators. For a particle in a potential \(V(x)\), the Hamiltonian is given by:</p>
+            <p>\[ \hat{H} = \frac{\hat{p}^2}{2m} + V(\hat{x}) \]</p>
+            <p>where \(\hat{p}\) is the momentum operator and \(\hat{x}\) is the position operator. Thus, the Hamiltonian determines both the time evolution of the system (from the Schrödinger equation) and its energy eigenvalues and eigenstates.</p>
+            <h2>The Hydrogen Atom</h2>
+            <p>The hydrogen atom consists of a single electron orbiting a single proton. The potential energy due to the Coulomb force between the electron and the proton is given by:</p>
+            <p>\[ V(r) = -\frac{e^2}{4\pi \epsilon_0 r} \]</p>
+            <p>where \(r\) is the distance between the electron and the proton and \(e\) is the elementary charge.</p>
+            <p>Solving the Schrödinger equation for the hydrogen atom is a long process, but it gives energy eigenstates in spherical coordinates that take the form \(R_n^\ell(r)Y_\ell^m (\theta, \phi)\) where \(R\) is a radial component, and \(Y_\ell^m\) is dependent only on the polar and azimuthal angles. Requiring continuity of the wavefunction gives that the radial wavefunction must satisfy the equation
+            $$
+                \left(-\frac{\hbar^2}{2m}\vec{\nabla}^2 - \frac{e^2}{4\pi\epsilon_0 r}\right)R_n^\ell(r) = E_nR_n^\ell(r),
+            $$
+            which is the radial equation. Note that here we made the substitution \(\vec{\nabla}^2 \doteq \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + \frac{\partial^2}{\partial z^2}\) for the momentum operator and \(r \doteq \sqrt{x^2 + y^2 + z^2}\) for the position operator.
+            </p>
+            <p>
+            Solving this equation gives the energy eigenvalues
+            $$
+                E_n = -\frac{13.6 \text{ eV}}{n^2},
+            $$
+            which are quantized. This is why we observe discrete spectral lines in the hydrogen (or really any element's) spectrum.
+            </p>
+            Now, we have that our wavefunction is determined entirely by the quantum numbers \(n, \ell, m\). The principal quantum number \(n\) describes the energy level of the electron, the azimuthal quantum number \(\ell\) describes the shape of the orbital (this is some integer \(\in [0, n-1]\), where 0 corresponds to an s-orbital, 1 to a p-orbital, 2 to a d-orbital, etc.), and the magnetic quantum number \(m\) describes the orientation of the orbital (this is some integer \(\in [-\ell, \ell]\)). We also have a spin quantum number \(s\) which describes the spin of the electron \(\in [0, 1]\), where 0 corresponds to spin down and 1 corresponds to spin up.</p>
+            <h2>Madelung's Rule</h2>
+            <p>Madelung's Rule is a guideline for determining the order in which electrons fill atomic orbitals; it states that electrons fill orbitals in order of increasing \(n + \ell\), where \(n\) is the principal quantum number and \(\ell\) is the azimuthal quantum number. If two orbitals have the same \(n + \ell\) value, the one with the lower \(n\) is filled first.</p>
+            <p>This rule helps predict the electron configuration of atoms and explains the structure of the periodic table.</p>
+            <p>The energy of an electron in an atom is primarily determined by the principal quantum number \(n\), which indicates the energy level, and the azimuthal quantum number \(\ell\), which indicates the shape of the orbital.</p>
+            <p>In a simplified model, the energy of an electron is given by:</p>
+            <p>\[ E_{n,\ell} = -\frac{13.6 \text{ eV}}{n^2} \]</p>
+            <p>However, this model does not account for the fine and hyperfine structure corrections that arise from relativistic effects and electron-electron interactions (these become important when we have more than a single electron). These corrections are typically small, but they are important for understanding the structure of the periodic table.</p>
+            <p>Fine structure corrections arise from relativistic effects and spin-orbit coupling, which cause the energy levels to split into sublevels. These corrections are more significant for higher \(\ell\) values, leading to a more complex energy landscape.</p>
+            <p>(Hyperfine structure corrections consider the interaction between the electron's magnetic moment and the nuclear spin. These corrections are typically smaller than fine structure corrections but can still influence the energy ordering. These are not important for this particular discussion, but are still interesting to consider.)</p>
+            <p>The energy of an electron in an atom is influenced by the azimuthal quantum number \(\ell\). Lower \(\ell\) values generally correspond to lower energy levels for a given principal quantum number \(n\). This is because electrons with lower \(\ell\) values are closer to the nucleus, experiencing a stronger attractive force, which results in lower energy.</p>
+            <p>The actual derivation of where the energy corrections come from when we consider the fine and hyperfine structure corrections is a bit more complicated and involves perturbation theory, a full explanation of which is ommitted here.</p>
+            <h2>Pauli Exclusion Principle</h2>
+            <p>The Pauli Exclusion Principle states that no two electrons in an atom can occupy the same quantum state simultaneously —- i.e. they cannot have the same set of four quantum numbers. This principle is a consequence of the spin-statistics theorem in quantum field theory, which comes from the requirements of relativistic quantum mechanics. It applies to all fermions(particles with half-integer spin), but for our purposes, we can just think of it as saying that no two electrons can have the same set of quantum numbers.</p>
+            <h3>Spin-Statistics Theorem</h3>
+            <p>The spin-statistics theorem is a result in relativistic quantum field theory that explains why particles with half-integer spin (fermions) obey Fermi-Dirac statistics and cannot share quantum states, while particles with integer spin (bosons) obey Bose-Einstein statistics and can. Below is a quick outline of the proof as the actual proof is a bit more complicated.</p>
+            <ol>
+                <li><strong>Microcausality:</strong> To preserve causality, field operators at spacelike separations must either commute (bosons) or anticommute (fermions). This ensures that measurements at points that cannot influence each other do not interfere.</li>
+                <li><strong>Lorentz Invariance & Positive Energy:</strong> The theory must respect Lorentz symmetry, meaning it should be invariant under transformations of special relativity. Additionally, the theory must have a stable, lowest-energy vacuum to avoid unphysical scenarios.</li>
+                <li><strong>Spin and Commutation:</strong> Fields with integer spin must commute, and those with half-integer spin must anticommute. Any other combination leads to violations of causality or negative probabilities, which are not allowed in a physical theory.</li>
+            </ol>
+            <p>As a result, fermionic fields obey anticommutation rules, which leads directly to the Pauli Exclusion Principle: two identical fermions cannot occupy the same quantum state.</p>
+            <h2>Hybridization</h2>
+            <p>Hybridization describes the mixing of atomic orbitals to form new hybrid orbitals. These hybrid orbitals are linear combinations of the original atomic orbitals and are used to explain the geometry of molecules.</p>
+            <p>Hybridization respects the following rules:</p>
+            <ul>
+                <li><strong>Conservation of Orbitals:</strong> The number of hybrid orbitals formed must equal the number of atomic orbitals that are mixed.</li>
+                <li><strong>Energy Conservation:</strong> The total energy of the hybrid orbitals must be the same as the total energy of the original atomic orbitals.</li>
+                <li><strong>Orthogonality:</strong> The hybrid orbitals must be orthogonal to each other.</li>
+            </ul>
+            <p>Common types of hybridization include \(sp\), \(sp^2\), and \(sp^3\), which describe the mixing of one \(s\) orbital with one, two, or three \(p\) orbitals, respectively. These hybridizations are used to explain the shapes of molecules, e.g. linear, trigonal planar, tetrahedral geometries.</p>
+        </section>
+        <section>
+            <h2>Conclusion</h2>
+            <p> To be honest, this post ended up being a lot more technical than I had intended, but hopefully it provides a quick glimpse into some of the more interesting parts of quantum mechanics and how the results derived from it are used.</p>
+        </section>
+    </main>
+</body>
+
+</html>
