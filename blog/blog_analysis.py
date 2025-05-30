@@ -1,3 +1,5 @@
+## hardcoded paths -- always run from inside /blog directory
+
 from bs4 import BeautifulSoup
 import requests
 from typing import List, Tuple, Dict
@@ -69,6 +71,14 @@ def extract_blog_info(html_path: str) -> Dict:
                 break
     logger.info(f"Found {len(coming_soon)} coming soon topics")
     
+    # Handle case where no 'coming soon' posts are found
+    if not coming_soon:
+        logger.info("No 'coming soon' topics found.")
+        coming_soon_embeddings = []
+    else:
+        logger.info("Generating embeddings for 'coming soon' topics")
+        coming_soon_embeddings = get_embeddings(coming_soon)
+    
     logger.info("Extracting blog posts")
     blog_posts = soup.find_all('article', class_='blog-post')
     
@@ -90,7 +100,6 @@ def extract_blog_info(html_path: str) -> Dict:
     
     logger.info("Generating embeddings for blog content")
     post_embeddings = get_embeddings(post_texts)
-    coming_soon_embeddings = get_embeddings(coming_soon)
     
     return {
         'coming_soon': coming_soon,

@@ -1,15 +1,15 @@
 text,pc1,pc2,type,pc1_variance,pc2_variance
-Cookie Magic,0.46801895,-0.08634876,blog_post,0.12855878,0.11125518
-Neural Tangent Kernels,-0.13068332,0.5507986,blog_post,0.12855878,0.11125518
-Hopfield Networks,0.5589493,0.24193683,blog_post,0.12855878,0.11125518
-The Eigenlearning Framework,-0.48133093,0.33022976,blog_post,0.12855878,0.11125518
-Richness in Training Regimes,-0.29178855,0.08945618,blog_post,0.12855878,0.11125518
-Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry),0.33564103,0.14536141,coming_soon,0.12855878,0.11125518
-Measure Theory and applications to probability theory,-0.11809818,-0.4448523,coming_soon,0.12855878,0.11125518
-RandNLA + applications,0.23330978,-0.24307105,coming_soon,0.12855878,0.11125518
-Some older ML architectures not frequently studied,-0.042792596,0.26033068,coming_soon,0.12855878,0.11125518
-Boltzmann machines,-0.09075425,0.042471733,coming_soon,0.12855878,0.11125518
-A barebones guide to Quantum Mechanics (just enough so that chemistry makes sense),0.31679752,-0.035679646,coming_soon,0.12855878,0.11125518
-Everything is a Markov process if your state is large enough,-0.07489817,-0.47304234,coming_soon,0.12855878,0.11125518
-Information theory and connections to stat mech,-0.290732,-0.39057252,coming_soon,0.12855878,0.11125518
-Information bottlenecks and relations to statistical learning theory,-0.39163923,0.012981335,coming_soon,0.12855878,0.11125518
+Quantum Mechanics Primer,0.107258335,-0.32051346,blog_post,0.12487527,0.11336643
+Cookie Magic,0.55992144,0.04990817,blog_post,0.12487527,0.11336643
+Neural Tangent Kernels,-0.124391586,0.5103119,blog_post,0.12487527,0.11336643
+Hopfield Networks,0.55112076,0.24075408,blog_post,0.12487527,0.11336643
+The Eigenlearning Framework,-0.47456387,0.3214526,blog_post,0.12487527,0.11336643
+Richness in Training Regimes,-0.23422903,0.18504108,blog_post,0.12487527,0.11336643
+Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry),0.32799447,0.1346278,coming_soon,0.12487527,0.11336643
+Measure Theory and applications to probability theory,-0.11895142,-0.44391933,coming_soon,0.12487527,0.11336643
+RandNLA + applications,0.287122,-0.1368987,coming_soon,0.12487527,0.11336643
+Some older ML architectures not frequently studied,-0.063135594,0.26258805,coming_soon,0.12487527,0.11336643
+Boltzmann machines,-0.121195465,-0.046999775,coming_soon,0.12487527,0.11336643
+Everything is a Markov process if your state is large enough,-0.05182694,-0.50799096,coming_soon,0.12487527,0.11336643
+Information theory and connections to stat mech,-0.27296683,-0.32675713,coming_soon,0.12487527,0.11336643
+Information bottlenecks and relations to statistical learning theory,-0.372156,0.07839575,coming_soon,0.12487527,0.11336643
