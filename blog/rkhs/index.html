@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproducing Kernel Hilbert Spaces</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../toc-generator.js"></script>
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="intro">
+            <h1>Reproducing Kernel Hilbert Spaces</h1>
+            <p class="date">Jun 1, 2025</p>
+        </article>
+        <section>
+            <p><strong>NOTE:</strong> this post is in progress</p>
+            <p>
+            Building up the theory of RKHSs from the Riesz Representation Theorem.
+            </p>
+        </section>
+        <section>
+            <h2>Motivation</h2>
+            <p>
+            Reproducing Kernel Hilbert Spaces (RKHSs) are a major deal in machine learning, especially in the study of kernel methods and SVMs. RKHSs are a natural extension of Hilbert spaces to function spaces and give us several useful results in statistical learning theory. We'll first prove the Reisz Representation Theorem and then use it to prove the representer theorem for RKHSs, then discuss why RKHSs are useful in machine learning.
+            </p>
+            <h2>The Riesz Representation Theorem (for Hilbert Spaces)</h2>
+            
+            <h3>Statement</h3>
+            <p>Let \(\mathcal{H}\) be a Hilbert space. Then for every continuous linear functional \(f \in \mathcal{H}^*\) (the dual
+                space of \(\mathcal{H}\)), there exists a unique element \(v \in \mathcal{H}\) such that \(f(u) = \langle u, v
+                \rangle\) for all \(u \in \mathcal{H}\).</p>
+            
+            <p>Parsing this statement is a bit intimidating, especially without a bit of background in linear algebra or functional
+                analysis. Essentially, the RRT states that every function \(f\) that takes a vector \(u \in \mathcal{H}\) and
+                returns a scalar in a way that is linear and continuous is always expressible as the inner product of that vector
+                with some fixed other vector \(v \in \mathcal{H}\), and this vector \(v\) is unique and thus defines the linear
+                functional \(f\).</p>
+            
+            <h3>Proof</h3>
+            <p>The proof of the RRT is pretty standard and I'm sure it can be found in most linear algebra textbooks, but it is
+                included here for completeness.</p>
+            
+            <p>Let \(\mathcal{H}\) be a Hilbert space over \(\mathbb{R}\) or \(\mathbb{C}\), and let \(f\) be a continuous linear
+                functional on \(\mathcal{H}\). We wish to show that there exists a unique \(v \in \mathcal{H}\) such that \(f(u) =
+                \langle u, v \rangle\) for all \(u \in \mathcal{H}\).</p>
+            
+            <p>First, let's consider the trivial case \(f = 0\). In this case, choosing \(v = \vec{0}\) satisfies our requirement
+                and we are done. So, going forward, we assume \(f \neq 0\).</p>
+            
+            <p>Let \(\ker f = \{u \in \mathcal{H} \mid f(u) = 0\}\). This is a closed subspace of \(\mathcal{H}\) because \(f\) is
+                continuous. Since \(f \neq 0\), we have \(\ker f \neq \mathcal{H}\), so there exists \(w \in \mathcal{H} \setminus
+                \ker f\).</p>
+            
+            <p>Let \(v = \text{proj}_{\ker f^\perp}(w)\), the orthogonal projection of \(w\) onto the orthogonal complement of
+                \(\ker f\). Then \(v \in \ker f^\perp\) and \(v \neq 0\) since \(w \notin \ker f\). Define
+                \[
+                v_0 = \frac{\overline{f(v)}}{\|v\|^2}v.
+                \]
+            </p>
+            
+            <p>Any \(x \in \mathcal{H}\) can be uniquely written as \(x = u + \alpha v\) with \(u \in \ker f\) and \(v \in \ker
+                f^\perp\). If \(x \in \ker f\), then \(\alpha = 0\). By linearity of \(f\), we have
+                \[
+                f(x) = f(u + \alpha v) = f(u) + \alpha f(v) = \alpha f(v),
+                \]
+                and
+                \[
+                \langle x, v_0 \rangle = \langle u + \alpha v, \frac{\overline{f(v)}}{\|v\|^2}v \rangle = \langle u,
+                \frac{\overline{f(v)}}{\|v\|^2}v \rangle + \alpha \frac{\overline{f(v)}}{\|v\|^2} \langle v, v \rangle = \alpha
+                \overline{f(v)}.
+                \]
+                So if \(f(x) = \alpha f(v)\) and \(\langle x, v_0 \rangle = \alpha \overline{f(v)}\), these are equal since \(f(v) =
+                \overline{f(v)}\) if \(\mathbb{H}\) is real, and otherwise by definition of \(v_0\).</p>
+            
+            <p>Thus, \(f(x) = \langle x, v_0 \rangle\) for all \(x \in \mathcal{H}\).</p>
+            
+            <p>To show uniqueness, suppose there exists another vector \(v_1 \in \mathcal{H}\) such that \(f(x) = \langle x, v_1
+                \rangle\) for all \(x \in \mathcal{H}\). Then,
+                \[
+                \langle x, v_0 - v_1 \rangle = \langle x, v_0 \rangle - \langle x, v_1 \rangle = f(x) - f(x) = 0
+                \]
+                for all \(x \in \mathcal{H}\). Setting \(x = v_0 - v_1\) gives
+                \[
+                \|v_0 - v_1\|^2 = \langle v_0 - v_1, v_0 - v_1 \rangle = 0,
+                \]
+                which implies \(v_0 = v_1\). Thus, the vector \(v_0\) is unique.
+            </p>
+
+        </section>
+    </main>
+</body>
+
+</html>

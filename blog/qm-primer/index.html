@@ -136,6 +136,8 @@
             <p>
             A brief introduction to quantum mechanics as an answer to some lingering questions from AP Chemistry.
             </p>
+        </section>
+        <section>
             <p>
             <strong>Note:</strong> Quantum mechanics is a very broad and deep field and after reading this post over after writing it, this is only a very basic introduction to the field and is a perhaps more technical than I had intended. This is not a comprehensive guide to quantum mechanics, but rather a quick primer and a somewhat hand-wavy explanation of some interesting results to clear up some of the rules of chemistry often accepted without question.</p>
         </section>
@@ -164,7 +166,7 @@
             $$
             where  each coefficient \(c_i\) is a complex number. This is referred to as a superposition and from this decomposition we can extract the probabilities of getting certain measurements. The probability of the system beign in eigenstate \(\ket{\phi_i}\) after measurement is given by \(\abs{c_i}^2\). It is easy to verify this (but before doing so, we define \(\bra{\,\cdot\,} \doteq \ket{\,\cdot\,}^\dagger\) the conjugate transpose of \(\ket{\,\cdot\,}\), and the inner product of two wavefunctions \(\ket{a}, \ket{b}\) then becomes \(\bra{a}\ket{b}\)):
             $$
-                \abs{\bra{\phi_j} \ket{\psi}}^2 = \abs{\bra{\phi_i}\left(\sum_j c_j \ket{\phi_j}\right)}^2 = \abs{\sum_j c_j \bra{\phi_i}\ket{\phi_j}}^2 = \abs{c_j}^2,
+                \abs{\bra{\phi_i} \ket{\psi}}^2 = \abs{\bra{\phi_i}\left(\sum_j c_j \ket{\phi_j}\right)}^2 = \abs{\sum_j c_j \bra{\phi_i}\ket{\phi_j}}^2 = \abs{c_i}^2,
             $$
             where in the last equality we have used the orthonormality of eigenstates. From here, it is clear why we require all wavefunctions to be normalized; if a wavefunction were not normalized, the probabilities would not sum to unity.
             </p>
