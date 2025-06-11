@@ -1,10 +1,10 @@
 term1,term2,mapping
-information,statistical mechanics,Information Theory in Statistical Mechanics
-neural tangent,kernel,Neural Tangent Kernels
-eigenlearning,framework,Eigenlearning Framework
-hopfield,network,Neural Network Architectures
-boltzmann,machine,Neural Network Architectures
-category,tensor,Category Theory & Tensor Structures
-measure,probability,Measure Theory in Probability
-richness,training,Richness Theory in Training
-randomized,numerical,Randomized Numerical Linear Algebra 
+information,statistical mechanics,Statistical Physics & Information
+neural tangent,kernel,Learning Theory
+eigenlearning,framework,Learning Theory
+hopfield,network,Early ML Architectures
+boltzmann,machine,Early ML Architectures
+category,tensor,Algebra
+measure,probability,Probability Theory
+richness,training,Learning Theory
+randomized,numerical,Numerical Methods 

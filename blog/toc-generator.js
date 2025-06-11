@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
     }
 
+    function createIdFromText(text) {
+        return text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    }
+
     const tocContainer = document.createElement('div');
     tocContainer.id = 'toc-container';
     tocContainer.innerHTML = `
@@ -104,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         </style>
-        <div id="toc-header">Table of Contents</div>
+        <div id="toc-header">Outline</div>
         <div id="toc-menu"></div>
     `;
     
@@ -114,19 +118,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const h2Elements = document.querySelectorAll('h2');
     const h3Elements = document.querySelectorAll('h3');
     
-    h2Elements.forEach((h2, index) => {
+    // First pass: assign IDs to h2 elements
+    h2Elements.forEach((h2) => {
         if (!h2.id) {
-            h2.id = `section-${index + 1}`;
+            h2.id = createIdFromText(h2.textContent);
         }
     });
     
-    h3Elements.forEach((h3, index) => {
-        if (!h3.id) {
-            h3.id = `subsection-${index + 1}`;
+    // Second pass: assign IDs to h3 elements with parent section prefix
+    h2Elements.forEach((h2) => {
+        let next = h2.nextElementSibling;
+        while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
+            if (next.tagName && next.tagName.toLowerCase() === 'h3' && !next.id) {
+                next.id = `${h2.id}.${createIdFromText(next.textContent)}`;
+            }
+            next = next.nextElementSibling;
         }
     });
     
-    Array.from(h2Elements).forEach((h2, h2Index) => {
+    Array.from(h2Elements).forEach((h2) => {
         const sectionElement = document.createElement('div');
         sectionElement.className = 'toc-section';
         
