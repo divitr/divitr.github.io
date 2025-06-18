@@ -1,8 +1,6 @@
 topic,strength,coherence,core_content,connections
-Neural Networks,9,0.6412002,"Eigenlearning Some notes on Simon et. al's The Eigenlearning Framework: A
-                            Conservation
-                            Law Perspective on Kernel Regression and Wide Neural Networks. | Boltzmann machines | Neural Tangent Kernels A rough derivation of the neural tangent kernel. | Reproducing Kernel Hilbert Spaces Building up RKHSs from the Riesz Representation Theorem. | Some older ML architectures not frequently studied",Quantum Mechanics Primer A brief introduction to quantum mechanics as an answer to some lingering questions from AP Chemistry.
-Information Theory,9,0.62994426,Information theory and connections to stat mech | Information bottlenecks and relations to statistical learning theory | Measure Theory and applications to probability theory | Richness in Training Regimes The richness scale (from NTK to μP). | Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry),
-Early ML Architectures,2,0.74517083,Hopfield Networks A quick implementation of a Hopfield network in Python. | Cookie Magic How I got ~$500 worth of cookies for free.,
-Markov Processes,2,0.66244787,Everything is a Markov process if your state is large enough | Boltzmann machines,
-Randomized Numerical Linear Algebra,1,1.0,RandNLA + applications,
+Early ML Architectures,8,0.61049265,"Neural Tangent Kernels A rough derivation of the neural tangent kernel. | Eigenlearning Some notes on Simon et. al's The Eigenlearning Framework: A Conservation Law Perspective on Kernel Regression and Wide Neural Networks. | Reproducing Kernel Hilbert Spaces Building up RKHSs from the Riesz Representation Theorem. | Category Theory A brief introduction to category theory, and some connections to tensors and homological mirror symmetry. | Quantum Mechanics Primer A brief introduction to quantum mechanics as an answer to some lingering questions from AP Chemistry.",
+Information Theory,7,0.6400325,Information theory and connections to stat mech | Information bottlenecks and relations to statistical learning theory | Measure Theory and applications to probability theory | Richness in Training Regimes The richness scale (from NTK to μP). | Eigenlearning Some notes on Simon et. al's The Eigenlearning Framework: A Conservation Law Perspective on Kernel Regression and Wide Neural Networks.,
+Numerical Methods,1,1.0000001,RandNLA + applications,
+Cookie Story,1,1.0,Cookie Magic How I got ~$500 worth of cookies for free.,
+Mathematical Foundations,1,1.0,Everything is a Markov process if your state is large enough,

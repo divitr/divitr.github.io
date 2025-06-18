@@ -134,14 +134,21 @@
             <strong>in progress</strong>
         </article>
         <section>
-            <h2>Motivation</h2>
-            <p>Nearly a year ago, I took PHYSICS 89 (Mathematical Physics) at Berkeley. As part of our course material, we learned tensors, which, when first introduced were quite daunting. The topic was not made much more approachable by our GSI, who provided four interpretations of tensors, the first being that tensors are multidimensional arrays (simple enough), the fourth being that tensors are a symmetric monoidal structure on Vect (a very abstract way of thinking about tensors rooted in category theory). I remember being completely confused by this last interpretation. In Fall 2024, I took a course on Abstract Algebra (Berkeley's MATH 113), and was introduced to monoids -- one piece of the puzzle. A month or so ago, I attended a talk by Dr. Jasper Van DeKreeke on the algebra of punctured surfaces and saw category theory pop up again and I figured that if it had appeared so many times in so many places, surely this was something worth learning. The rest of this blog post will build up category theory from groups and discuss some interesting applications of this very abstract idea. Finally, we'll cover what it means to say that a tensor is a symmetric monoidal structure on Vect. -- the original motivation for this post.</p>
+            <p>
+                A brief introduction to category theory, and some connections to tensors and homological mirror symmetry.
+            </p>
         </section>
         <section>
+            <h2>Motivation</h2>
+            <p>Nearly a year ago, I took PHYSICS 89 (Mathematical Physics) at Berkeley. As part of our course material, we learned tensors, which, when first introduced were quite daunting. The topic was not made much more approachable by our GSI, who provided four interpretations of tensors, the first being that tensors are multidimensional arrays (simple enough), the fourth being that tensors are a symmetric monoidal structure on Vect (a very abstract way of thinking about tensors rooted in category theory). I remember being completely confused by this last interpretation. In Fall 2024, I took a course on Abstract Algebra (Berkeley's MATH 113), and was introduced to monoids. A month or so ago, I attended a talk by Dr. Jasper Van DeKreeke on the algebra of punctured surfaces and saw category theory pop up again and I figured that if it had appeared so many times in so many places, surely this was something worth learning. The rest of this blog post will build up category theory from groups and discuss some interesting applications of this very abstract idea. Finally, we'll discuss what it means to say that a tensor is a symmetric monoidal structure on Vect. -- the original motivation for this post.</p>
+        </section>
+
+        <section>
             <h2>Groups and Group Homomorphisms</h2>
+            <h3>Definitions</h3>
             <p>Groups are the most familiar algebraic structure; a group consists of a set \(G\) together with a binary operation \(\cdot\) that satisfies the following axioms:
                 <ul>
-                    <li><strong>Closure</strong>:\(g \cdot h \in G\) for all \(g, h \in G\),</li>
+                    <li><strong>Closure</strong>: \(g \cdot h \in G\) for all \(g, h \in G\),</li>
                     <li><strong>Associativity</strong>: \((a \cdot b) \cdot c = a \cdot (b \cdot c)\) for \(a, b, c \in G\),</li>
                     <li><strong>Identity</strong>: there exists an element \(e \in G\) so that \(e \cdot g = g \cdot e = g\) for all \(g \in G\),</li>
                     <li><strong>Inverses</strong>: there exists an inverse \(g^{-1} \in G\) for each \(g \in G\) so that \(g \cdot g^{-1} = g^{-1} \cdot g = e\).</li>
@@ -153,14 +160,167 @@
                     <li>the symmetries of a regular polygon.</li>
                 </ul>
             </p>
-            <p>We also define group homomorphisms</p>
+            <p>We also define group homomorphisms \(\phi: G \to H\) to be a function that satisfies \(\phi(g \cdot h) = \phi(g) \cdot \phi(h)\) for all \(g, h \in G\). It essentially gives us a way to map one group onto another while keeping the essential relationships intact.</p>
+
+            <div class="example-box">
+                <span class="example-box-title">Examples of Group Homomorphisms</span>
+                <p><strong>Exponential Function</strong></p>
+                <p>Consider the function \(\phi: (\mathbb{R}, +) \to (\mathbb{R}^+, \times)\) defined by \(\phi(x) = e^x\).
+                \[\phi(a + b) = e^{a+b} = e^a \cdot e^b = \phi(a) \cdot \phi(b)\]
+                This maps the additive group of real numbers to the multiplicative group of positive real numbers, preserving the
+                    group structure.</p>
+                
+                <p><strong>Modulo Function</strong></p>
+                <p>The function \(\phi: \mathbb{Z} \to \mathbb{Z}_n\) defined by \(\phi(k) = k \bmod n\) is a homomorphism from the
+                    additive group of integers to the additive group of integers modulo \(n\).</p>
+            </div>
+            Group homomorphisms are a fundamental pattern in mathematics; we have some objects (groups) and some way to relate them (homomorphisms) that preserve their essential structure. Categories effectively just generalize this.
+
+            <h3>Properties of Group Homomorphisms</h3>
+            <p>Group homomorphisms have the following handy properties, which are easily verified:</p>
+            <ul>
+                <li><strong>Identity preservation:</strong> \(\phi(e_G) = e_H\) (the identity of \(G\) maps to the identity of \(H\))</li>
+                <li><strong>Inverse preservation:</strong> \(\phi(g^{-1}) = \phi(g)^{-1}\) (inverses map to inverses)</li>
+                <li><strong>Subgroup preservation:</strong> If \(K\) is a subgroup of \(G\), then \(\phi(K)\) is a subgroup of \(H\)</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Categories and Functors</h2>
+            <h3>Categories</h3>
+            <p>A category \(\mathcal{C}\) consists of:</p>
+            <ul>
+                <li><strong>Objects:</strong> A collection \(\text{Ob}(\mathcal{C})\)</li>
+                <li><strong>Morphisms:</strong> For each pair of objects \(A, B\), a set \(\text{Hom}(A, B)\) of morphisms from \(A\) to \(B\)</li>
+                <li><strong>Composition:</strong> For any three objects \(A, B, C\), a function \(\circ:\text{Hom}(B, C) \times \text{Hom}(A, B) \to \text{Hom}(A, C)\)</li>
+                <li><strong>Identity:</strong> For each object \(A\), a morphism \(1_A: A \to A\) called the identity morphism</li>
+            </ul>
+
+            <p>These must satisfy</p>
+            <ul>
+                <li><strong>Associativity:</strong> \((f \circ g) \circ h = f \circ (g \circ h)\) for all composable morphisms</li>
+                <li><strong>Identity:</strong> \(f \circ 1_A = f\) and \(1_B \circ f = f\) for any morphism \(f: A \to B\)</li>
+            </ul>
+
+            <div class="example-box">
+                <span class="example-box-title">Examples of Categories</span>
+                
+                <p><strong>Set:</strong> Objects are sets, morphisms are functions between sets. Composition is function composition, identity is the identity function.</p>
+                
+                <p><strong>Grp:</strong> Objects are groups, morphisms are group homomorphisms. This is exactly what we just discussed!</p>
+                
+                <p><strong>Vect:</strong> Objects are vector spaces, morphisms are linear transformations. Composition is composition of linear maps.</p>
+                
+                <p><strong>Top:</strong> Objects are topological spaces, morphisms are continuous functions.</p>
+                
+                <p><strong>Preorder as Category:</strong> Any preorder \((P, \leq)\) can be viewed as a category where objects are elements of \(P\) and there's a unique morphism \(a \to b\) iff \(a \leq b\).</p>
+            </div>
+
+            <h3>Functors</h3>
+            <p>A functor \(F: \mathcal{C} \to \mathcal{D}\) consists of:</p>
+            <ul>
+                <li>A function \(F: \text{Ob}(\mathcal{C}) \to \text{Ob}(\mathcal{D})\)</li>
+                <li>For each pair of objects \(A, B\) in \(\mathcal{C}\), a function \(F: \text{Hom}(A, B) \to \text{Hom}(F(A), F(B))\)</li>
+            </ul>
+            <p>that must satisfy:</p>
+            <ul>
+                <li><strong>Preservation of composition:</strong> \(F(f \circ g) = F(f) \circ F(g)\)</li>
+                <li><strong>Preservation of identity:</strong> \(F(1_A) = 1_{F(A)}\)</li>
+            </ul>
+
+            <div class="example-box">
+                <span class="example-box-title">Examples of Functors</span>
+                
+                <p><strong>Forgetful Functors:</strong> These "forget" some structure. For example, \(U: \mathbf{Grp} \to \mathbf{Set}\) sends a group to its underlying set and a group homomorphism to the underlying function, "forgetting" the group structure.</p>
+                
+                <p><strong>Free Functors:</strong> These add structure "freely". For example, \(F: \mathbf{Set} \to \mathbf{Grp}\) sends a set \(X\) to the free group generated by \(X\).</p>
+                
+                <p><strong>Dual Space Functor:</strong> \((-)^*: \mathbf{Vect} \to \mathbf{Vect}\) sends a vector space \(V\) to its dual space \(V^*\) and a linear map \(T: V \to W\) to its transpose \(T^*: W^* \to V^*\).</p>
+            </div>
+
+            <h3>Covariant vs Contravariant Functors</h3>
+            <p>The above functors are covariant -- they preserve the direction of morphisms. A contravariant is one which reverses the direction:</p>
+            <ul>
+                <li>For a contravariant functor \(F: \mathcal{C} \to \mathcal{D}\), we have \(F: \text{Hom}(A, B) \to \text{Hom}(F(B), F(A))\)</li>
+                <li>The composition rule is now \(F(f \circ g) = F(g) \circ F(f)\)</li>
+            </ul>
+
+            <p>For example, the dual space functor \((-)^*: \mathbf{Vect} \to \mathbf{Vect}\) is contravariant because if \(T: V \to W\), then \(T^*: W^* \to V^*\) goes in the opposite direction.</p>
+
+            <p>Functors effectively allow us to move between categories. For example when dealing with a problem about groups, we can use a functor to translate it into a set problem, solve it there, and then translate the solution back to groups.</p>
+        </section>
+        <section>
+            <h2>Tensors as Symmetric Monoidal Structures on Vect</h2>
+            <h3>Monoidal Categories</h3>
+            <p>A monoidal category is a category equipped with a tensor product operation. Formally, it consists of:</p>
+            <ul>
+                <li>A bifunctor \(\otimes: \mathcal{C} \times \mathcal{C} \to \mathcal{C}\)</li>
+                <li>A unit object \(I\)</li>
+                <li>Natural isomorphisms for associativity and unit laws</li>
+            </ul>
+            
+            <p>A symmetric monoidal category also has a natural isomorphism \(\sigma_{A,B}: A \otimes B \to B \otimes A\) that
+                satisfies \(\sigma_{B,A} \circ \sigma_{A,B} = 1_{A \otimes B}\).</p>
+            
+            <div class="example-box">
+                <span class="example-box-title">Examples</span>
+                <p><strong>Set:</strong> Cartesian product \(\times\) with unit \(\{*\}\)</p>
+                <p><strong>Vect:</strong> Tensor product \(\otimes\) with unit \(\mathbb{F}\)</p>
+            </div>
+            <h3>Tensors</h3>
+            <p>Now we can finally understand what it means to say that tensors are "symmetric monoidal structures on Vect."</p>
+
+            <p>The category \(\mathbf{Vect}\) becomes a symmetric monoidal category with:</p>
+            <ul>
+                <li><strong>Tensor Product:</strong> \(V \otimes W\)</li>
+                <li><strong>Unit:</strong> The field \(\mathbb{F}\)</li>
+                <li><strong>Symmetry:</strong> \(\sigma_{V,W}: V \otimes W \to W \otimes V\)</li>
+            </ul>
+
+            Under this framework, tensor operations become a natural cateogry-theoretic operation and all tensor properties follow from the monoidal structure.
+        </section>
+        <section>
+            <h2>Homological Mirror Symmetry</h2>
+            <p><strong>Note:</strong> I'm not super familiar with this (most of my knowledge on the subject is from the talk I attended), so this section is brief and not guaranteed to be correct.</p>
+
+            <h3>Algebra of Punctured Surfaces</h3>
+            <p>When we study punctured surfaces (surfaces with holes), the topology of the surface determines the algebra:</p>
+            <ul>
+                <li><strong>Fundamental Group:</strong> The fundamental group of a punctured surface is a free group</li>
+                <li><strong>Mapping Class Group:</strong> The group of homeomorphisms up to isotopy</li>
+                <li><strong>Braid Groups:</strong> Arise naturally from the punctures</li>
+            </ul>
+
+            <p>Category theory enters here because these algebraic structures can be organized into categories, and the relationships between different surfaces become functors between these categories.</p>
+
+            <div class="example-box">
+                <span class="example-box-title">Example: Torus with One Puncture</span>
+                <p>Consider a torus with one puncture. The fundamental group is \(\mathbb{Z} \times \mathbb{Z}\), and the mapping class group is \(SL(2, \mathbb{Z})\).</p>
+                <p>When we remove the puncture, we get a closed torus, and the algebra changes. Via category theory, we can examine how these changes are related.</p>
+            </div>
+
+            <h3>Mirror Symmetry</h3>
+            <p>Mirror symmetry conjectures that for certain pairs of Calabi-Yau manifolds \(X\) and \(Y\), there's an equivalence:</p>
+            <p>\[\text{Fuk}(X) \simeq D^b\text{Coh}(Y)\]</p>
+
+            <p>From here, we have a connection between symplectic geometry (Fukaya category) and algebraic geometry (derived category of sheaves). The connection to punctured surfaces is that the moduli space of punctured surfaces is equivalent to the moduli space of Calabi-Yau manifolds.</p>
+            <ul>
+                <li><strong>Riemann Surfaces:</strong> Punctured surfaces are examples of Riemann surfaces</li>
+                <li><strong>Moduli Spaces:</strong> The space of all punctured surfaces forms a moduli space</li>
+                <li><strong>Mirror Pairs:</strong> Certain punctured surfaces have "mirror" partners</li>
+            </ul>
         </section>
         <footer>
             <h2>References</h2>
             <ul style="list-style-type: none;">
-                <li>[1] <a href="https://lilianweng.github.io/posts/2022-09-08-ntk/">https://lilianweng.github.io/posts/2022-09-08-ntk/</a></li>
-                <li>[2] <a href="https://arxiv.org/abs/1806.07572">https://arxiv.org/abs/1806.07572</a></li>
-                <li>[3] <a href="https://arxiv.org/abs/1711.00165">https://arxiv.org/abs/1711.00165</a></li>
+                <li>
+                    [1] <a href="https://en.wikipedia.org/wiki/Category_theory">https://en.wikipedia.org/wiki/Category_theory</a>
+                </li>
+                <li>
+                    [2] <a href="https://math.uchicago.edu/~may/REU2021/REUPapers/Yao,Wang.pdf">https://math.uchicago.edu/~may/REU2021/REUPapers/Yao,Wang.pdf</a>
+                </li>
+                <li>
+                    [2] <a href="https://en.wikipedia.org/wiki/Symmetric_monoidal_category">hhttps://en.wikipedia.org/wiki/Symmetric_monoidal_category</a>
+                </li>
             </ul>
         </footer>
     </main>

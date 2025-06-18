@@ -1,49 +1,49 @@
 term,mapping
-neural,Neural Networks
-kernel,Kernel Methods
+neural,Early ML Architectures
+kernel,Learning Theory
 theory,None
-network,Neural Networks
-physics,Theoretical Physics
+network,Early ML Architectures
+physics,Quantum Mechanics
 quantum,Quantum Mechanics
 information,Information Theory
-statistical,Statistical Learning
+statistical,Learning Theory
 learning,Learning Theory
-optimization,Optimization
-markov,Markov Processes
+optimization,Learning Theory
+markov,Mathematical Foundations
 category,Category Theory
-measure,Measure Theory
-entropy,Statistical Mechanics
-tensor,Tensor Algebra
-hopfield,Neural Network Architectures
-boltzmann,Neural Network Architectures
-eigenlearning,Eigenlearning Framework
-richness,Richness Theory
-ntk,Neural Tangent Kernels
-randnla,Randomized Numerical Linear Algebra
+measure,Mathematical Foundations
+entropy,Information Theory
+tensor,Category Theory
+hopfield,Early ML Architectures
+boltzmann,Early ML Architectures
+eigenlearning,Learning Theory
+richness,Learning Theory
+ntk,Learning Theory
+randnla,Numerical Methods
 statmech,Statistical Mechanics
 generalization,Learning Theory
-variance,Statistical Learning
-bias,Statistical Learning
+variance,Learning Theory
+bias,Learning Theory
 compression,Information Theory
-representation,Representation Learning
+representation,Learning Theory
 monoidal,Category Theory
-homological,Algebraic Topology
+homological,Category Theory
 functor,Category Theory
 natural,Category Theory
 transformation,Category Theory
-probability,Probability Theory
-sigma,Measure Theory
-lebesgue,Measure Theory
+probability,Mathematical Foundations
+sigma,Mathematical Foundations
+lebesgue,Mathematical Foundations
 wave,Quantum Mechanics
-function,Mathematical Analysis
-regime,Training Dynamics
-scaling,Parameterization Theory
-μp,Parameterization Theory
-numerical,Numerical Analysis
-linear,Linear Algebra
-stochastic,Stochastic Processes
-state,State Space Analysis
-transition,Markov Processes
+function,Mathematical Foundations
+regime,Learning Theory
+scaling,Learning Theory
+μp,Learning Theory
+numerical,Numerical Methods
+linear,Mathematical Foundations
+stochastic,Mathematical Foundations
+state,Mathematical Foundations
+transition,Mathematical Foundations
 energy,Statistical Mechanics
 partition,Statistical Mechanics
 ensemble,Statistical Mechanics
@@ -53,16 +53,16 @@ channel,Information Theory
 shannon,Information Theory
 kl,Information Theory
 divergence,Information Theory
-ridge,Kernel Methods
-regression,Statistical Learning
-spectral,Spectral Analysis
-eigenvalue,Spectral Analysis
-associative,Neural Network Architectures
-memory,Neural Network Architectures
+ridge,Learning Theory
+regression,Learning Theory
+spectral,Mathematical Foundations
+eigenvalue,Mathematical Foundations
+associative,Early ML Architectures
+memory,Early ML Architectures
 spin,Statistical Mechanics
 glass,Statistical Mechanics
-restricted,Neural Network Architectures
-rbm,Neural Network Architectures
-approximation,Numerical Analysis
-sketching,Randomized Algorithms
-sampling,Statistical Methods 
+restricted,Early ML Architectures
+rbm,Early ML Architectures
+approximation,Numerical Methods
+sketching,Numerical Methods
+sampling,Numerical Methods 

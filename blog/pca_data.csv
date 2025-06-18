@@ -1,16 +1,14 @@
 text,pc1,pc2,type,pc1_variance,pc2_variance
-Eigenlearning,-0.4335076,-0.15676895,blog_post,0.11419156,0.111432664
-Reproducing Kernel Hilbert Spaces,-0.29502285,-0.22919641,blog_post,0.11419156,0.111432664
-Quantum Mechanics Primer,0.07661813,0.13040555,blog_post,0.11419156,0.111432664
-Cookie Magic,0.66161346,-0.23630139,blog_post,0.11419156,0.111432664
-Neural Tangent Kernels,-0.32219264,-0.39348415,blog_post,0.11419156,0.111432664
-Hopfield Networks,0.29778934,-0.4391327,blog_post,0.11419156,0.111432664
-Richness in Training Regimes,-0.12992926,0.07268342,blog_post,0.11419156,0.111432664
-Category Theory (and perhaps tensors as symmetric monoidal structs on Vect or connections to homological mirror symmetry),0.20856607,-0.26131862,coming_soon,0.11419156,0.111432664
-Measure Theory and applications to probability theory,0.11809414,0.4476673,coming_soon,0.11419156,0.111432664
-RandNLA + applications,0.4245301,0.02503693,coming_soon,0.11419156,0.111432664
-Some older ML architectures not frequently studied,-0.24847162,-0.18890193,coming_soon,0.11419156,0.111432664
-Boltzmann machines,-0.21473658,0.088986725,coming_soon,0.11419156,0.111432664
-Everything is a Markov process if your state is large enough,0.09435296,0.46048182,coming_soon,0.11419156,0.111432664
-Information theory and connections to stat mech,-0.02716808,0.474819,coming_soon,0.11419156,0.111432664
-Information bottlenecks and relations to statistical learning theory,-0.21053557,0.20502283,coming_soon,0.11419156,0.111432664
+Eigenlearning,-0.45486996,-0.17922245,blog_post,0.12859958,0.12746136
+Reproducing Kernel Hilbert Spaces,-0.3727279,-0.18055364,blog_post,0.12859958,0.12746136
+Quantum Mechanics Primer,0.056580447,0.08190381,blog_post,0.12859958,0.12746136
+Category Theory,0.024797654,-0.06977574,blog_post,0.12859958,0.12746136
+Cookie Magic,0.52862734,-0.35579243,blog_post,0.12859958,0.12746136
+Neural Tangent Kernels,-0.42260033,-0.42531675,blog_post,0.12859958,0.12746136
+Hopfield Networks,0.36885086,-0.48870537,blog_post,0.12859958,0.12746136
+Richness in Training Regimes,-0.19952984,0.05664871,blog_post,0.12859958,0.12746136
+Measure Theory and applications to probability theory,0.12885797,0.45679596,coming_soon,0.12859958,0.12746136
+RandNLA + applications,0.4664777,0.019629031,coming_soon,0.12859958,0.12746136
+Everything is a Markov process if your state is large enough,0.13479236,0.3642048,coming_soon,0.12859958,0.12746136
+Information theory and connections to stat mech,-0.047916565,0.5095623,coming_soon,0.12859958,0.12746136
+Information bottlenecks and relations to statistical learning theory,-0.2113395,0.21062158,coming_soon,0.12859958,0.12746136
