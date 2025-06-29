@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eigenlearning</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../toc-generator.js"></script>
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="intro">
+            <h1>Measure Theory and the Lebesgue Integral</h1>
+            <p class="date">Jun 28, 2025</p>
+        </article>
+        <section>
+            <p>
+                When Reimann integration breaks, and why we need measure theory (+ applications to probability theory).
+            </p>
+        </section>
+        <section>
+            <h2>Integration</h2>
+            <h3>The Reimann Integral</h3>
+            <p>The Reimann integral is a familiar concept from introductory calculus. The idea is, to integrate a function \(f\) over an interval \([a, b]\), we split the interval into a finite number of subintervals, and then sum up the areas of the rectangles that lie above the \(x\)-axis and below the curve, and below the \(x\)-axis and above the curve. As we take the limit of the width of the rectangles to zero, we get the exact area under the curve. This works well for many functions, but there are some functions that we would like to integrate that the Reimann integral does not work well for.</p>
+            <p>For example, let's consider the function \(f(x) = \begin{cases} 1 & \text{if } x \in \mathbb{Q} \\ 0 & \text{if } x \notin \mathbb{Q} \end{cases}\). If we try to integrate this function over the interval \([0, 1]\), we see that the Reimann integral is zero, which seems unintuitive. Here, the function is discontinuous at every rational number, and so the Reimann integral does not converge. Clearly the Reimann integral is not the right approach.</p>
+
+            <h3>The Lebesgue Integral</h3>
+            <p>To overcome the problems with the Reimann integral, we need to change our approach to integration. Instead of splitting the domain of the function into a countably infinite number of subintervals, we split the range of the function into a countably infinite number of subintervals.</p>
+            <p>We can do this by considering the preimage of each interval. For example, if we take the interval \([0, 1]\), we can consider the preimage of the interval \([0, 1]\) under \(f\). This is the set of all \(x\) such that \(f(x) \in [0, 1]\).</p>
+            <p>It's not immediately obvious how to do this, so let's consider the function we introduced above.</p>
+            <p>Consider the function \(f(x) = \begin{cases} 1 & \text{if } x \in \mathbb{Q} \\ 0 & \text{if } x \notin \mathbb{Q} \end{cases}\). It is not Riemann integrable over \([0, 1]\) since it is discontinuous everywhere. However, using the Lebesgue approach, we see that the set of rationals in \([0,1]\) has measure zero, so the integral of \(f\) over \([0, 1]\) is \( \int_0^1 f(x) \, dx = 0 \).
+            </p>
+        </section>
+        <section>
+            <h2>Measure Theory</h2>
+            <p>
+                For the Lebesgue integral to work, we need to be able to partition the range of the function into a countably infinite number of intervals and we need to know the size of each interval. This is simple for "nice" sets like intervals, but becomes much more difficult for more complicated sets.
+            </p>
+            <p>
+                In order to do this, we need a theory that measures sets. Hence, measure theory.
+            </p>
+            <p>
+                The idea is that we can assign a size to any set, and this size is called the measure of the set. First, we need to define what we mean by a set (some sets are not measurable). We define a measure space as the tuple \((X, \mathcal{F}, \mu)\), where \(X\) is the set, \(\mathcal{F}\) is the \(\sigma\)-algebra of subsets of \(X\), and \(\mu\) is the measure.
+            </p>
+            <p>
+                A \(\sigma\)-algebra \(\mathcal{F}\) on a set \(X\) is a collection of subsets of \(X\) that satisfies:
+            </p>
+            <ul>
+                <li>\(X \in \mathcal{F}\)</li>
+                <li>If \(A \in \mathcal{F}\), then \(A^c \in \mathcal{F}\) (closed under complements)</li>
+                <li>If \(A_1, A_2, \ldots \in \mathcal{F}\), then \(\bigcup_{i=1}^{\infty} A_i \in \mathcal{F}\) (closed under countable unions)</li>
+            </ul>
+            <p>
+                A measure \(\mu\) on a measurable space \((X, \mathcal{F})\) is a function \(\mu: \mathcal{F} \to [0, \infty]\) that satisfies:
+            </p>
+            <ul>
+                <li>\(\mu(\emptyset) = 0\) (measure of empty set is zero)</li>
+                <li>Countable additivity: If \(A_1, A_2, \ldots\) are pairwise disjoint sets in \(\mathcal{F}\), then \(\mu\left(\bigcup_{i=1}^{\infty} A_i\right) = \sum_{i=1}^{\infty} \mu(A_i)\)</li>
+            </ul>
+            <p>
+                With measure theory in place, we can now properly define the Lebesgue integral. For a simple function \(f = \sum_{i=1}^{n} a_i \chi_{A_i}\) (where \(\chi_{A_i}\) is the characteristic function of set \(A_i\)), we define:
+            </p>
+                \[\int_X f \, d\mu = \sum_{i=1}^{n} a_i \mu(A_i)\]
+            <p>
+                For more general measurable functions, we approximate them by simple functions and take the limit. In this way, we are able to integrate functions that the Riemann integral cannot handle.
+            </p>
+        </section>
+        <section>
+            <h2>Probability Theory</h2>
+            <h3>Kolmogorov's Axioms</h3>
+            <p>
+                Probability theory is really just measure theory with some extra rules. In fact, Kolmogorov's axioms formalize this: a probability space is a measure space \((\Omega, \mathcal{F}, P)\) where:
+            </p>
+            <ul>
+                <li>\(\Omega\): the sample space</li>
+                <li>\(\mathcal{F}\): the \(\sigma\)-algebra of events</li>
+                <li>\(P\): a measure with total mass 1</li>
+            </ul>
+            <p>
+                Then, random variables are just measurable functions \(X: \Omega \to \mathbb{R}\) and expected value is just the Lebesgue integral:
+            </p>
+                \[E[X] = \int_{\Omega} X(\omega) \, dP(\omega)\]
+
+            <h3>Bertrand's Paradox</h3>
+            <p>
+                Bertrand's paradox is a well known problem that illustrates why we need to be careful about how we define "random" when working with continuous probability spaces.
+            </p>
+            <p>
+                Consider a circle of radius 1. We want to find the probability that a "random chord" has length greater than \(\sqrt{3}\) (which is the length of the side of an equilateral triangle inscribed in the circle).
+                There are three equally reasonable ways to choose a "random chord":
+            </p>
+            <ol>
+                <li><strong>Random endpoints:</strong> Choose two random points on the circumference and draw the chord between them. The probability is \(\frac{1}{3}\).</li>
+                <li><strong>Random radius:</strong> Choose a random radius and a random point on that radius, then draw the chord perpendicular to the radius through that point. The probability is \(\frac{1}{2}\).</li>
+                <li><strong>Random midpoint:</strong> Choose a random point inside the circle and draw the chord with that point as its midpoint. The probability is \(\frac{1}{4}\).</li>
+            </ol>
+            <p>
+                Clearly, the idea of "random" depends on the method of selection. Each method forces a different probability measure on the space of chords, and thus we must be careful about how we define "random" -- namely by our choice of probability measure.
+            </p>
+        </section>
+        <section>
+            <h2>References</h2>
+            <ul>
+                <li>
+                    <a href="https://www.stat.berkeley.edu/~wfithian/courses/stat210a/measure-theory-basics.html">Will Fithian's Notes on Measure Theory</a>
+                </li>
+                <li>
+                    <a href="https://www.stat.berkeley.edu/~aldous/Real_World/kolmogorov.html">David Aldous's Notes on Kolmogorov's Axioms</a>
+                </li>
+                <li>
+                    <a href="https://en.wikipedia.org/wiki/Bertrand_paradox_(probability)">Bertrand's Paradox</a>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+</body>
+
+</html>
