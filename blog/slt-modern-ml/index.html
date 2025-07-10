@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Learning Theory in Modern Machine Learning</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../toc-generator.js"></script>
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="intro">
+            <h1>Statistical Learning Theory in Modern Machine Learning</h1>
+            <p class="date">Jul 09, 2025</p>
+        </article>
+        <section>
+            <p>
+                A very brief introduction to statistical learning theory, how it differs from most current ML research, and why (I believe) it's still worth studying.
+            </p>
+        </section>
+        <section>
+            <h2>Motivation</h2>
+            <p>
+                A few weeks ago, I was explaining my research to a friend and he asked me why we care about theory research. To be honest, I didn't have a great answer -- I mostly got into theory because I was interested in the math. But over the past month or so I've been thinking about this question a lot and hopefully this post will outline some of the reasons (i believe) it's still, if not more important, than it was in the past.
+            </p>
+            <p>
+                <strong>[Note]</strong>: This is not meant to be a comprehensive guide to statistical learning theory or a literature review. It's more of a brain dump of my thoughts on the subject, and to that end will likely be a bit incomplete and disorganized.
+            </p>
+
+            <h2>What is Statistical Learning Theory?</h2>
+            <p>
+                Statistical learning theory in the broadest sense is the study of data and models. It's primarily concerned with how to learn a model from some data and how to evaluate the performance of that model. Usually this falls into the general categories of understanding the capabilities and limitations of certain classes of models and understanding how well the model generalizes to unseen data.
+            </p>
+            <p>
+                The typical setup (as in all supervised machine learning) is that we have some set of labelled data points and we wish to learn a model that "understands" the distribution that generated the data. Then, we use this model to predict the label of new, unseen data points.
+            </p>
+            <p>
+                In general, the tools used are probability theory, optimization, linear algebra, measure theory, statistics, and sometimes information theory. Most of these tools are pretty abstract and are often written off by most people as too theoretical to have any practical applications. Indeed, many of the results of statistical learning theory are not particularly useful for the development of new models, but rather are used to understand the capabilities and limitations of old classes of models.
+            </p>
+            <p>
+                A good example here might be that of the VC dimension, a metric of the "complexity" of a model. The VC dimension is a measure of the maximum number of points that a model can shatter, i.e. the maximum number of points that can be separated by a hyperplane. The VC dimension is a useful tool for understanding the capabilities and limitations of models, but isn't directly applicable for designing new architectures.
+            </p>
+            <h2>Modern Machine Learning</h2>
+            <p>
+                Modern machine learning is almost entirely dominated by deep neural networks, and for good reason. Neural nets are able to learn extremely complex functions (under mild conditions, and with enough neurons, a shallow network can approximate any continuous function on a compact domain, see <a href="https://www.cs.cmu.edu/~epxing/Class/10715/reading/Kornick_et_al.pdf">Universal Approximation Theorem</a>) and tend to generalize very very well. Most of the advantage of parametric models (which neural nets are a class of) is in their ability to do what's known as feature learning, i.e. extracting/engineering feautures that are useful for the task at hand from the data. Here, a parametric model is any model that learns some parameters during training so that the model can be described by a fixed number of parameters.
+                <div class="example-box">
+                    <div class="example-box-title">Parametric vs. Non-Parametric Models</div>
+                    <div class="example-box-prompt">
+                        <p>
+                            Parametric models are those which are fully dsecribed by some parametrs that the model learns during training. For example, a transformer is a parametric model; during training it learns the values of the key and value matrices.
+                        </p>
+                        <p>
+                            Non-parametric models are those which are do not learn or update any parameters during training. For example, a \(k\)-nearest neighbor classifier is a non-parametric model; during training it does not learn any parameters, it simply stores the training data and uses it to make predictions.
+                        </p>
+                    </div>
+                </div>
+            </p>
+            <p>
+                That being said, the state of modern ML is largely dominated by "scale is all you need" approaches... the current paradigm is usually some variant of trial and error in which we throw different architectures, hyperparameters, and training tricks at the problem. A lot of approaches also involve massive compute or data scaling, the conventional wisdom is that with more compute (i.e. a bigger model) and more data, we perform better. That's not to say this is incorrect (in fact it has been an incredibly successful strategy), but it can often result in ineffecient or uninterpretable models.
+            </p>
+            <p>
+                While this approach has produced remarkable results (GPT, DALL-E, AlphaFold, etc.), it has significant limitations. Namely, accessibility is limited to well-funded organizations, and we almost never understand what these models  are doing. More importantly, we're hitting diminishing returns -- scaling laws suggest we're approachign fundamental limits of what pure scaling is able to do..
+            </p>
+            <h2>Why Statistical Learning Theory Remains Relevant</h2>
+            <p>
+                This is exactly why statistical learning theory remains relevant (and some might argue is more relevant than ever). We need theoretical frameworks that can help us 
+                <ul>
+                    <li>design more efficient architectures that don't require ridiculous compute,</li>
+                    <li>understand why some models generalize well and others dont,</li>
+                    <li>develop interpretable models,</li>
+                    <li>and make decisions about model complexity and performance</li>
+                </ul>
+            <p>
+                Theory and empirical work aren't mutually exclusive, and the goal isn't to replace empirical work with pure theory, but instead to develop theoretical work that can guide more principled model development. Instead of throwing more compute/data at problems, we should be asking what about our current approach is limited and what theoretical principles can we use to move towards better models with less data and compute.
+            </p>
+        </section>
+    </main>
+</body>
+
+</html>
