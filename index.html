@@ -7,174 +7,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DR</title>
-    <style>
-        :root {
-            --primary-color: #4a4a4a;
-            --link-color: #6B46C1;
-            --background-color: #fffdf92e;
-            --hover-color: #fffdfd;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--primary-color);
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: var(--background-color);
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        nav a {
-            margin-left: 1.5rem;
-            text-decoration: none;
-            color: var(--primary-color);
-            transition: color 0.2s;
-        }
-
-        nav a:hover {
-            /* color: var(--link-color); */
-            color: var(--primary-color);
-            text-decoration: underline;
-        }
-
-        .intro {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .profile-img {
-            width: 100%;
-            border-radius: 4px;
-        }
-
-        .bio h1 {
-            margin-top: 0;
-            margin-bottom: 0;
-            font-size: 2.5rem;
-        }
-
-        a {
-           color: var(--primary-color); 
-            /* color: var(--link-color); */
-            text-decoration: underline;
-        }
-
-        a:visited {
-            color: var(--primary-color);
-        }
-
-        a:hover {
-            text-decoration: none;
-        }
-
-        @media (max-width: 768px) {
-            .intro {
-                grid-template-columns: 1fr;
-            }
-
-            .profile-img {
-                max-width: 250px;
-            }
-        }
-
-        .footer {
-            max-width: 800px;
-            margin: 4rem auto 2rem;
-            padding: 0 0.5rem;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: baseline;
-            margin-bottom: 1rem;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            position: relative;
-        }
-
-        .contact-label {
-            font-size: 1.2rem;
-            color: #666;
-            flex-shrink: 0;
-            position: relative;
-            background-color: var(--background-color);
-            padding-right: 8px;
-        }
-
-        .contact-value {
-            font-size: 1.2rem;
-            color: #333;
-            margin-left: auto;
-            text-align: right;
-            position: relative;
-            background-color: var(--background-color);
-            padding-left: 8px;
-        }
-
-        .contact-value a {
-            text-decoration: underline;
-            color: var(--primary-color);
-            transition: color 0.2s;
-        }
-
-        .contact-value a:hover {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-
-        .dotted-line {
-            flex-grow: 1;
-            margin: 0 8px;
-            border-bottom: 1px dotted #ccc;
-            height: 1px;
-            align-self: center;
-        }
-
-        .last-updated {
-            text-align: center;
-            font-size: .75rem;
-            color: #77777777;
-            padding: 1rem 0;
-            background-color: var(--background-color);
-            border-top: 1px solid #eee;
-            margin-top: 2rem;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="header.js"></script>
 </head>
 
 <body>
-    <header>
-        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
-        <nav>
-            <a href="/research">Research</a>
-            <!-- <a href="/projects">Projects</a> -->
-            <a href="/blog">Blog</a>
-        </nav>
-    </header>
+    <div id="header-placeholder"></div>
 
     <main>
         <section class="intro">
             <img src="bos.png" alt="Profile photo" class="profile-img">
             <div class="bio">
                 <h1>Divit Rawal</h1>
-                <p>I'm an undergrad @ Berkeley studying Statistics, Physics, and Mathematics.</p>
-                <p>I'm broadly interested in understanding the behavior and properties of machine learning models via statistical learning theory. I'm also interested in computational methods for science.</p>
+                <p>I'm an undergrad @ Berkeley Statistics, Physics, and Mathematics.</p>
+                <p>I'm broadly interested in machine learning (particularly theory) and computational science.</p>
             </div>
         </section>
     </main>
@@ -184,7 +30,7 @@
             <div class="contact-label">Email</div>
             <div class="dotted-line"></div>
             <div class="contact-value">
-                divit [dot] rawal [at] berkeley.edu
+                first.last@berkeley.edu
             </div>
         </div>
         <div class="contact-item">
@@ -217,7 +63,7 @@
             </div>
         </div> -->
         <div class="last-updated">
-            <p>Last Updated Aug 07, 2025</p>
+            <p>Last Updated Aug 22, 2025</p>
         </div>
     </footer>
 </body>
