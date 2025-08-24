@@ -8,7 +8,7 @@ tags: ;
 ## Motivation
 Fourier’s law and the heat equation are phenomenological; they describe how temperature fields evolve at macroscopic scales. However, statistical mechanics is concerned with deriving macroscopic properties from microscopic interactions and behaviors. Thus, a natural question is whether we can derive these laws from assumptions that are (i) local, (ii) Markov (memoryless), and (iii) energy-conserving. In the below, we go through a derivation of the discrete Laplacian and how it converges to the heat equation in the hydrodynamic limit.
 
-**[EDIT]** About halfway through writing this post, I found the KMP paper *Heat Flow in an Exactly Solvable Model*, which actually introduces this concept. What's derived here is essentially their model, and the diffusive scaling section is a far more rigorous and extensive version of what's presented here.
+**[EDIT]** About halfway through writing this post, I found the KMP paper *Heat Flow in an Exactly Solvable Model*, which actually introduces this concept. What's derived here is essentially their model, and their work is a far more rigorous and extensive version of what's presented here.
 
 ## Model
 We will consider the 1 dimensional lattice of \(N\) cells with spacing \(a > 0\). Then, our total length is \(L \doteq Na\). Our system's state at a time \(t\) is the energy vector

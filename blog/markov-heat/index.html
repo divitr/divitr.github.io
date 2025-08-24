@@ -26,7 +26,7 @@
         </section>
 
 <p><h2>Motivation</h2> Fourier’s law and the heat equation are phenomenological; they describe how temperature fields evolve at macroscopic scales. However, statistical mechanics is concerned with deriving macroscopic properties from microscopic interactions and behaviors. Thus, a natural question is whether we can derive these laws from assumptions that are (i) local, (ii) Markov (memoryless), and (iii) energy-conserving. In the below, we go through a derivation of the discrete Laplacian and how it converges to the heat equation in the hydrodynamic limit.</p>
-<p><strong>[EDIT]</strong> About halfway through writing this post, I found the KMP paper <em>Heat Flow in an Exactly Solvable Model</em>, which actually introduces this concept. What's derived here is essentially their model, and the diffusive scaling section is a far more rigorous and extensive version of what's presented here.</p>
+<p><strong>[EDIT]</strong> About halfway through writing this post, I found the KMP paper <em>Heat Flow in an Exactly Solvable Model</em>, which actually introduces this concept. What's derived here is essentially their model, and their work is a far more rigorous and extensive version of what's presented here.</p>
 <p><h2>Model</h2> We will consider the 1 dimensional lattice of \(N\) cells with spacing \(a > 0\). Then, our total length is \(L \doteq Na\). Our system's state at a time \(t\) is the energy vector \begin{equation} \mathbf{e}(t) \doteq (e_1(t), e_2(t), \dots, e_N(t)) \in [0,\infty)^N. \end{equation}</p>
 <p>We define energy exchange via a Markov jump process. Specifically, we assume that each bond between particle \(i\), \(i+1\) (a bond is defined only between neighbors) independently operates on a Poisson clock with rate \(\lambda\). When the clock "rings", the two energy sites are redistributed uniformly in a way that preserves their sum, i.e. \begin{equation} (e_i, e_{i+1}) \to \left(US, (1-U)S\right) \text{ for } U \sim \operatorname{Unif}[0,1], S \doteq e_i + e_{i+1}. \end{equation} This defines a continuous time Markov jump process on \([0, \infty)^N\) that preserves the total energy \(E \doteq \sum_i e_i\). It is clear that the process is memmoryless, but verifying the other conditions is a bit more involved:</p>
 <div class="example-box">
@@ -61,7 +61,7 @@
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Aug 23, 2025 at 20:48 | <a href="../src/markov-heat.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Aug 23, 2025 at 20:50 | <a href="../src/markov-heat.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 
