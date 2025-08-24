@@ -544,10 +544,38 @@ class MDTXCompiler:
 
 if __name__=="__main__":
     if len(sys.argv)!=2:
-        print("Usage: python3 -m compile src")
+        print("Usage: python3 -m compile <src_dir> OR python3 -m compile <file.mdtx>")
         sys.exit(1)
-    source_dir = sys.argv[1]
-    if not os.path.isdir(source_dir):
-        print(f"Error: {source_dir} is not a directory")
-        sys.exit(1)
-    MDTXCompiler(source_dir).watch()
+    
+    path_arg = sys.argv[1]
+    
+    if path_arg.endswith('.mdtx'):
+        # Single file mode - compile once and watch that specific file
+        file_path = Path(path_arg)
+        if not file_path.exists():
+            print(f"Error: File {file_path} not found")
+            sys.exit(1)
+        
+        # Get the source directory from the file path
+        source_dir = file_path.parent
+        compiler = MDTXCompiler(source_dir)
+        
+        print(f"Compiling {file_path.name}...")
+        compiler.compile_file(file_path)
+        
+        print(f"Watching {file_path.name} for changes...")
+        try:
+            while True:
+                if compiler.changed(file_path):
+                    print(f"Changes detected in {file_path.name}, recompiling...")
+                    compiler.compile_file(file_path)
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Stopped.")
+            
+    else:
+        # Directory mode - watch entire source directory
+        if not os.path.isdir(path_arg):
+            print(f"Error: {path_arg} is not a directory")
+            sys.exit(1)
+        MDTXCompiler(path_arg).watch()
