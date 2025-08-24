@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         </style>
-        <div id="toc-header">Outline</div>
+        <div id="toc-header">Contents</div>
         <div id="toc-menu"></div>
     `;
     

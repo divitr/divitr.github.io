@@ -5,7 +5,7 @@ function loadHeader() {
     let headerPath = 'header.html';
     
     // If we're in a subdirectory, go up one level to find header.html
-    if (currentPath.includes('/research/') || currentPath.includes('/blog/') || currentPath.includes('/projects/') || currentPath.includes('/notes/')) {
+    if (currentPath.includes('/research/') || currentPath.includes('/blog/')|| currentPath.includes('/notes/') || currentPath.includes('/misc/')) {
         headerPath = '../header.html';
     }
     

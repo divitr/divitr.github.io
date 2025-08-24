@@ -1,0 +1,553 @@
+#!/usr/bin/env python3
+"""
+compile.py - Compiles .mdtx files to HTML with LaTeX math support.
+
+Usage:
+    python3 -m compile src
+"""
+import os, re, sys, time
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, List, Tuple
+
+class MDTXCompiler:
+    def __init__(self, source_dir: str):
+        # Source directory is blog/src/
+        self.source_dir = Path(source_dir).resolve()
+        # Root directory is blog/ (one level up from source)
+        self.root_dir = self.source_dir.parent
+        self._mtimes  = {}
+
+    def scan(self) -> List[Path]:
+        return list(self.source_dir.glob("*.mdtx"))
+
+    def changed(self, p: Path) -> bool:
+        m, k = p.stat().st_mtime, str(p)
+        if k not in self._mtimes or m > self._mtimes[k]:
+            self._mtimes[k] = m
+            return True
+        return False
+
+    def remove_comments(self, text: str) -> str:
+        return re.sub(r'//.*', '', text)
+
+    def process_requires(self, text: str) -> Tuple[List[str], str]:
+        reqs, out = [], []
+        for L in text.splitlines():
+            m = re.match(r'^\s*req:\s*([^;]+);', L.strip())
+            if m:
+                reqs.extend(r.strip() for r in m.group(1).split(','))
+            else:
+                out.append(L)
+        return reqs, "\n".join(out)
+
+    def parse_metadata(self, text: str) -> Tuple[Dict[str,str], str]:
+        """
+        Pull out all the lines up to the first empty line as metadata,
+        split that on ';' into key:value pairs, then return (meta, body).
+        """
+        # split into metadata block and the rest
+        parts = text.split('\n\n', 1)
+        meta_block = parts[0]
+        body       = parts[1] if len(parts) > 1 else ''
+        
+        meta = {}
+        for entry in meta_block.split(';'):
+            entry = entry.strip()
+            if not entry:
+                continue
+            if ':' not in entry:
+                continue
+            k, v = entry.split(':', 1)
+            meta[k.strip()] = v.strip()
+        
+        return meta, body
+
+
+
+
+    def convert_links(self, text: str) -> str:
+        text = re.sub(r'\*\[', '[', text)
+        
+        # Handle links with more robust regex that can handle whitespace and newlines
+        def link_repl(m):
+            link_text = m.group(1).strip()
+            link_url = m.group(2).strip()
+            # Clean up any extra whitespace or newlines in the URL, but preserve the URL structure
+            link_url = re.sub(r'\s+', '', link_url)
+            # Ensure we have a valid URL
+            if link_url:
+                return f'<a href="{link_url}">{link_text}</a>'
+            else:
+                # If URL is empty, return the original text
+                return f'[{link_text}]({m.group(2)})'
+        
+        # Handle https:// URLs with a more robust pattern
+        # Use a greedy match to ensure we capture the full URL
+        text = re.sub(r'\[([^\]]+)\]\((https://[^)]+)\)', link_repl, text, flags=re.DOTALL)
+        
+        # Then handle other URLs with the restrictive pattern
+        return re.sub(r'\[([^\]]+)\]\(([^)<>]+)\)', link_repl, text, flags=re.DOTALL)
+
+    def apply_emphasis(self, text: str) -> str:
+        return re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+
+    def process_inline_code(self, text: str) -> str:
+        # Handle inline code with single backticks: `code`
+        def repl(m):
+            code = m.group(1)
+            # Escape HTML characters in inline code
+            code = code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            return f'<code>{code}</code>'
+        return re.sub(r'`([^`]+)`', repl, text)
+
+    def extract_footnotes(self, text: str) -> Tuple[Dict[str,str], str]:
+        fns, out = {}, []
+        for L in text.splitlines():
+            m = re.match(r'\[\^([^\]]+)\]:\s*(.+)', L.strip())
+            if m:
+                fns[m.group(1)] = m.group(2)
+            else:
+                out.append(L)
+        return fns, "\n".join(out)
+
+    def replace_footrefs(self, text: str, fns: Dict[str,str]) -> str:
+        def r(m):
+            i = m.group(1)
+            if i in fns:
+                return f'<sup><a href="#fn{i}" id="fnref{i}">{i}</a></sup>'
+            return m.group(0)
+        return re.sub(r'\[\^([^\]]+)\]', r, text)
+
+    def footnotes_html(self, fns: Dict[str,str]) -> str:
+        if not fns:
+            return ""
+        parts = ['<div class="footnotes">','<hr>','<ol>']
+        for i, t in fns.items():
+            parts.append(f'<li id="fn{i}">{t} <a href="#fnref{i}" class="footnote-backref">↩</a></li>')
+        parts.append('</ol></div>')
+        return "\n".join(parts)
+
+    def process_code(self, text: str) -> str:
+        # Handle code blocks with syntax: code[language]: ... end code;
+        def repl(m):
+            lang, code = m.group(1), m.group(2)
+            # Escape HTML characters in code
+            code = code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            return f'<pre><code class="language-{lang}">{code}</code></pre>'
+        
+        # More robust pattern that handles multiline code blocks
+        pattern = re.compile(
+            r'code\[([^\]]+)\]:\s*\n'
+            r'([\s\S]*?)'
+            r'\nend code;?',  # Make semicolon optional
+            re.DOTALL
+        )
+        return pattern.sub(repl, text)
+
+    def process_image(self, text: str) -> str:
+        def repl(m):
+            src=alt=width=caption=""
+            for L in m.group(1).splitlines():
+                l = L.strip()
+                if l.startswith('src:'):     src     = l.split(':',1)[1].strip().rstrip(';')
+                if l.startswith('alt:'):     alt     = l.split(':',1)[1].strip().rstrip(';')
+                if l.startswith('width:'):   width   = l.split(':',1)[1].strip().rstrip(';')
+                if l.startswith('caption:'): caption = l.split(':',1)[1].strip().rstrip(';')
+            
+            # Images are referenced by name only and located in blog/filename/
+            # For file "a.mdtx" with image "img.png", path should be "img.png"
+            # Strip any "imgs/" prefix since images are directly in the output directory
+            if src.startswith('imgs/'):
+                src = src[5:]  # Remove "imgs/" prefix
+            
+            style = f' style="width:{width}"' if width else ''
+            img_html = f'<img src="{src}" alt="{alt}"{style}>'
+            return f'<figure>{img_html}<figcaption>{caption}</figcaption></figure>' if caption else img_html
+        return re.sub(r'image:\s*\n(.*?)\nend image;?', repl, text, flags=re.DOTALL)  # Make semicolon optional
+
+    def process_example(self, text: str) -> str:
+        pattern = re.compile(
+            r'example:\s*\n'
+            r'([\s\S]*?)'
+            r'\nend example;?',  # Match and consume the end marker  
+            re.DOTALL
+        )
+        def repl(m):
+            block   = m.group(1)
+            t_m     = re.search(r'title:\s*(.+?)(?:;|\n)',      block)  # Look for semicolon or newline
+            title   = t_m.group(1).strip()   if t_m   else ''
+            
+            # Handle both original format "content: {" and processed format "content: \begin{equation}"
+            content_start = block.find('content: {')
+            if content_start != -1:
+                content_start += len('content: {')
+                # Find the last "};" in the block and exclude it
+                content_end = block.rfind('};')
+                if content_end != -1:
+                    body = block[content_start:content_end].strip()
+                else:
+                    body = ''
+            else:
+                # Try the processed format with \begin{equation}
+                content_start = block.find('content: \\begin{equation}')
+                if content_start != -1:
+                    content_start += len('content: \\begin{equation}')
+                    # Find the corresponding \end{equation}
+                    content_end = block.find('\\end{equation}', content_start)
+                    if content_end != -1:
+                        body = block[content_start:content_end].strip()
+                    else:
+                        body = ''
+                else:
+                    body = ''
+            
+            # Recursively process the example box content through the main processing pipeline
+            body = self.process_image(body)
+            body = self.process_lists_in_example(body)  # Special list processing for example boxes
+            body = self.replace_display_math(body)  # Process any remaining display math
+            body = self.replace_inline_math(body)  # Process inline math
+            body = self.apply_emphasis(body)  # Process emphasis last
+            
+            return (
+                '<div class="example-box">\n'
+                  f'<div class="example-box-title">{title}</div>\n'
+                  '<div class="example-box-prompt">\n'
+                  f'{body}\n'
+                  '</div>\n'
+                '</div>\n'
+            )
+        return pattern.sub(repl, text)
+
+    def process_lists(self, text: str) -> str:
+        pattern = re.compile(
+            r'list\[([^\]]+)\]:\s*\n'
+            r'((?:\s*-\s*[^\n]*\n(?:[^\n]*\n)*?)+)'  # List items that may contain multiple lines
+            r'\s*end list;?',  # Look for end list marker (with or without newline)
+            re.DOTALL
+        )
+        def repl(m):
+            list_type = m.group(1)
+            content = m.group(2)
+            # Split by list item markers and process each item
+            items = []
+            current_item = ""
+            for line in content.splitlines():
+                if line.strip().startswith('- '):
+                    if current_item:
+                        items.append(current_item.strip())
+                    current_item = line.strip()[2:].strip()
+                elif line.strip():
+                    current_item += " " + line.strip()
+            if current_item:
+                items.append(current_item.strip())
+            
+            items = [self.apply_emphasis(it) for it in items]
+            lis = ''.join(f'<li>{it}</li>' for it in items)
+            if list_type.startswith('o'):
+                parts = list_type.split('-', 1)
+                att = f' type="{parts[1]}"' if len(parts)==2 else ''
+                return f'<ol{att}>{lis}</ol>'
+            return f'<ul>{lis}</ul>'
+        return pattern.sub(repl, text)
+
+    def process_lists_in_example(self, text: str) -> str:
+        """Process lists in example boxes that don't have explicit 'end list;' markers"""
+        pattern = re.compile(
+            r'list\[([^\]]+)\]:\s*\n'
+            r'((?:\s*-\s*[^\n]+\n?)+)',  # List items until end of content or next block
+            re.DOTALL
+        )
+        def repl(m):
+            list_type = m.group(1)
+            lines     = m.group(2).splitlines()
+            items     = [l.strip()[2:].strip() for l in lines if l.strip().startswith('- ')]
+            items     = [self.apply_emphasis(it) for it in items]
+            lis       = ''.join(f'<li>{it}</li>' for it in items)
+            if list_type.startswith('o'):
+                parts = list_type.split('-', 1)
+                att   = f' type="{parts[1]}"' if len(parts)==2 else ''
+                return f'<ol{att}>{lis}</ol>'
+            return f'<ul>{lis}</ul>'
+        return pattern.sub(repl, text)
+
+    def replace_display_math(self, text: str) -> str:
+        # Find { ... } blocks that span multiple lines and convert them to \begin{equation} ... \end{equation}
+        # Look for { on its own line (possibly with preceding content and comma/punctuation)
+        pat = re.compile(
+            r'(.*?)\n\{\s*\n'      # Any content ending with newline, then { on new line with optional whitespace and newline
+            r'([\s\S]*?)'          # Content (non-greedy)
+            r'\n\s*\}',            # Closing } on its own line with optional whitespace
+            re.MULTILINE | re.DOTALL
+        )
+        def sub(m):
+            # Keep the preceding content and wrap the math content in equation environment
+            preceding = m.group(1)
+            math_content = m.group(2)
+            return f"{preceding}\n\\begin{{equation}}\n{math_content}\n\\end{{equation}}"
+        return pat.sub(sub, text)
+
+
+
+    def replace_inline_math(self, text: str) -> str:
+        # Preserve existing \( \) patterns as-is (they're already LaTeX verbatim)
+        # Only convert standalone {} patterns to inline math
+        
+        def process_math_in_content(content: str) -> str:
+            # Process {} patterns in text content (not inside HTML tags or existing math)
+            out, i, n = [], 0, len(content)
+            while i < n:
+                # Skip existing math blocks
+                if content[i:i+2] == '\\(':
+                    # Find end of inline math
+                    end = content.find('\\)', i+2)
+                    if end != -1:
+                        out.append(content[i:end+2])
+                        i = end + 2
+                        continue
+                elif content[i:i+16] == '\\begin{equation}':
+                    # Find end of display math
+                    end = content.find('\\end{equation}', i+16)
+                    if end != -1:
+                        out.append(content[i:end+14])
+                        i = end + 14
+                        continue
+                elif content[i] == '{':
+                    # Find matching closing brace, handling nested braces
+                    depth, j = 1, i+1
+                    while j < n and depth > 0:
+                        if   content[j]=='{': depth += 1
+                        elif content[j]=='}': depth -= 1
+                        j += 1
+                    if depth == 0:
+                        inner = content[i+1:j-1]
+                        # Wrap in \( \) for inline math
+                        out.append(f'\\({inner}\\)')
+                        i = j
+                        continue
+                out.append(content[i])
+                i += 1
+            return "".join(out)
+        
+        # Split text into HTML tags and content, only process content parts
+        parts = re.split(r'(<[^>]*>)', text)
+        for i in range(len(parts)):
+            if not parts[i].startswith('<'):  # Not an HTML tag
+                parts[i] = process_math_in_content(parts[i])
+        
+        return "".join(parts)
+
+    def process_headings(self, text: str) -> str:
+        out = []
+        for L in text.splitlines():
+            if L.startswith('#'):
+                lvl = min(len(L) - len(L.lstrip('#')), 6)
+                out.append(f'<h{lvl}>{L.lstrip("#").strip()}</h{lvl}>')
+            else:
+                out.append(L)
+        return "\n".join(out)
+
+    def process_paragraphs(self, text: str) -> str:
+        # First, protect any existing code blocks, divs, etc. by replacing them with placeholders
+        protected_blocks = {}
+        placeholder_counter = 0
+        
+        # Protect multi-line HTML blocks (like <pre>, <div>, etc.)
+        for tag in ['pre', 'div', 'ol', 'ul']:
+            pattern = re.compile(f'<{tag}[^>]*>.*?</{tag}>', re.DOTALL)
+            def protect_block(m):
+                nonlocal placeholder_counter
+                placeholder = f'__PROTECTED_BLOCK_{placeholder_counter}__'
+                protected_blocks[placeholder] = m.group(0)
+                placeholder_counter += 1
+                return placeholder
+            text = pattern.sub(protect_block, text)
+        
+        # Now process paragraphs normally
+        blocks = re.split(r'\n\s*\n', text.strip())
+        out    = []
+        for blk in blocks:
+            chunk = blk.strip()
+            # Skip if it's already HTML, a placeholder, or empty
+            if (chunk.startswith('<') and chunk.endswith('>')) or chunk.startswith('__PROTECTED_BLOCK_') or not chunk:
+                out.append(chunk)
+            else:
+                # Only process as paragraph if it's not already processed
+                line = ' '.join(l.strip() for l in blk.splitlines())
+                if line:  # Only add paragraph if there's content
+                    line = self.apply_emphasis(line)
+                    out.append(f'<p>{line}</p>')
+        
+        # Restore protected blocks
+        result = "\n".join(out)
+        for placeholder, original in protected_blocks.items():
+            result = result.replace(placeholder, original)
+        
+        return result
+
+
+    
+    def extract_all_urls(self, text: str) -> tuple[str, dict[str, tuple[str, str]]]:
+        """Extract ALL URLs and replace with simple placeholders."""
+        url_map = {}
+        url_counter = 0
+        
+        def replace_url(match):
+            nonlocal url_counter
+            url_counter += 1
+            placeholder = f'PLACEHOLDER{url_counter}'
+            link_text = match.group(1)
+            link_url = match.group(2)
+            url_map[placeholder] = (link_text, link_url)
+            return placeholder
+        
+        # Extract all markdown-style URLs [text](url) regardless of content
+        text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_url, text, flags=re.DOTALL)
+        
+        return text, url_map
+    
+    def restore_urls_as_html(self, text: str, url_map: dict[str, tuple[str, str]]) -> str:
+        """Restore all URLs as proper HTML links."""
+        for placeholder, (link_text, link_url) in url_map.items():
+            # Clean up the URL (remove extra whitespace/newlines)
+            link_url = re.sub(r'\s+', '', link_url.strip())
+            html_link = f'<a href="{link_url}">{link_text}</a>'
+            text = text.replace(placeholder, html_link)
+        return text
+
+    def compile_file(self, path: Path):
+        raw  = path.read_text(encoding='utf8')
+        
+        # Extract ALL URLs IMMEDIATELY after reading, before any processing
+        raw, url_map = self.extract_all_urls(raw)
+        
+        raw  = self.remove_comments(raw)
+        reqs, body = self.process_requires(raw)
+        meta, body = self.parse_metadata(body)
+        fns,  body = self.extract_footnotes(body)
+        
+        # ←── minimal fix: strip any leftover 'desc:' or 'tags:' lines 
+        body = re.sub(r'(?m)^(?:desc|tags):.*\n', '', body)
+
+        # now build date + desc blocks from meta, with emphasis processing
+        date_html = f'            <p class="date">{self.apply_emphasis(meta["date"])}</p>\n' if meta.get("date") else ""
+        desc_html = f'            <p class="desc">{self.apply_emphasis(meta["desc"])}</p>\n'  if meta.get("desc") else ""
+
+        # Process emphasis and inline code first
+        body = self.apply_emphasis(body)
+        body = self.process_inline_code(body)
+
+        # Process display math BEFORE block-level elements so it's available in example boxes
+        body = self.replace_display_math(body)
+
+        # Process all block-level elements first (before paragraphs)
+        body = self.process_code(body)
+        body = self.process_image(body)
+        body = self.process_example(body)
+        body = self.process_lists(body)
+        body = self.process_headings(body)
+        
+
+        # Process footnotes
+        body = self.replace_footrefs(body, fns)
+        
+        # Process paragraphs last (after all other blocks are processed)
+        body = self.process_paragraphs(body)
+        
+        # Restore all URLs as HTML links at the very end (skip convert_links entirely)
+        body = self.restore_urls_as_html(body, url_map)
+
+        # Process inline math last (after display math and paragraphs)
+        body = self.replace_inline_math(body)
+
+        # append footnotes
+        fn_html = self.footnotes_html(fns)
+        if fn_html:
+            body += "\n" + fn_html
+
+        head_reqs = "".join(f"    \\(\\require{{{r}}}\\)\n" for r in reqs)
+        title     = meta.get('title','Untitled')
+        
+        # Get current timestamp for footer
+        compile_time = datetime.now().strftime("%b %d, %Y at %H:%M")
+        
+        # Create output directory structure
+        # For file "a.mdtx" -> create "a/index.html"
+        output_dir = self.root_dir / path.stem
+        output_dir.mkdir(exist_ok=True)
+        output_file = output_dir / "index.html"
+
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+
+<head>
+{head_reqs}    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../blog.css">
+    <script src="../blog_header.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>{title}</h1>
+{date_html}{desc_html}        </section>
+
+{body}
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled {compile_time} | <a href="../src/{path.name}" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Debug header loading
+        console.log('Blog post loaded, checking header...');
+        console.log('Current path:', window.location.pathname);
+        console.log('Header script loaded:', typeof loadBlogHeader !== 'undefined');
+        
+        setTimeout(() => {{
+            const header = document.getElementById('header-placeholder');
+            console.log('Header placeholder:', header);
+            console.log('Header content:', header.innerHTML);
+        }}, 1000);
+    </script>
+    
+    <!-- Table of Contents Generator -->
+    <script src="../toc-generator.js"></script>
+</body>
+</html>"""
+
+        output_file.write_text(html, encoding='utf8')
+        print("Compiled →", path.name, "→", output_file.relative_to(self.root_dir))
+
+    def watch(self):
+        print(f"Watching {self.source_dir} …")
+        try:
+            while True:
+                for f in self.scan():
+                    if self.changed(f):
+                        self.compile_file(f)
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Stopped.")
+
+if __name__=="__main__":
+    if len(sys.argv)!=2:
+        print("Usage: python3 -m compile src")
+        sys.exit(1)
+    source_dir = sys.argv[1]
+    if not os.path.isdir(source_dir):
+        print(f"Error: {source_dir} is not a directory")
+        sys.exit(1)
+    MDTXCompiler(source_dir).watch()
