@@ -9,6 +9,18 @@
     <title>DR</title>
     <link rel="stylesheet" href="style.css">
     <script src="header.js"></script>
+    <script>
+        // Limit news items to top 3
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsItems = document.querySelectorAll('.news-item');
+            if (newsItems.length > 3) {
+                // Hide all items after the first 3
+                for (let i = 3; i < newsItems.length; i++) {
+                    newsItems[i].style.display = 'none';
+                }
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -23,6 +35,15 @@
                 <p>I'm broadly interested in machine learning (particularly theory) and computational science.</p>
             </div>
         </section>
+        <!-- <section class="news">
+            <h2>News</h2>
+            <div class="news-items">
+                <div class="news-item">
+                    <div class="news-date">DATE</div>
+                    <div class="news-content">NEWS</div>
+                </div>
+            </div>
+        </section> -->
     </main>
 
     <footer class="footer">
