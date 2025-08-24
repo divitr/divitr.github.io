@@ -90,7 +90,11 @@ class MDTXCompiler:
         return re.sub(r'\[([^\]]+)\]\(([^)<>]+)\)', link_repl, text, flags=re.DOTALL)
 
     def apply_emphasis(self, text: str) -> str:
-        return re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+        # Handle bold text first: **text** -> <strong>text</strong>
+        text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+        # Handle italic text: *text* -> <em>text</em>
+        text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+        return text
 
     def process_inline_code(self, text: str) -> str:
         # Handle inline code with single backticks: `code`
@@ -182,9 +186,22 @@ class MDTXCompiler:
             content_start = block.find('content: {')
             if content_start != -1:
                 content_start += len('content: {')
-                # Find the last "};" in the block and exclude it
-                content_end = block.rfind('};')
-                if content_end != -1:
+                # Find the closing "}" by counting braces to handle nested content
+                # Skip the opening brace of content: {
+                brace_count = 1
+                content_end = content_start
+                
+                # Look for the matching closing brace, handling nested braces
+                for i, char in enumerate(block[content_start:], content_start):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            content_end = i
+                            break
+                
+                if content_end > content_start:
                     body = block[content_start:content_end].strip()
                 else:
                     body = ''
@@ -203,10 +220,11 @@ class MDTXCompiler:
                     body = ''
             
             # Recursively process the example box content through the main processing pipeline
+            # Process math FIRST so lists can handle the processed content
+            body = self.replace_display_math(body)  # Process display math first
+            body = self.replace_inline_math(body)  # Process inline math
             body = self.process_image(body)
             body = self.process_lists_in_example(body)  # Special list processing for example boxes
-            body = self.replace_display_math(body)  # Process any remaining display math
-            body = self.replace_inline_math(body)  # Process inline math
             body = self.apply_emphasis(body)  # Process emphasis last
             
             return (
@@ -229,21 +247,84 @@ class MDTXCompiler:
         def repl(m):
             list_type = m.group(1)
             content = m.group(2)
-            # Split by list item markers and process each item
-            items = []
-            current_item = ""
-            for line in content.splitlines():
-                if line.strip().startswith('- '):
-                    if current_item:
-                        items.append(current_item.strip())
-                    current_item = line.strip()[2:].strip()
-                elif line.strip():
-                    current_item += " " + line.strip()
-            if current_item:
-                items.append(current_item.strip())
             
-            items = [self.apply_emphasis(it) for it in items]
-            lis = ''.join(f'<li>{it}</li>' for it in items)
+            # Parse nested list structure
+            def parse_nested_list(lines):
+                items = []
+                i = 0
+                while i < len(lines):
+                    line = lines[i]
+                    if not line.strip():
+                        i += 1
+                        continue
+                    
+                    # Check if this is a list item
+                    if line.strip().startswith('- '):
+                        item_text = line.strip()[2:].strip()
+                        sub_items = []
+                        
+                        # Look ahead for nested items
+                        j = i + 1
+                        while j < len(lines):
+                            next_line = lines[j]
+                            if not next_line.strip():
+                                j += 1
+                                continue
+                            
+                            # Check indentation level
+                            current_indent = len(line) - len(line.lstrip())
+                            next_indent = len(next_line) - len(next_line.lstrip())
+                            
+                            if next_indent > current_indent and next_line.strip().startswith('- '):
+                                # This is a nested item
+                                nested_text = next_line.strip()[2:].strip()
+                                nested_sub_items = []
+                                
+                                # Look for deeper nesting
+                                k = j + 1
+                                while k < len(lines):
+                                    deeper_line = lines[k]
+                                    if not deeper_line.strip():
+                                        k += 1
+                                        continue
+                                    
+                                    deeper_indent = len(deeper_line) - len(deeper_line.lstrip())
+                                    if deeper_indent > next_indent and deeper_line.strip().startswith('- '):
+                                        deeper_text = deeper_line.strip()[2:].strip()
+                                        nested_sub_items.append(f'<li>{self.apply_emphasis(deeper_text)}</li>')
+                                        k += 1
+                                    else:
+                                        break
+                                
+                                if nested_sub_items:
+                                    nested_html = f'<ul>{"".join(nested_sub_items)}</ul>'
+                                    nested_text += nested_html
+                                
+                                sub_items.append(f'<li>{self.apply_emphasis(nested_text)}</li>')
+                                j = k
+                            elif next_indent == current_indent and next_line.strip().startswith('- '):
+                                # Same level item, break
+                                break
+                            else:
+                                # Continuation of current item
+                                item_text += " " + next_line.strip()
+                                j += 1
+                        
+                        if sub_items:
+                            sub_html = f'<ul>{"".join(sub_items)}</ul>'
+                            item_text += sub_html
+                        
+                        items.append(f'<li>{self.apply_emphasis(item_text)}</li>')
+                        i = j
+                    else:
+                        i += 1
+                
+                return items
+            
+            lines = content.splitlines()
+            items = parse_nested_list(lines)
+            lis = ''.join(items)
+            
             if list_type.startswith('o'):
                 parts = list_type.split('-', 1)
                 att = f' type="{parts[1]}"' if len(parts)==2 else ''
@@ -255,15 +336,68 @@ class MDTXCompiler:
         """Process lists in example boxes that don't have explicit 'end list;' markers"""
         pattern = re.compile(
             r'list\[([^\]]+)\]:\s*\n'
-            r'((?:\s*-\s*[^\n]+\n?)+)',  # List items until end of content or next block
+            r'([\s\S]*?)(?=\n\S|\n*$)',  # Capture everything until next unindented content or end
             re.DOTALL
         )
         def repl(m):
             list_type = m.group(1)
-            lines     = m.group(2).splitlines()
-            items     = [l.strip()[2:].strip() for l in lines if l.strip().startswith('- ')]
-            items     = [self.apply_emphasis(it) for it in items]
-            lis       = ''.join(f'<li>{it}</li>' for it in items)
+            content = m.group(2)
+            
+            # Parse list structure with proper multi-line item handling
+            def parse_list_items(text_content):
+                lines = text_content.splitlines()
+                items = []
+                i = 0
+                
+                while i < len(lines):
+                    line = lines[i]
+                    if not line.strip():
+                        i += 1
+                        continue
+                    
+                    # Check if this starts a list item
+                    if line.strip().startswith('- '):
+                        # Get the base indentation level for this item
+                        base_indent = len(line) - len(line.lstrip())
+                        item_content = [line.strip()[2:].strip()]  # Remove '- ' prefix
+                        
+                        # Collect all lines that belong to this item
+                        j = i + 1
+                        while j < len(lines):
+                            next_line = lines[j]
+                            
+                            # Empty lines are part of the item
+                            if not next_line.strip():
+                                item_content.append("")
+                                j += 1
+                                continue
+                            
+                            next_indent = len(next_line) - len(next_line.lstrip())
+                            
+                            # If next line starts a new item at same or less indentation, stop
+                            if next_indent <= base_indent and next_line.strip().startswith('- '):
+                                break
+                            
+                            # If it's indented more than the base item, it's part of this item
+                            if next_indent > base_indent:
+                                item_content.append(next_line.strip())
+                                j += 1
+                            else:
+                                # Unindented content that's not a list item - stop here
+                                break
+                        
+                        # Join the item content and process it
+                        full_item = " ".join(filter(None, item_content))  # Filter out empty strings
+                        items.append(f'<li>{self.apply_emphasis(full_item)}</li>')
+                        i = j
+                    else:
+                        i += 1
+                
+                return items
+            
+            items = parse_list_items(content)
+            lis = ''.join(items)
+            
             if list_type.startswith('o'):
                 parts = list_type.split('-', 1)
                 att   = f' type="{parts[1]}"' if len(parts)==2 else ''
@@ -273,9 +407,9 @@ class MDTXCompiler:
 
     def replace_display_math(self, text: str) -> str:
         # Find { ... } blocks that span multiple lines and convert them to \begin{equation} ... \end{equation}
-        # Look for { on its own line (possibly with preceding content and comma/punctuation)
+        # Handle both standalone { ... } blocks and indented ones
         pat = re.compile(
-            r'(.*?)\n\{\s*\n'      # Any content ending with newline, then { on new line with optional whitespace and newline
+            r'(.*?)\n\s*\{\s*\n'   # Any content ending with newline, then { on new line with optional whitespace and newline
             r'([\s\S]*?)'          # Content (non-greedy)
             r'\n\s*\}',            # Closing } on its own line with optional whitespace
             re.MULTILINE | re.DOTALL

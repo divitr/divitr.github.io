@@ -33,96 +33,50 @@
                 <h2>Posts</h2>
             </div>
             <article class="blog-post-card">
+                <h2><a href="/blog/markov-heat">A Markov Picture of Heat</a></h2>
+                <div class="post-date">Aug 23, 2025</div>
+                <p>A derivation of the heat equation from a stochastic model of energy exchange</p>
+            </article>
+            <br />
+            <article class="blog-post-card">
                 <h2><a href="/blog/eigenlearning">Eigenlearning</a></h2>
                 <div class="post-date">Jun 11, 2025</div>
-                    <p>Some notes on Simon et. al's <em><a href="https://arxiv.org/abs/2110.03922">The Eigenlearning Framework: A Conservation Law Perspective on Kernel Regression and Wide Neural Networks</a></em>.</p>
+                    <p>Some notes the Eigenlearning paper by Simon et. al.</p>
             </article>
             <br />
             <article class="blog-post-card">
                 <h2><a href="/blog/rkhs">Reproducing Kernel Hilbert Spaces</a></h2>
                 <div class="post-date">Jun 03, 2025</div>
-                <p>Building up RKHSs from the Riesz Representation Theorem.</p>
+                <p>Building up RKHSs from the Riesz Representation Theorem</p>
             </article>
             <br />
             <article class="blog-post-card">
                 <h2><a href="/blog/cookie-magic">Cookie Magic</a></h2>
                 <div class="post-date">Apr 19, 2025</div>
-                <p>How I got ~$500 worth of cookies for free.</p>
+                <p>How I got ~$500 worth of cookies for free</p>
             </article>
             <br />
             <article class="blog-post-card">
                 <h2><a href="/blog/ntk">Neural Tangent Kernels</a></h2>
                 <div class="post-date">Apr 11, 2025</div>
-                <p>A rough derivation of the neural tangent kernel.</p>
+                <p>A rough derivation of the neural tangent kernel</p>
             </article>
             <br />
             <article class="blog-post-card">
                 <h2><a href="/blog/hopfield-networks">Hopfield Networks</a></h2>
                 <div class="post-date">Jan 19, 2025</div>
-                <p>A quick implementation of a Hopfield network in Python.</p>
+                <p>A quick implementation of a Hopfield network in Python</p>
             </article>
             <br/>
         </section>
-        <script type="module">
-            import { init } from './analysis.js';
-            
-            // Initialize and insert the visualizations
-            init().then(container => {
-                document.querySelector('.blog-analysis-section').appendChild(container);
-            });
-        </script>
-        <!-- <script>
-            // Tag filtering functionality
-            document.addEventListener('DOMContentLoaded', function() {
-                const posts = document.querySelectorAll('.blog-post');
-                const tagFilter = document.getElementById('tagFilter');
-                const filterToggle = document.getElementById('filterToggle');
-                
-                // Toggle filter visibility
-                filterToggle.addEventListener('click', () => {
-                    tagFilter.classList.toggle('visible');
-                });
-                
-                // Get all unique tags
-                const allTags = new Set();
-                posts.forEach(post => {
-                    const tags = post.dataset.tags.split(',');
-                    tags.forEach(tag => allTags.add(tag));
-                });
-                
-                // Create tag buttons
-                allTags.forEach(tag => {
-                    const tagButton = document.createElement('div');
-                    tagButton.className = 'tag';
-                    tagButton.textContent = tag.split('-').map(word => 
-                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                    ).join(' ');
-                    tagButton.dataset.tag = tag;
-                    tagButton.addEventListener('click', () => toggleTag(tagButton));
-                    tagFilter.appendChild(tagButton);
-                });
-                
-                function toggleTag(tagButton) {
-                    tagButton.classList.toggle('active');
-                    filterPosts();
-                }
-                
-                function filterPosts() {
-                    const activeTags = Array.from(document.querySelectorAll('.tag.active'))
-                        .map(tag => tag.dataset.tag);
-                    
-                    posts.forEach(post => {
-                        const postTags = post.dataset.tags.split(',');
-                        if (activeTags.length === 0 || activeTags.some(tag => postTags.includes(tag))) {
-                            post.classList.remove('hidden');
-                        } else {
-                            post.classList.add('hidden');
-                        }
-                    });
-                }
-            });
-        </script> -->
     </main>
+    <footer>
+        <div class="last-updated">
+            <p>These posts are written in my own hybrid markdown-latex format with a very brittle vibecoded compiler (the result of a
+            very unproductive day at work in Summer 2025). If you're interested in the format you can check out a GPT generated
+            example/summary file <a href="mdtx-reference.mdtx" target="_blank">here</a>.</p>
+        </div>
+    </footer>
 </body>
 
 </html>

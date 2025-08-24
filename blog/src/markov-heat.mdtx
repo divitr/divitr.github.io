@@ -1,198 +1,142 @@
 req: physics;
 
-title: Reproducing Kernel Hilbert Spaces;
-date: Jun 3, 2025;
-desc: Building up RKHSs from the Riesz Representation Theorem;
+title: A Markov Picture of Heat;
+date: Aug. 23, 2025;
+desc: A derivation of the heat equation from a stochastic model of energy exchange;
 tags: ;
 
 ## Motivation
+Fourier’s law and the heat equation are phenomenological; they describe how temperature fields evolve at macroscopic scales. However, statistical mechanics is concerned with deriving macroscopic properties from microscopic interactions and behaviors. Thus, a natural question is whether we can derive these laws from assumptions that are (i) local, (ii) Markov (memoryless), and (iii) energy-conserving. In the below, we go through a derivation of the discrete Laplacian and how it converges to the heat equation in the hydrodynamic limit.
 
-Reproducing Kernel Hilbert Spaces (RKHSs) are a major deal in machine learning, especially in the study of kernel methods and SVMs. RKHSs are a natural extension of Hilbert spaces to function spaces and give us several useful results in statistical learning theory. We'll first prove the Riesz Representation Theorem and then use it to prove the representer theorem for RKHSs, and show that any kernel has an RKHS.
+**[EDIT]** About halfway through writing this post, I found the #TODO
 
-## The Riesz Representation Theorem (for Hilbert Spaces)
-
-### Statement
-
-Let \(\mathcal{H}\) be a Hilbert space. Then for every continuous linear functional \(f \in \mathcal{H}^*\) (the dual space of \(\mathcal{H}\)), there exists a unique element \(v \in \mathcal{H}\) such that \(f(u) = \langle u, v \rangle\) for all \(u \in \mathcal{H}\).
-
-Parsing this statement is a bit intimidating, especially without a bit of background in linear algebra or functional analysis. Essentially, the RRT states that every function \(f\) that takes a vector \(u \in \mathcal{H}\) and returns a scalar in a way that is linear and continuous is always expressible as the inner product of that vector with some fixed other vector \(v \in \mathcal{H}\), and this vector \(v\) is unique and thus defines the linear functional \(f\).
-
-### Proof
-
-The proof of the RRT is pretty standard and I'm sure it can be found in most linear algebra textbooks (see e.g. Axler's Linear Algebra Done Right), but it is included here for completeness.
-
-Let \(\mathcal{H}\) be a Hilbert space over \(\mathbb{R}\) or \(\mathbb{C}\), and let \(f\) be a continuous linear functional on \(\mathcal{H}\). We wish to show that there exists a unique \(v \in \mathcal{H}\) such that \(f(u) = \langle u, v \rangle\) for all \(u \in \mathcal{H}\).
-
-First, let's consider the trivial case \(f = 0\). In this case, choosing \(v = \vec{0}\) satisfies our requirement and we are done. So, going forward, we assume \(f \neq 0\).
-
-Let \(\ker f = \{u \in \mathcal{H} \mid f(u) = 0\}\). This is a closed subspace of \(\mathcal{H}\) because \(f\) is continuous. Since \(f \neq 0\), we have \(\ker f \neq \mathcal{H}\), so there exists \(w \in \mathcal{H} \setminus \ker f\).
-
-Let \(v = \text{proj}_{\ker f^\perp}(w)\), the orthogonal projection of \(w\) onto the orthogonal complement of \(\ker f\). Then \(v \in \ker f^\perp\) and \(v \neq 0\) since \(w \notin \ker f\). Define
+## Model
+We will consider the 1 dimensional lattice of \(N\) cells with spacing \(a > 0\). Then, our total length is \(L \doteq Na\). Our system's state at a time \(t\) is the energy vector
 {
-    v_0 = \frac{\overline{f(v)}}{\|v\|^2}v.
+    \mathbf{e}(t) \doteq (e_1(t), e_2(t), \dots, e_N(t)) \in [0,\infty)^N.
 }
 
-Any \(x \in \mathcal{H}\) can be uniquely written as \(x = u + \alpha v\) with \(u \in \ker f\) and \(v \in \ker f^\perp\). If \(x \in \ker f\), then \(\alpha = 0\). By linearity of \(f\), we have
+We define energy exchange via a Markov jump process. Specifically, we assume that each bond between particle \(i\), \(i+1\) (a bond is defined only between neighbors) independently operates on a Poisson clock with rate \(\lambda\). When the clock "rings", the two energy sites are redistributed uniformly in a way that preserves their sum, i.e.
 {
-    f(x) = f(u + \alpha v) = f(u) + \alpha f(v) = \alpha f(v),
+    (e_i, e_{i+1}) \to \left(US, (1-U)S\right) \text{ for } U \sim \operatorname{Unif}[0,1], S \doteq e_i + e_{i+1}.
 }
-and
-{
-    \langle x, v_0 \rangle = \langle u + \alpha v, \frac{\overline{f(v)}}{\|v\|^2}v \rangle = \langle u, \frac{\overline{f(v)}}{\|v\|^2}v \rangle + \alpha \frac{\overline{f(v)}}{\|v\|^2} \langle v, v \rangle = \alpha \overline{f(v)}.
-}
-So if \(f(x) = \alpha f(v)\) and \(\langle x, v_0 \rangle = \alpha \overline{f(v)}\), these are equal since \(f(v) = \overline{f(v)}\) if \(\mathcal{H}\) is real, and otherwise by definition of \(v_0\).
-
-Thus, \(f(x) = \langle x, v_0 \rangle\) for all \(x \in \mathcal{H}\).
-
-To show uniqueness, suppose there exists another vector \(v_1 \in \mathcal{H}\) such that \(f(x) = \langle x, v_1 \rangle\) for all \(x \in \mathcal{H}\). Then,
-{
-    \langle x, v_0 - v_1 \rangle = \langle x, v_0 \rangle - \langle x, v_1 \rangle = f(x) - f(x) = 0
-}
-for all \(x \in \mathcal{H}\). Setting \(x = v_0 - v_1\) gives
-{
-    \|v_0 - v_1\|^2 = \langle v_0 - v_1, v_0 - v_1 \rangle = 0,
-}
-which implies \(v_0 = v_1\). Thus, the vector \(v_0\) is unique.
-
-## Reproducing Kernel Hilbert Spaces
-
-### Kernels
-
-Before diving into RKHSs, we must first define a kernel. A kernel acts as a similarity measure between data points. More precisely, a kernel is a function \(K : X \times X \to \mathbb{R}\) (or \(\mathbb{C}\)) such that, for any pair of inputs \(x, x^\prime \in X\), the value \(K(x, x^\prime)\) gives some notion of similarity between \(x\) and \(x^\prime\).
-
-A kernel must satisfy the following two properties:
-
-list[u]:
-- **Symmetry:** \(K(x, x^\prime) = K(x^\prime, x)\)
-- **Positive semi-definiteness:** For any finite set of points \(x_1, \dots, x_n \in X\), the kernel matrix
-{
-    K_{ij} := K(x_i, x_j)
-}
-must be symmetric and positive semi-definite. In other words, for any \(c_1, \dots, c_n \in \mathbb{R}\),
-{
-    \sum_{i,j=1}^n c_i c_j K(x_i, x_j) \geq 0.
-}
-end list;
-
-Kernels can be thought of as implicitly defining a feature space \(\mathcal{F}\) and a mapping \(\phi : X \to \mathcal{F}\) s.t.
-{
-    K(x, x^\prime) = \langle \phi(x), \phi(x^\prime) \rangle_{\mathcal{F}}.
-}
-Kernels are useful since we don't need to know \(\phi\) explicitly (often referred to as the *kernel trick*). Via kernels, we may compute inner products in high or infinite dimensional feature spaces without ever leaving our original input space.
-
-### RKHSs
-
-Now we can define a Reproducing Kernel Hilbert Space. An RKHS is a Hilbert space of functions where evaluation at a point is a continuous linear operation and this evaluation can be "reproduced" via an inner product with a kernel function.
-
-Formally, let \(X\) be a nonempty set and \(\mathcal{H}\) be a Hilbert space of functions \(f: X \to \mathbb{R}\). Then, \(H\) is a reproducing kernel hilbert space if there exists a function \(K: X \times X \to \mathbb{R}\) so that
-
-list[u]:
-- For every fixed \(x \in X\), \(K(x, \cdot) \in \mathcal{H}\) and
-- \(\forall f \in \mathcal{H}, x \in X, f(x) = \langle f, K(x, \cdot) \rangle_\mathcal{H}\)
-end list;
-
-The second property (the reproducing property) is the more interesting one that we really care about. It effectively tells us that evaluating a function is the same as taking an inner product between the function and a specific element of the space (\(K(x, \cdot)\)). Equivalently, it says that the kernel functions serve as "representatives" of point evaluation.
-
-This result allows us to apply tools from Hilbert space theory to function evaluation and learning. Since kernels are defined without reference to a specific feature space, we can build function spaces with nice properties (e.g. smoothness, regularity) by choosing an appropriate kernel.
-
-## Representer Theorem
-
-Now, we introduce the Representer Theorem, one of the most important results from statistical learning theory. In a nutshell, it explains why kernel methods are tractable, despite involving very high or infinite dimensional function spaces.
-
-### Setup
-
-Let's assume we wish to solve a problem of the form
-{
-    \min_{f \in \mathcal{H}} \sum_{i=1}^n L(y_i, f(x_i)) + \lambda \norm{f}^2_\mathcal{H}.
-}
-Here, \(\mathcal{H}\) is a reproducing kernel Hilbert space with kernel \(K\), \(\{(x_i, y_i)\}_{i=1}^n\) are our training data, \(L: \mathbb{R} \times \mathbb{R} \to \mathbb{R}\) is a loss function, and \(\lambda > 0\) is a regularization parameter penalizing the complexity of the function \(f\).
-
-### Statement
-
-Let \(\mathcal{H}\) be a reproducing kernel hilbert space with kernel \(K\) and suppose the objective depends on \(f\) only via its evaluations at the training points and its RKHS norm. Then, any minimizer \(f^* \in \mathcal{H}\) can be represented in the form
-{
-    f^* = \sum_{i=1}^n \alpha_i K(x_i, x)
-}
-for coefficients \(\alpha_1, \dots, \alpha_n \in \mathbb{R}\). Even though \(\mathcal{H}\) may be an infinite dimensional space of functions, the optimal solution lies in the finite-dimensional subspace spanned by the kernel functions centered at the training data: \(\{K(x_i, \cdot)\}_{i=1}^n\). Thus, instead of searching over all function space, we need only search over the \(n\) coefficients \(\alpha_1, \dots, \alpha_n\), and we have reduced an infinite dimensional problem into a finite dimensional one.
-
-### Proof
-
-Let \(\mathcal{H}_0 \doteq \operatorname{span}\{K(x_1, \cdot), \dots, K(x_n, \cdot)\} \subseteq \mathcal{H}\) a finite dimensional subspace of \(\mathcal{H}\). Since \(\mathcal{H}\) is a Hilbert space, we can uniquely decompose any function \(f \in \mathcal{H}\) as
-{
-    f = f_0 + f_\perp,
-}
-where \(f_0 \in \mathcal{H}_0\) and \(f_\perp \in \mathcal{H}_0^\perp\).
-
-Recall the reproducing property:
-{
-    f(x_i) = \langle f, K(x_i, \cdot)\rangle_\mathcal{H} = \langle f_0, K(x_i, \cdot)\rangle + \langle f_\perp, K(x_i, \cdot)\rangle
-}
-where the second equality follows from the decomposition of \(f\) above. Since \(f_\perp \in \mathcal{H}_0^\perp\) and \(K(x_i, \cdot) \in \mathcal{H}_0\), we have \(\langle f_\perp, K(x_i, \cdot)\rangle = 0\), so
-{
-    f(x_i) = \langle f_0, K(x_i, \cdot)\rangle,
-}
-i.e. the evaluation of \(f\) at the data points depend only on \(f_0\).
-
-Via Pythagorean identity, we have \(\norm{f_0 + f_\perp}_\mathcal{H}^2 = \norm{f_0}_\mathcal{H}^2 + \norm{f_\perp}_\mathcal{H}^2\) and we can rewrite our objective function as
-{
-    \min_{f \in \mathcal{H}} \sum_{i=1}^n L(y_i, f(x_i)) + \lambda (\norm{f_0}_\mathcal{H}^2 + \norm{f_\perp}_\mathcal{H}^2).
-}
-Note that the function evaluation at the data points is independent of \(f_\perp\), but it still appears in the regularization term. Since we want to minimize the complexity of the function, it is optimal to set \(f_\perp = 0\) and thus the minimizer \(f^* \in \mathcal{H}_0\). Since \(\mathcal{H}_0 \doteq \operatorname{span}\{K(x_1, \cdot), \dots, K(x_n, \cdot)\} \subseteq \mathcal{H}\), it follows immediately that \(f\) is a linear combination of \(K(x_1, \cdot), \dots, K(x_n, \cdot)\).
-
-### Example
+This defines a continuous time Markov jump process on \([0, \infty)^N\) that preserves the total energy \(E \doteq \sum_i e_i\). It is clear that the process is memmoryless, but verifying the other conditions is a bit more involved:
 
 example:
-title: Kernel Ridge Regression;
+title: Heat Exchange is a Markov Jump Process
 content: {
-Let \(K \in \mathbb{R}^{n \times n}\) be the kernel matrix with entries \(K_{ij} = K(x_i, x_j)\), and let \(\mathbf{y} \in \mathbb{R}^n\) be the vector of targets. Then:
-{
-    \boldsymbol{\alpha} = (K + \lambda I)^{-1} \mathbf{y}
+    list[u]:
+        - **Holding time**: the next ring time is the minimum of \(N-1\) independent \(\operatorname{Exp}(\lambda)\) clocks; thus \(\Delta T \sim \operatorname{Exp}(\lambda(N-1))\)
+        - **Conservation of Total Energy**: By construction, our interaction model preserves total energy between neighbors, summing over all bonds gives that total energy of the system is conserved.
+        - **Generator**: the generator \(\mathcal{L}\) encodes the infinitesimal evolution of the process. It is defined as \((\mathcal{L}f)(\mathbf{e}) = \lim_{h \to 0} \frac{\mathbb{E}[f(\mathbf{e}_{t+h}) - f(\mathbf{e}_t) \mid \mathbf{e}_t = \mathbf{e}]}{h}.\) Intuitively, this is just the expectation of the change in \(f\) over an infinitesimal time period \(h\), conditioned on the current state (and normalized by \(h\)). In our case, the probability that bond \(i\) rings in a time period \([t, t+h]\) is approximately \(\lambda h + o(h)\). If that bond rings, the system jumps to a new state (as specified by the transition above) and the expectation of the difference is \(\mathbb{E}_U [f(\mathbf{e}^{(i, U)}) - f(\mathbf{e})]\), and summing over all \(N-1\) bonds gives the generator 
+        {
+            (\mathcal{L}f)(\mathbf{e}) = \lambda \sum_{i=1}^{N-1} \left(\mathbb{E}_U[f(\mathbf{e}^{(U,i)})] - f(\mathbf{e})\right).
+        }
 }
-};
-end example;
+end example
 
-## Moore-Aronszajn Theorem
+We will work with Neumann boundary conditions, i.e. that energy exchange only happens between internal bonds and so there are no boundary terms in the generator.
 
-So far, we've shown that RKHSs have several nice properties. Now, we show that they are guaranteed to exist for a kernel.
+## Continuity Equation
 
-### Statement
+### Discrete Laplacian
 
-Let \(K: X \times X \to \mathbb{R}\) be an SPSD (symmetric positive semi-definite) function. Then, there exists a unique RKHS \(\mathcal{H}_K\) of functions \(f: X \to \mathbb{R}\) such that
+For \(L\) the generator of our Markov Jump Process, we have that for any observable \(f\) (to be precise, \(f\) must map to the reals, i.e. \(f: [0, \infty)^N \to \mathbb{R}\)), 
+{
+    (\mathcal{L}f)(\mathbf{e}) = \lambda \sum_{i=1}^{N-1} \left(\mathbb{E}_U\left[f(\dots, US, (1-U)S, \dots)\right] - f(\mathbf{e})\right) + \text{(boundary terms)}
+}
+(this is identical to what we derived above).
+
+Let us consider only the coordinate observable \(f_i(\mathbf{e}) = e_i\). Only the adjacent bonds contribute, so we have that a single update on \((i-1, i)\) sends
+{
+    e_i \mapsto (1-U)(e_{i-1} + e_i) \implies \mathbb{E}_U [e_i^\prime - e_i] = \frac{e_{i-1} - e_i}{2}.
+}
+Similarly, an update on \((i, i+1)\) gives
+{
+    e_i \mapsto U(e_i + e_{i+1}) \implies \mathbb{E}_U [e_i^\prime - e_i] = \frac{e_{i+1} - e_i}{2}.
+}
+
+Plugging this back into our generator, we have that
+{
+    (\mathcal{L}f_i) (\mathbf{e}) = \frac{\lambda}{2} \left( e_{i-1} + e_{i+1} - 2e_i \right)
+}
+and if we define \(m_i(t) \doteq \mathbb{E}[e_i(t)]\) and use the Kolmogorov forward equation, we arrive at the discrete diffusion equation:
+{
+    \frac{d}{dt} m_i(t) = \frac{\lambda}{2} \left( m_{i-1}(t) + m_{i+1}(t) - 2m_i(t) \right).
+}
+This is the discrete Laplacian acting on the mean energy.
+
+### Continuity Equation
+The jump rule defines local energy conservation in every bond. Let us define the local microscopic current across the bond \((i, i+1)\)
+{
+    j_{i, i+1}(t) \doteq \frac{\lambda}{2}(e_i(t) - e_{i+1}(t)).
+}
+
+Now, if we examine the change in \(e_i(t)\) over a small increment in time \(dt\), we can see that
 
 list[u]:
-- For every fixed \(x \in X\), \(K(x, \cdot) \in \mathcal{H}_K\) and
-- \(\forall f \in \mathcal{H}_K, x \in X, f(x) = \langle f, K(x, \cdot) \rangle_{\mathcal{H}_K}\)
+    - energy flows *into* site \(i\) from \(i-1\) when bond \((i-1, i)\) rings, and
+    - energy flows *out of* site \(i\) to \(i+1\) when bond \((i, i+1)\) rings
 end list;
 
-In other words, we don't need to start with a function space and find a kernel the kernel itself builds its own Reproducing Kernel Hilbert Space.
-
-### Construction
-
-The RKHS \(\mathcal{H}_K\) can be explicitly constructed from the kernel \(K\) as follows:
-
-example:
-title: RKHS Construction;
-content: {
-Let \(K : X \times X \to \mathbb{R}\) be a symmetric, positive semi-definite kernel.
-
-Define a function space:
+Putting these together, we can rewrite the discrete Laplacian:
 {
-    \mathcal{H}_K := \left\{ f(x) = \sum_{i=1}^n \alpha_i K(x_i, x) \,\middle|\, \alpha_i \in \mathbb{R},\, x_i \in X \right\}.
+    \frac{d}{dt} e_i(t) = j_{i-1, i}(t) - j_{i, i+1}(t).
 }
-This has all finite linear combinations of the kernel evaluated at points in \(X\).
+The above equation is a pretty intuitive picture of the local energy change; the change in local energy is inflow minus outflow.
 
-Define an inner product on \(\mathcal{H}_K\):
+## Continuum Limit
+Let's go back to the discrete mean-energy evolution (the discrete Laplacian from above), but introduce a spatial scaling. Let us define the spatial coordinate of cell \(i\) be \(x_i \doteq ia\), recalling that \(a\) is the lattice spacing. Now, we may define a smooth profile \(e^a(x,t) \doteq m_i(t)\), so that as \(a\) gets small, the discrete vector \((m_i)\) becomes samples of a smooth field \(e(x,t)\).
+
+Since \(e(x,t)\) is smooth, we may Taylor expand the neighbors:
 {
-    \left\langle \sum_i \alpha_i K(x_i, \cdot), \sum_j \beta_j K(x_j, \cdot) \right\rangle_{\mathcal{H}_K} := \sum_{i,j} \alpha_i \beta_j K(x_i, x_j).
+    m_{i-1}(t) = e^a(x-a, t) = e^a(x,t) - a \partial_x e^a(x,t) + \frac{a^2}{2} \partial_{xx} e^a(x,t) + O(a^3),
 }
-This is a pre-Hilbert space.
-
-Complete the space. (This is done by including all limit points of Cauchy sequences under the induced norm by the inner product).
-
-This guarantees that \(K(x, \cdot) \in \mathcal{H}_K\) and that for all \(f \in \mathcal{H}_K\),
 {
-    f(x) = \langle f, K(x, \cdot) \rangle_{\mathcal{H}_K}
+    m_{i+1}(t) = e^a(x+a, t) = e^a(x,t) + a \partial_x e^a(x,t) + \frac{a^2}{2} \partial_{xx} e^a(x,t) + O(a^3).
 }
-as desired.
-};
-end example;
+Substituting into the RHS of the discrete Laplacian and simplifying yields
+{
+    \partial_t e^a(x,t) = \frac{\lambda}{2} (a^2 \partial_{xx}e^a(x,t) + O(a^3)).
+}
+
+Note that as \(a \to 0\), the RHS goes to 0 as well, and nothing really happens. Thus, we need to compensate in one of two ways: (i) either rescale time so we can see "slow" dynamics, or (ii) increasing the update rate so that microscopic effects add up to an observable macroscopic effect.
+
+### Diffusive Time Scaling
+First, let's consider what happens if we keep the rate \(\lambda\) fixed, but define a macroscopic time \(t^\prime \doteq \frac{t}{a^2}\). Via the chain rule, we have \(a^2 \partial_t = \partial_{t^\prime}\). Plugging into the discrete Laplacian, we have
+{
+    \partial_{t^\prime} e^a(x,t^\prime) = \frac{\lambda}{2} \partial_{xx} e^a(x,t^\prime) + O(a).
+}
+In the limit \(a \to 0\), we recover
+{
+    \partial_{t^\prime} e^a(x,t^\prime) = D \partial_{xx} e^a(x,t^\prime), \text{ for } D \doteq \frac{\lambda}{2}.
+}
+
+### Jump Rate Scaling
+Alternatively, we can also fix the time \(t\) fixed, but scale the update rate as \(\lambda = \frac{2D}{a^2}\), where \(D\) is defined the same way as above. Plugging into the discrete Laplacian, we get
+{
+    \partial_{t} e^a(x,t) = \frac{2D}{a^2}\frac{a^2}{2} \partial_{xx} e^a(x,t) + O(a),
+}
+which after simplifying and taking the continuum limit yields
+{
+   \partial_{t} e^a(x,t) = D \partial_{xx} e^a(x,t), \text{ for } D \doteq \frac{\lambda}{2},
+}
+same as above.
+
+This tracks pretty well with our intuition of random walks: each jump moves energy by distance \(a\), so to get macroscopic diffusion, we need \(O(1/a^2)\) jumps per unit time (since variance grows like \(\text{step}^2 \times \text{jumps}\)).
+
+Whether we choose to scale the jump rate or the time, we arrive at the same continuum PDE, where the diffusion constant \(D\) is set by the microscopic parameters \(\lambda, a\).
+
+### Fourier's Law
+If we write energy as proportional to temperature (\(e = cT\)) then
+{
+    \partial_t T(x,t) = \frac{D}{c} \partial_{xx} T(x,t),
+}
+and Fourier's law \(J = - \kappa \partial_x T\) appears with \(\kappa = cD\).
+
+image:
+src: heat_diffusion.gif;
+alt: 1-D diffusion gif;
+caption: 1-D heat diffussion governed by the equation derived above.;
+width: 100%;
+end image;
