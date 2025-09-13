@@ -1,0 +1,27 @@
+req: physics;
+
+title: Every Model is Kernel Ridge Regression;
+date: Sep 13, 2025;
+desc: Some notes on Domingos' paper: *Every Model Learned by Gradient Descent Is Approximately a Kernel Machine*.;
+tags: ;
+
+**[IN PROGRESS]**
+
+## Background
+
+Over the past year or so, I've been working a lot with kernel ridge regression. It provides a lot of neat theoretical tools and insights (see e.g. [this post](http://divitr.github.io/blog/eigenlearning)), but much of the criticism of studying something like KRR is that it's rarely used anymore -- nearly all modern ML is deep learning, and KRR is not. [Domingos' paper](https://arxiv.org/abs/2012.00152) shows that every gradient descent learned algorithm is approximately a kernel machine[^1], allowing a lot of the theoretical analysis that we have for KRR to be ported over to deep learning. 
+In what follows, we'll first study the "richness scale" of neural networks and formally define the kernel regime (for more on the NTK, see [this post](http://divitr.github.io/blog/ntk)), then go through Domingos' paper and reproduce the main proof.
+
+## The Richness Scale
+
+Training a neural network can be broken down into two complementary processes: inference and backpropagation. In the inference stage, we get predictions from our model on some data; then in the backprop stage, we update our model's hidden representations to reduce its loss (some metric of how "wrong" our model's prediction was). Via some nice math[^2], we may show that this entire process of training a neural network is dependent only on a single hyperparameter: the step size \(\norm{\Delta h}\) we use in gradient descent.
+
+## References
+
+list[o]:
+- [The lazy (NTK) and rich ({\mu}P) regimes: a gentle tutorial](https://arxiv.org/abs/2404.19719)
+- [Every Model Learned by Gradient Descent Is Approximately a Kernel Machine](https://arxiv.org/abs/2012.00152)
+end list
+
+[^1]: I use the term KRR somewhat broadly, in reality KRR is a specific algorithm within a family of kernel methods, this family is referred to as kernel machines. 
+[^2]: The "nice math" is shown in Sec. 2.2 of arXiv:2404.19719, linked in references. (This tutorial goes far more in depth and is a really good reference on the richness scale.)

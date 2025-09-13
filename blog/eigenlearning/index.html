@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    \(\require{physics}\)
+    <div style='display:none'>\(\require{physics}\)</div>
     <meta charset="UTF-8">
     <link rel="icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../style.css">
@@ -39,7 +39,11 @@
 <div class="example-box-prompt">
 The following hold for any \(f\) such that \(\norm{f} = 1\):
 
-<ol type="a"><li>\(\mathcal{L}(\phi_i), \mathcal{L}^\mathcal{D}(\phi_i) \in [0, 1]\).</li><li>For \(n=0\) \(\mathcal{L}^{\mathcal{D}}(f) = \mathcal{L}(f) = 0\).</li><li>For \(\mathcal{D}_{+} \doteq \mathcal{D} \cup x\), where \(x \in X, x \notin \mathcal{D}\), \(\mathcal{L}^{\mathcal{D}_{+}}(\phi_i) \geq \mathcal{L}^{\mathcal{D}}(\phi_i)\).</li><li>\(\pdv{\lambda_i}\mathcal{L}^{\mathcal{D}}(\phi_i) \geq 0\), \(\pdv{\lambda_i}\mathcal{L}^{\mathcal{D}}(\phi_j) \leq 0\), and \(\pdv{\delta}\mathcal{L}^{\mathcal{D}}(\phi_i) \leq 0\).</li><li>\(\mathcal{E}(f) \geq \mathcal{B}(f) \geq (1 - \mathcal{L}(f))^2\).</li></ol>
+<ol type="a"><li>\(\mathcal{L}(\phi_i), \mathcal{L}^\mathcal{D}(\phi_i) \in [0, 1]\).</li></ol>
+- For \(n=0\) \(\mathcal{L}^{\mathcal{D}}(f) = \mathcal{L}(f) = 0\).
+- For \(\mathcal{D}_{+} \doteq \mathcal{D} \cup x\), where \(x \in X, x \notin \mathcal{D}\), \(\mathcal{L}^{\mathcal{D}_{+}}(\phi_i) \geq \mathcal{L}^{\mathcal{D}}(\phi_i)\).
+- \(\pdv{\lambda_i}\mathcal{L}^{\mathcal{D}}(\phi_i) \geq 0\), \(\pdv{\lambda_i}\mathcal{L}^{\mathcal{D}}(\phi_j) \leq 0\), and \(\pdv{\delta}\mathcal{L}^{\mathcal{D}}(\phi_i) \leq 0\).
+- \(\mathcal{E}(f) \geq \mathcal{B}(f) \geq (1 - \mathcal{L}(f))^2\).
 </div>
 </div>
 <p>With the 5 properties above, we have a very intuitive idea of the learning process. From (a-c), we have that learnability is bounded between 0 and 1 (inclusive) and that it increases monotonically from 0 as data points are added, reaching a maximum of 1 in the infinite data limit (where we have ridge parameter \(\delta = 0\)). From (d), we have competition of eigenmodes: increasing only a single eigenvalue while holding the others fixed only decreases the learnabilities of the other eigenmodes. (e) provides a lower bound on test MSE.</p>
@@ -77,7 +81,14 @@ First define the effective regularization \(\kappa\) as the unique positive solu
 \end{equation}
 Then, we have
 
-<ul><li>\(\mathcal{L}(\phi_i) = \mathcal{L}_i \doteq \frac{\lambda_i}{\lambda_i + \kappa}\)</li><li>\(\mathcal{E}_0 = n \frac{\partial \kappa}{\partial \delta} = \frac{n}{n - \sum_i \ell_i^2}\)</li><li>\(\mathcal{E}(f) = \mathcal{E}_0 \left( \sum_i (1 - \mathcal{L}_i)^2 v_i^2 + \epsilon^2 \right)\)</li><li>\(\mathcal{B}(f) = \sum_i (1 - \mathcal{L}_i)^2 v_i^2 + \epsilon^2 = \frac{\mathcal{E}(f)}{\mathcal{E}_0}\)</li><li>\(\mathcal{V}(f) = \mathcal{E}(f) - \mathcal{B}(f) = \left(\frac{\mathcal{E}_0 - 1}{\mathcal{E}_0}\right) \mathcal{E}(f)\)</li><li>\(\mathcal{E}_{\text{tr}}(f) = \frac{\delta^2}{n^2 \kappa^2} \mathcal{E}(f)\)</li><li>\(\mathbb{E}[\hat{v}_i] = \mathcal{L}_i v_i\)</li><li>\(\mathrm{Cov}[\hat{v}_i, \hat{v}_j] = \frac{\mathcal{E}(f)}{n} \mathcal{L}_i^2 \delta_{ij}\)</li></ul>
+<ul><li>\(\mathcal{L}(\phi_i) = \mathcal{L}_i \doteq \frac{\lambda_i}{\lambda_i + \kappa}\)</li></ul>
+- \(\mathcal{E}_0 = n \frac{\partial \kappa}{\partial \delta} = \frac{n}{n - \sum_i \ell_i^2}\)
+- \(\mathcal{E}(f) = \mathcal{E}_0 \left( \sum_i (1 - \mathcal{L}_i)^2 v_i^2 + \epsilon^2 \right)\)
+- \(\mathcal{B}(f) = \sum_i (1 - \mathcal{L}_i)^2 v_i^2 + \epsilon^2 = \frac{\mathcal{E}(f)}{\mathcal{E}_0}\)
+- \(\mathcal{V}(f) = \mathcal{E}(f) - \mathcal{B}(f) = \left(\frac{\mathcal{E}_0 - 1}{\mathcal{E}_0}\right) \mathcal{E}(f)\)
+- \(\mathcal{E}_{\text{tr}}(f) = \frac{\delta^2}{n^2 \kappa^2} \mathcal{E}(f)\)
+- \(\mathbb{E}[\hat{v}_i] = \mathcal{L}_i v_i\)
+- \(\mathrm{Cov}[\hat{v}_i, \hat{v}_j] = \frac{\mathcal{E}(f)}{n} \mathcal{L}_i^2 \delta_{ij}\)
 </div>
 </div>
 <p>Perhaps the most intuitive result is the omniscient risk estimator for the test MSE (the third equation above) which tells us that modes that are fully learned (with learnability 1) do not contribute to the test MSE. The overfitting coefficient (the second equation above) gives us the MSE when trained on pure noise and is the factor by which pure noise is overfit. In this interpretation, ovefitting of noise is overconfidence on the part of the kernel that the target function lies in the top \(n\) subspace. Distributing learnability amongst a wider distribution (or giving part of the learnability budget to the ridge parameter \(\delta\)) fixes this problem. The fourth and fifth equations above give us the bias and variance only in terms of \(\mathcal{E}_0\) and \(\mathcal{E}(f)\). Notably, bias strictly decreases as \(n\) grows.</p>
@@ -88,7 +99,7 @@ Then, we have
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Aug 23, 2025 at 17:57 | <a href="../src/eigenlearning.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Sep 13, 2025 at 02:03 | <a href="../src/eigenlearning.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

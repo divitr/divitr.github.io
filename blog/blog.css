@@ -33,11 +33,21 @@
     display: inline;
 }
 
-.posts-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+
+/* Override main site header styling for blog pages */
+body #header-placeholder header,
+body header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 2rem !important;
+    padding-bottom: 1rem !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+/* Reduce footer spacing for blog posts */
+.blog-post + .footer {
+    margin: 2rem auto 1rem !important;
 }
 
 .filter-container {
@@ -294,11 +304,64 @@
     text-align: center;
 }
 
+
+/* Footnote styling */
+.footnotes {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.footnotes hr {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 1rem 0;
+}
+
+.footnotes ol {
+    padding-left: 1.5rem;
+    margin: 0;
+}
+
+.footnotes li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.footnotes .footnote-backref {
+    text-decoration: none;
+    color: #999;
+    font-size: 0.8em;
+    margin-left: 0.3rem;
+}
+
+.footnotes .footnote-backref:hover {
+    color: var(--link-color);
+}
+
+/* Inline footnote references */
+sup a {
+    text-decoration: none;
+    color: var(--link-color);
+    font-weight: 500;
+    font-size: 0.8em;
+}
+
+sup a:hover {
+    text-decoration: underline;
+}
+
 /* Responsive design for mobile */
 @media (max-width: 768px) {
     .image-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+    }
+    
+    .footnotes {
+        font-size: 0.8rem;
     }
 }
 

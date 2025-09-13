@@ -28,24 +28,18 @@
 <p>Hopfield networks are a type of recurrent neural network that can store and recall patterns. They are based on the idea of associative memory, where a network can "remember" a pattern and recall it when given a similar input.</p>
 <h2>Theory</h2>
 <h3>Energy Function</h3>
-<p>The Hopfield network has an energy function given by:</p>
-<p>\begin{equation} E = -\frac{1}{2} \displaystyle\sum_{i,j} w_{ij} s_i s_j \end{equation}</p>
+<p>The Hopfield network has an energy function given by: \begin{equation} E = -\frac{1}{2} \displaystyle\sum_{i,j} w_{ij} s_i s_j \end{equation}</p>
 <p>where \(w_{ij}\) is the weight between neurons \(i\) and \(j\), and \(s_i\) is the state of neuron \(i\).</p>
 <h3>Dynamics</h3>
-<p>The network is updated either synchronously or asynchronously (each node one at a time or all nodes at once, respectively). Each neuron's state is computed as a function of the weighted sum of the other neurons:</p>
-<p>\begin{equation} s_i = \text{sign} \left(\displaystyle\sum_{j} w_{ij}s_j\right) \end{equation}</p>
+<p>The network is updated either synchronously or asynchronously (each node one at a time or all nodes at once, respectively). Each neuron's state is computed as a function of the weighted sum of the other neurons: \begin{equation} s_i = \text{sign} \left(\displaystyle\sum_{j} w_{ij}s_j\right) \end{equation}</p>
 <h3>Computing Weights</h3>
-<p>For a given pattern, the weights are computed according to a Hebbian Learning rule. The goal is to strengthen the connection (increase the weight) of nodes that are active at the same time (which is why we use \(\pm 1\)). For a Hopfield network with \(N\) nodes and a pattern \(\xi\), weights are computed as</p>
-<p>\begin{equation} w_{ij} = \xi_i \xi_j \end{equation}</p>
+<p>For a given pattern, the weights are computed according to a Hebbian Learning rule. The goal is to strengthen the connection (increase the weight) of nodes that are active at the same time (which is why we use \(\pm 1\)). For a Hopfield network with \(N\) nodes and a pattern \(\xi\), weights are computed as \begin{equation} w_{ij} = \xi_i \xi_j \end{equation}</p>
 <p>If \(\xi_i\) and \(\xi_j\) are in the same state, their product is positive and the weight is bigger. Intuitively, this translates to each node having a larger impact on the state of the other.</p>
-<p>To memorize multiple patterns \(\{\xi^\mu\}_{\mu=1}^P\), each weight is the sum of the weights for each pattern:</p>
-<p>\begin{equation} w_{ij} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi_i^\mu \xi_j^\mu \end{equation}</p>
+<p>To memorize multiple patterns \(\{\xi^\mu\}_{\mu=1}^P\), each weight is the sum of the weights for each pattern: \begin{equation} w_{ij} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi_i^\mu \xi_j^\mu \end{equation}</p>
 <h2>Implementation</h2>
 <h3>Matrix-Vector Notation</h3>
-<p>If we encode the state of the network as an \(N\)-dimensional vector, a synchronous update rule is given by multiplying by a \(N \times N\)-dimensional weight matrix. This weight matrix is given by the sum of the outer product of each pattern with itself:</p>
-<p>\begin{equation} \mathbf{W} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi^\mu \otimes \xi^\mu = \frac{1}{P} \displaystyle\sum_{\mu=1}^P {\xi^\mu}^\top \xi^\mu \end{equation}</p>
-<p>To understand why this has each memorized vector as the stable point of the network dynamics, consider a transition:</p>
-<p>\begin{equation} W \xi = (\xi \xi^\top) \xi = \xi (\xi^\top \xi) \propto \xi \end{equation}</p>
+<p>If we encode the state of the network as an \(N\)-dimensional vector, a synchronous update rule is given by multiplying by a \(N \times N\)-dimensional weight matrix. This weight matrix is given by the sum of the outer product of each pattern with itself: \begin{equation} \mathbf{W} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi^\mu \otimes \xi^\mu = \frac{1}{P} \displaystyle\sum_{\mu=1}^P {\xi^\mu}^\top \xi^\mu \end{equation}</p>
+<p>To understand why this has each memorized vector as the stable point of the network dynamics, consider a transition: \begin{equation} W \xi = (\xi \xi^\top) \xi = \xi (\xi^\top \xi) \propto \xi \end{equation}</p>
 <p>since \(\xi^\top \xi\) is a scalar. Then, we simply superimpose the contributions of each memorized vector \(\xi\).</p>
 <h3>Python Implementation</h3>
 <pre><code class="language-python">class HopfieldNetwork:
@@ -118,7 +112,7 @@ Source: <a href="https://personal.math.ubc.ca/~andrewr/research/intro_html/node1
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Aug 23, 2025 at 17:57 | <a href="../src/hopfield-networks.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Sep 13, 2025 at 02:03 | <a href="../src/hopfield-networks.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

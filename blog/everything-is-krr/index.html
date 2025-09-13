@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <div style='display:none'>\(\require{physics}\)</div>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../blog.css">
+    <script src="../blog_header.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Every Model is Kernel Ridge Regression</title>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>Every Model is Kernel Ridge Regression</h1>
+            <p class="date">Sep 13, 2025</p>
+            <p class="desc">Some notes on Domingos' paper: <em>Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</em>.</p>
+        </section>
+
+<strong>[IN PROGRESS]</strong>
+<h2>Background</h2>
+<p>Over the past year or so, I've been working a lot with kernel ridge regression. It provides a lot of neat theoretical tools and insights (see e.g. <a href="http://divitr.github.io/blog/eigenlearning">this post</a>), but much of the criticism of studying something like KRR is that it's rarely used anymore -- nearly all modern ML is deep learning, and KRR is not. <a href="https://arxiv.org/abs/2012.00152">Domingos' paper</a> shows that every gradient descent learned algorithm is approximately a kernel machine<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>, allowing a lot of the theoretical analysis that we have for KRR to be ported over to deep learning. In what follows, we'll first study the "richness scale" of neural networks and formally define the kernel regime (for more on the NTK, see <a href="http://divitr.github.io/blog/ntk">this post</a>), then go through Domingos' paper and reproduce the main proof.</p>
+<h2>The Richness Scale</h2>
+<p>Training a neural network can be broken down into two complementary processes: inference and backpropagation. In the inference stage, we get predictions from our model on some data; then in the backprop stage, we update our model's hidden representations to reduce its loss (some metric of how "wrong" our model's prediction was). Via some nice math<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup>, we may show that this entire process of training a neural network is dependent only on a single hyperparameter: the step size \(\norm{\Delta h}\) we use in gradient descent.</p>
+<h2>References</h2>
+<ol><li><a href="https://arxiv.org/abs/2404.19719">The lazy (NTK) and rich (\(\mu\)P) regimes: a gentle tutorial</a></li><li><a href="https://arxiv.org/abs/2012.00152">Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</a></li></ol>
+<div class="footnotes">
+<ol>
+<li id="fn1">I use the term KRR somewhat broadly, in reality KRR is a specific algorithm within a family of kernel methods, this family is referred to as kernel machines. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn2">The "nice math" is shown in Sec. 2.2 of arXiv:2404.19719, linked in references. (This tutorial goes far more in depth and is a really good reference on the richness scale.) <a href="#fnref2" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+</ol></div>
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled Sep 13, 2025 at 02:08 | <a href="../src/everything-is-krr.mdtx" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Debug header loading
+        console.log('Blog post loaded, checking header...');
+        console.log('Current path:', window.location.pathname);
+        console.log('Header script loaded:', typeof loadBlogHeader !== 'undefined');
+        
+        setTimeout(() => {
+            const header = document.getElementById('header-placeholder');
+            console.log('Header placeholder:', header);
+            console.log('Header content:', header.innerHTML);
+        }, 1000);
+    </script>
+    
+    <!-- Table of Contents Generator -->
+    <script src="../toc-generator.js"></script>
+</body>
+</html>

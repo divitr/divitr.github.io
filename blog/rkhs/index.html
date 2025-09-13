@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    \(\require{physics}\)
+    <div style='display:none'>\(\require{physics}\)</div>
     <meta charset="UTF-8">
     <link rel="icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../style.css">
@@ -44,7 +44,7 @@
 <h3>Kernels</h3>
 <p>Before diving into RKHSs, we must first define a kernel. A kernel acts as a similarity measure between data points. More precisely, a kernel is a function \(K : X \times X \to \mathbb{R}\) (or \(\mathbb{C}\)) such that, for any pair of inputs \(x, x^\prime \in X\), the value \(K(x, x^\prime)\) gives some notion of similarity between \(x\) and \(x^\prime\).</p>
 <p>A kernel must satisfy the following two properties:</p>
-<ul><li><em><em>Symmetry:</em></em> \(K(x, x^\prime) = K(x^\prime, x)\)</li><li><em><em>Positive semi-definiteness:</em></em> For any finite set of points \(x_1, \dots, x_n \in X\), the kernel matrix \begin{equation} K_{ij} := K(x_i, x_j) \end{equation} must be symmetric and positive semi-definite. In other words, for any \(c_1, \dots, c_n \in \mathbb{R}\), \begin{equation} \sum_{i,j=1}^n c_i c_j K(x_i, x_j) \geq 0. \end{equation}</li></ul>
+<ul><li><strong>Symmetry:</strong> \(K(x, x^\prime) = K(x^\prime, x)\)</li><li><strong>Positive semi-definiteness:</strong> For any finite set of points \(x_1, \dots, x_n \in X\), the kernel matrix \begin{equation} K_{ij} := K(x_i, x_j) \end{equation} must be symmetric and positive semi-definite. In other words, for any \(c_1, \dots, c_n \in \mathbb{R}\), \begin{equation} \sum_{i,j=1}^n c_i c_j K(x_i, x_j) \geq 0. \end{equation}</li></ul>
 <p>Kernels can be thought of as implicitly defining a feature space \(\mathcal{F}\) and a mapping \(\phi : X \to \mathcal{F}\) s.t. \begin{equation} K(x, x^\prime) = \langle \phi(x), \phi(x^\prime) \rangle_{\mathcal{F}}. \end{equation} Kernels are useful since we don't need to know \(\phi\) explicitly (often referred to as the <em>kernel trick</em>). Via kernels, we may compute inner products in high or infinite dimensional feature spaces without ever leaving our original input space.</p>
 <h3>RKHSs</h3>
 <p>Now we can define a Reproducing Kernel Hilbert Space. An RKHS is a Hilbert space of functions where evaluation at a point is a continuous linear operation and this evaluation can be "reproduced" via an inner product with a kernel function.</p>
@@ -110,7 +110,7 @@ as desired.
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Aug 23, 2025 at 17:57 | <a href="../src/rkhs.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Sep 13, 2025 at 02:03 | <a href="../src/rkhs.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

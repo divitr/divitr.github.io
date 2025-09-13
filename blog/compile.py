@@ -119,16 +119,18 @@ class MDTXCompiler:
         def r(m):
             i = m.group(1)
             if i in fns:
-                return f'<sup><a href="#fn{i}" id="fnref{i}">{i}</a></sup>'
+                return f'<sup><a href="#fn{i}" id="fnref{i}" aria-label="Footnote {i}">{i}</a></sup>'
             return m.group(0)
         return re.sub(r'\[\^([^\]]+)\]', r, text)
 
     def footnotes_html(self, fns: Dict[str,str]) -> str:
         if not fns:
             return ""
-        parts = ['<div class="footnotes">','<hr>','<ol>']
+        parts = ['<div class="footnotes">','<ol>']
         for i, t in fns.items():
-            parts.append(f'<li id="fn{i}">{t} <a href="#fnref{i}" class="footnote-backref">↩</a></li>')
+            # Process the footnote text for emphasis and other formatting
+            processed_text = self.apply_emphasis(t.strip())
+            parts.append(f'<li id="fn{i}">{processed_text} <a href="#fnref{i}" class="footnote-backref" aria-label="Back to reference">↩</a></li>')
         parts.append('</ol></div>')
         return "\n".join(parts)
 
@@ -599,7 +601,11 @@ class MDTXCompiler:
         if fn_html:
             body += "\n" + fn_html
 
-        head_reqs = "".join(f"    \\(\\require{{{r}}}\\)\n" for r in reqs)
+        if reqs:
+            req_text = "".join(f"\\(\\require{{{r}}}\\)" for r in reqs)
+            head_reqs = f"    <div style='display:none'>{req_text}</div>\n"
+        else:
+            head_reqs = ""
         title     = meta.get('title','Untitled')
         
         # Get current timestamp for footer

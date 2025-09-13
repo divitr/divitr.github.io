@@ -1,6 +1,6 @@
 // Blog header component loader
 function loadBlogHeader() {
-    // For blog posts, we need to go up two levels to find the header.html
+    // For blog posts, we need to go up one level to find the blog_header.html
     const headerPath = '../blog_header.html';
     
     fetch(headerPath)
