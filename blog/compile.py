@@ -338,7 +338,7 @@ class MDTXCompiler:
         """Process lists in example boxes that don't have explicit 'end list;' markers"""
         pattern = re.compile(
             r'list\[([^\]]+)\]:\s*\n'
-            r'([\s\S]*?)(?=\n\S|\n*$)',  # Capture everything until next unindented content or end
+            r'((?:[ \t]*-[ \t]*[^\n]*(?:\n[ \t]+[^\n]*)*\n?)*)',  # Match list items and their continuations
             re.DOTALL
         )
         def repl(m):
@@ -357,39 +357,50 @@ class MDTXCompiler:
                         i += 1
                         continue
                     
-                    # Check if this starts a list item
+                    # Check if this starts a top-level list item
                     if line.strip().startswith('- '):
                         # Get the base indentation level for this item
                         base_indent = len(line) - len(line.lstrip())
                         item_content = [line.strip()[2:].strip()]  # Remove '- ' prefix
                         
-                        # Collect all lines that belong to this item
+                        # Collect all lines that belong to this item (including sub-items)
                         j = i + 1
+                        sub_items = []
+                        
                         while j < len(lines):
                             next_line = lines[j]
                             
                             # Empty lines are part of the item
                             if not next_line.strip():
-                                item_content.append("")
                                 j += 1
                                 continue
                             
                             next_indent = len(next_line) - len(next_line.lstrip())
                             
-                            # If next line starts a new item at same or less indentation, stop
+                            # If next line starts a new top-level item, stop
                             if next_indent <= base_indent and next_line.strip().startswith('- '):
                                 break
                             
-                            # If it's indented more than the base item, it's part of this item
-                            if next_indent > base_indent:
+                            # If it's a sub-item (indented and starts with -)
+                            if next_indent > base_indent and next_line.strip().startswith('- '):
+                                sub_item_text = next_line.strip()[2:].strip()
+                                sub_items.append(f'<li>{self.apply_emphasis(sub_item_text)}</li>')
+                                j += 1
+                            elif next_indent > base_indent:
+                                # Continuation of current item (not a sub-item)
                                 item_content.append(next_line.strip())
                                 j += 1
                             else:
                                 # Unindented content that's not a list item - stop here
                                 break
                         
-                        # Join the item content and process it
+                        # Build the full item
                         full_item = " ".join(filter(None, item_content))  # Filter out empty strings
+                        if sub_items:
+                            # Add nested list if there are sub-items
+                            sub_list = f'<ul>{"".join(sub_items)}</ul>'
+                            full_item += sub_list
+                        
                         items.append(f'<li>{self.apply_emphasis(full_item)}</li>')
                         i = j
                     else:
