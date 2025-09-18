@@ -1,0 +1,69 @@
+req: physics;
+
+title: Algebraic Autoencoders;
+date: [In Progress];
+desc: What happens if we remove some limitations on how latent spaces must behave?;
+tags: ;
+
+## Overview
+
+Autoencoders are a particularly useful model in which we take some high-dimensional vector and "compress" it to some low-dimensional *latent space*. In this way, we can effectively reduce some overly complex representation of our data into the core parts that really matter (these compressed representations lie in our latent space). These latent objects that we create are almost[^1] always vectors, so that our latent space is a vector space. However, vector spaces are a bit limited in their structure; namely they're a core part of linear algebra, which necessarily has linearity. The remainder of this post will be dedicated to figuring out what exactly happens if we don't require that our latent space is a vector space -- what if instead, it's a more general algebraic structure?
+
+I haven't really thought this idea through, so I'm not entirely sure how to implement it, but the hope is that over the next few days I'll keep chipping away at this until I get some kind of working model, and then we can see how it stacks up against standard autoencoders. As a result, this post will almost definitely be a bit disorganized; I'll probably go back and clean it up when I finish this project.
+
+## Preliminaries
+
+### Rings[^2]
+
+Rings are a cool algebraic structure that have several nice properties. Below, we cover the basic properties of rings so that the rest of this makes sense. 
+
+A ring is defined as the tuple {(S, +, \times)}, where {S} is a set and {+, \times} are binary operations. On its own, this tuple is kind of boring -- all our interesting structure arises from the axioms (rules) that rings must obey.
+
+example:
+title: Ring Axioms;
+content: {
+Let {(S, +, \times)} be a ring and let us denote this tuple by {R}. Then, {R} must obey the following axioms.
+
+list[u]:
+- {(S, +)} is an abelian group. This means that it has
+  - Closure: {\forall a,b\in R,\ a+b\in R}
+  - Associativity: {\forall a,b,c\in R,\ (a+b)+c = a+(b+c)}
+  - Additive identity: {\exists 0\in R} s.t. {a+0=a=0+a}
+  - Additive inverse: {\forall a\in R,\ \exists (-a)\in R} with {a+(-a)=0}
+  - Commutativity: {\forall a,b\in R,\ a+b=b+a}
+- {(R, \times)} is a monoid[^3]:
+  - Closure: {\forall a,b\in R,\ a\times b\in R}
+  - Associativity: {\forall a,b,c\in R,\ (a\times b)\times c = a\times (b\times c)}
+  - Identity: {\exists 1\in R} with {1\times a=a=a\times 1}
+- Distributivity of multiplication over addition:
+  - Left: {\forall a,b,c\in R,\ a\times (b+c) = (a\times b) + (a\times c)}
+  - Right: {\forall a,b,c\in R,\ (a+b)\times c = (a\times c) + (b\times c)}
+
+Notes:
+list[u]:
+- A ring is *commutative* if {a\times b = b\times a} for all {a,b\in R}.
+};
+end example;
+
+### Autoencoders
+
+Autoencoders are neural nets designed to learn efficient representations of some data. They're typically trained via compression and reconstruction, as the network consists of two main components: an encoder that maps input data {x} to a lower dimensional latent representation {z}, and a decoder that reconstructs {x} from {z}. Formally, we learn an encoder function {f: \mathbb{R}^n \to \mathbb{R}^k} (where {n > k}) and a decoder function {g: \mathbb{R}^k \to \mathbb{R}^n} so that we minimize reconstruction loss {\mathcal{L}(x, g(f(x)))}.
+
+We use autoencoders to reveal meaningful structure in high-dimensional data by forcing it through an information bottleneck. The latent space contains only the essential features necessary to effectively reconstruct the iput (a good way to think about this is as a nonlinear dimensionality reduction).
+
+## Toy Task
+Let us define a simple toy task in which we will (hopefully) see some improvement by using a ring as our latent space. Consider the integers modulo {n}, denoted {\mathbb{Z}/n\mathbb{Z}}. Here, 
+
+[^1]: I'm sure that someone has explored this idea of not necessarily restricting the latent representations to just being vectors, but in the interest of developing my own version of this idea to see how it stacks up against existing research, I haven't done a real literature review or anything.
+[^2]: It's perhaps worth noting that there's no specific reason I've chosen rings to be the algebraic structure we use in this modified version of autoencoders, the logic is simply that a vector space is a group under addition with some additional structure with scalars, but a vector space is not a ring (unless we impose additional structure upon it, but in general we don't), so using a ring in some sense is the most "simple" algebraic structure that still gives us something that a typical vector space does not.
+[^3]: This is a matter of convention, some people require that it only be a semigroup, we'll use the monoid convention.
+
+
+
+
+
+
+## Scratchpad
+
+here we treat autoencoders where latent spaces need not be vector spaces, the latent space constitutes a ring instead. In this way (in theory) we get more expressivity. Along the way, we'll confront and (hopefully) resolve some problems with gradient descent/optimization of neural networks and differential geometery
+

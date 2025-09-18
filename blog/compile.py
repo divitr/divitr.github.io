@@ -562,6 +562,105 @@ class MDTXCompiler:
             text = text.replace(placeholder, html_link)
         return text
 
+    def generate_blog_index(self):
+        """Generate the blog index page from all MDTX files"""
+        mdtx_files = list(self.source_dir.glob("*.mdtx"))
+        posts = []
+        
+        for mdtx_file in mdtx_files:
+            try:
+                raw = mdtx_file.read_text(encoding='utf8')
+                raw = self.remove_comments(raw)
+                _, body = self.process_requires(raw)
+                meta, _ = self.parse_metadata(body)
+                
+                # Skip files that don't have required fields
+                if not meta.get('title') or not meta.get('desc'):
+                    continue
+                
+                posts.append({
+                    'filename': mdtx_file.stem,
+                    'title': meta.get('title', 'Untitled'),
+                    'date': meta.get('date', ''),
+                    'desc': meta.get('desc', ''),
+                    'tags': meta.get('tags', '')
+                })
+            except Exception as e:
+                print(f"Warning: Could not parse {mdtx_file.name}: {e}")
+                continue
+        
+        # Sort posts by date (most recent first)
+        # [In Progress] posts stay at top, then sort by actual dates
+        import re
+        from datetime import datetime
+        
+        def sort_key(post):
+            date_str = post['date'].strip()
+            if date_str == '[In Progress]':
+                # Return a date far in the future to keep at top
+                return datetime(9999, 12, 31)
+            
+            # Common date patterns in your blog
+            patterns = [
+                r'(\w+) (\d+), (\d+)',        # "Sep 13, 2025"
+                r'(\w+)\.? (\d+), (\d+)',     # "Aug. 23, 2025"
+                r'(\w+) (\d+) (\d+)'          # "Jan 19 2025"
+            ]
+            
+            month_map = {
+                'Jan': 1, 'January': 1, 'Feb': 2, 'February': 2, 'Mar': 3, 'March': 3,
+                'Apr': 4, 'April': 4, 'May': 5, 'Jun': 6, 'June': 6, 'Jul': 7, 'July': 7,
+                'Aug': 8, 'August': 8, 'Sep': 9, 'September': 9, 'Oct': 10, 'October': 10,
+                'Nov': 11, 'November': 11, 'Dec': 12, 'December': 12
+            }
+            
+            for pattern in patterns:
+                match = re.match(pattern, date_str)
+                if match:
+                    try:
+                        month_str, day_str, year_str = match.groups()
+                        month = month_map.get(month_str, 1)
+                        day = int(day_str)
+                        year = int(year_str)
+                        return datetime(year, month, day)
+                    except (ValueError, KeyError):
+                        continue
+            
+            # If parsing fails, return a very old date to put at bottom
+            return datetime(1900, 1, 1)
+        
+        posts.sort(key=sort_key, reverse=True)
+        
+        # Generate the blog posts HTML
+        posts_html = []
+        for post in posts:
+            posts_html.append(f'''            <article class="blog-post-card">
+                <h2><a href="/blog/{post['filename']}">{post['title']}</a></h2>
+                <div class="post-date">{post['date']}</div>
+                <p>{post['desc']}</p>
+            </article>
+            <br />''')
+        
+        posts_section = '\n'.join(posts_html)
+        
+        # Read the current blog index template
+        index_path = self.root_dir / "index.html"
+        if index_path.exists():
+            current_content = index_path.read_text(encoding='utf8')
+            
+            # Replace the posts section (between the posts-header and </section>)
+            import re
+            pattern = r'(<div class="posts-header">.*?</div>\s*)(.*?)(\s*</section>)'
+            replacement = r'\1\n' + posts_section + r'\n        \3'
+            
+            new_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
+            
+            # Write the updated index
+            index_path.write_text(new_content, encoding='utf8')
+            print(f"Updated blog index with {len(posts)} posts")
+        else:
+            print("Warning: blog/index.html not found")
+
     def compile_file(self, path: Path):
         raw  = path.read_text(encoding='utf8')
         
@@ -686,17 +785,37 @@ class MDTXCompiler:
         print(f"Watching {self.source_dir} …")
         try:
             while True:
+                files_changed = []
                 for f in self.scan():
                     if self.changed(f):
                         self.compile_file(f)
+                        files_changed.append(f)
+                
+                # Regenerate index if any files changed
+                if files_changed:
+                    self.generate_blog_index()
+                    
                 time.sleep(1)
         except KeyboardInterrupt:
             print("Stopped.")
 
 if __name__=="__main__":
-    if len(sys.argv)!=2:
-        print("Usage: python3 -m compile <src_dir> OR python3 -m compile <file.mdtx>")
+    if len(sys.argv) < 2:
+        print("Usage: python3 -m compile <src_dir> OR python3 -m compile <file.mdtx> OR python3 -m compile --index <src_dir>")
         sys.exit(1)
+    
+    # Check for index generation flag
+    if sys.argv[1] == "--index":
+        if len(sys.argv) != 3:
+            print("Usage: python3 -m compile --index <src_dir>")
+            sys.exit(1)
+        source_dir = sys.argv[2]
+        if not os.path.isdir(source_dir):
+            print(f"Error: {source_dir} is not a directory")
+            sys.exit(1)
+        compiler = MDTXCompiler(source_dir)
+        compiler.generate_blog_index()
+        sys.exit(0)
     
     path_arg = sys.argv[1]
     
@@ -714,12 +833,16 @@ if __name__=="__main__":
         print(f"Compiling {file_path.name}...")
         compiler.compile_file(file_path)
         
+        # Also regenerate index after compiling a file
+        compiler.generate_blog_index()
+        
         print(f"Watching {file_path.name} for changes...")
         try:
             while True:
                 if compiler.changed(file_path):
                     print(f"Changes detected in {file_path.name}, recompiling...")
                     compiler.compile_file(file_path)
+                    compiler.generate_blog_index()
                 time.sleep(1)
         except KeyboardInterrupt:
             print("Stopped.")
@@ -729,4 +852,7 @@ if __name__=="__main__":
         if not os.path.isdir(path_arg):
             print(f"Error: {path_arg} is not a directory")
             sys.exit(1)
-        MDTXCompiler(path_arg).watch()
+        compiler = MDTXCompiler(path_arg)
+        # Generate initial index
+        compiler.generate_blog_index()
+        compiler.watch()
