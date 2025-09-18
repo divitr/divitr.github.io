@@ -29,8 +29,8 @@
 <p>Autoencoders are a particularly useful model in which we take some high-dimensional vector and "compress" it to some low-dimensional <em>latent space</em>. In this way, we can effectively reduce some overly complex representation of our data into the core parts that really matter (these compressed representations lie in our latent space). These latent objects that we create are almost<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup> always vectors, so that our latent space is a vector space. However, vector spaces are a bit limited in their structure; namely they're a core part of linear algebra, which necessarily has linearity. The remainder of this post will be dedicated to figuring out what exactly happens if we don't require that our latent space is a vector space -- what if instead, it's a more general algebraic structure?</p>
 <p>I haven't really thought this idea through, so I'm not entirely sure how to implement it, but the hope is that over the next few days I'll keep chipping away at this until I get some kind of working model, and then we can see how it stacks up against standard autoencoders. As a result, this post will almost definitely be a bit disorganized; I'll probably go back and clean it up when I finish this project.</p>
 <h2>Preliminaries</h2>
-<h3>Rings<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup></h3>
-<p>Rings are a cool algebraic structure that have several nice properties. Below, we cover the basic properties of rings so that the rest of this makes sense.</p>
+<h3>Rings</h3>
+<p>Rings are a cool algebraic structure that have several nice properties.<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup> Below, we cover the basic properties of rings so that the rest of this makes sense.</p>
 <p>A ring is defined as the tuple \((S, +, \times)\), where \(S\) is a set and \(+, \times\) are binary operations. On its own, this tuple is kind of boring -- all our interesting structure arises from the axioms (rules) that rings must obey.</p>
 <div class="example-box">
 <div class="example-box-title">Ring Axioms</div>
@@ -58,7 +58,7 @@ Notes:
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Sep 18, 2025 at 02:33 | <a href="../src/alg-autoencoder.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Sep 18, 2025 at 02:36 | <a href="../src/alg-autoencoder.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

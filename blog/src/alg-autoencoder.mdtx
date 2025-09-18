@@ -13,9 +13,9 @@ I haven't really thought this idea through, so I'm not entirely sure how to impl
 
 ## Preliminaries
 
-### Rings[^2]
+### Rings
 
-Rings are a cool algebraic structure that have several nice properties. Below, we cover the basic properties of rings so that the rest of this makes sense. 
+Rings are a cool algebraic structure that have several nice properties.[^2] Below, we cover the basic properties of rings so that the rest of this makes sense. 
 
 A ring is defined as the tuple {(S, +, \times)}, where {S} is a set and {+, \times} are binary operations. On its own, this tuple is kind of boring -- all our interesting structure arises from the axioms (rules) that rings must obey.
 
