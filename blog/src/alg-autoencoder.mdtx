@@ -51,13 +51,35 @@ Autoencoders are neural nets designed to learn efficient representations of some
 
 We use autoencoders to reveal meaningful structure in high-dimensional data by forcing it through an information bottleneck. The latent space contains only the essential features necessary to effectively reconstruct the iput (a good way to think about this is as a nonlinear dimensionality reduction).
 
+## Training
+### Problems
+
+The main issue wiht implementing a ring-structure latent space is the mismatch between discrete algebraic structures and continuous optimization. Namely, the problems we encounter are the following:
+
+list[o]:
+  - Ring operations are typically discrete and non-differentiable, but neural network training requires smooth gradients for backpropagation. These discrete operations break gradient flow and prevent us from properly doing backprop.[^4]
+  - We need some way to ensure that during trianing the latent space always respects the ring axioms we want, so that the latent space preserves its ring structure rather than just poorly approximating them.
+  - We need some sort of consistency between the discrete nature of the ring and continous optimization target.
+end list;
+
+### Solution
+
+There's two main solutions I can think of to adress the above problems.
+
+list[o]:
+ - **Differentiable Approximations**: Here we replace discrete ring operations with smooth, differentiable approximations that preserve the core algebraic structure while still allowing gradient descent based optimization.
+ - **Projection Methods**: Here we learn mappings between the discrete ring space and a continuous embedding space where operations can be performed differentiably, then project back to enforce ring structure.
+end list;
+
+For simplicity, we'll start with the first since it's easier to impelement, but we'll also implement the second. We could also design architectural constraints and add regularization terms to our loss function while using continuous representations for optimization, but this is a bit complex.
+
 ## Toy Task
 Let us define a simple toy task in which we will (hopefully) see some improvement by using a ring as our latent space. Consider the integers modulo {n}, denoted {\mathbb{Z}/n\mathbb{Z}}. Here, 
 
 [^1]: I'm sure that someone has explored this idea of not necessarily restricting the latent representations to just being vectors, but in the interest of developing my own version of this idea to see how it stacks up against existing research, I haven't done a real literature review or anything.
 [^2]: It's perhaps worth noting that there's no specific reason I've chosen rings to be the algebraic structure we use in this modified version of autoencoders, the logic is simply that a vector space is a group under addition with some additional structure with scalars, but a vector space is not a ring (unless we impose additional structure upon it, but in general we don't), so using a ring in some sense is the most "simple" algebraic structure that still gives us something that a typical vector space does not.
 [^3]: This is a matter of convention, some people require that it only be a semigroup, we'll use the monoid convention.
-
+[^4]: We could technically get around this by using genetic algorithms (so that we never need backprop at all), but that seems like a lot more work to implement.
 
 
 
