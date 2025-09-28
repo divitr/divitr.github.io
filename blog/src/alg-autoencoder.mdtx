@@ -47,7 +47,7 @@ end example;
 
 ### Autoencoders
 
-Autoencoders are neural nets designed to learn efficient representations of some data. They're typically trained via compression and reconstruction, as the network consists of two main components: an encoder that maps input data {x} to a lower dimensional latent representation {z}, and a decoder that reconstructs {x} from {z}. Formally, we learn an encoder function {f: \mathbb{R}^n \to \mathbb{R}^k} (where {n > k}) and a decoder function {g: \mathbb{R}^k \to \mathbb{R}^n} so that we minimize reconstruction loss {\mathcal{L}(x, g(f(x)))}.
+Autoencoders are neural nets designed to learn efficient representations of some data. They're typically trained via compression and reconstruction, as the network consists of two main components: an encoder that maps input data {x} to a lower dimensional latent representation {z}, and a decoder that reconstructs {x} from {z}. Formally, we learn an encoder function {f: \mathbb{R}^n \to \mathbb{R}^k} (where {n > k}) and a decoder function {g: \mathbb{R}^k \to \mathbb{R}^n} so that we minimize reconstruction loss {\mathcal{L}(x, g(f(x)))}. Naturally, both {f} and {g} are parameterized by some learned parameters.
 
 We use autoencoders to reveal meaningful structure in high-dimensional data by forcing it through an information bottleneck. The latent space contains only the essential features necessary to effectively reconstruct the iput (a good way to think about this is as a nonlinear dimensionality reduction).
 
@@ -62,7 +62,7 @@ list[o]:
   - We need some sort of consistency between the discrete nature of the ring and continous optimization target.
 end list;
 
-### Solution
+### Solutions (?)
 
 There's two main solutions I can think of to adress the above problems.
 

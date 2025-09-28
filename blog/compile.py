@@ -590,15 +590,15 @@ class MDTXCompiler:
                 continue
         
         # Sort posts by date (most recent first)
-        # [In Progress] posts stay at top, then sort by actual dates
+        # [In Progress] posts go to bottom, then sort by actual dates
         import re
         from datetime import datetime
         
         def sort_key(post):
             date_str = post['date'].strip()
             if date_str == '[In Progress]':
-                # Return a date far in the future to keep at top
-                return datetime(9999, 12, 31)
+                # Return a very old date to put at bottom
+                return datetime(1800, 1, 1)
             
             # Common date patterns in your blog
             patterns = [
@@ -631,7 +631,7 @@ class MDTXCompiler:
         
         posts.sort(key=sort_key, reverse=True)
         
-        # Generate the blog posts HTML
+        # Generate the blog posts HTML  
         posts_html = []
         for post in posts:
             posts_html.append(f'''            <article class="blog-post-card">
@@ -650,8 +650,8 @@ class MDTXCompiler:
             
             # Replace the posts section (between the posts-header and </section>)
             import re
-            pattern = r'(<div class="posts-header">.*?</div>\s*)(.*?)(\s*</section>)'
-            replacement = r'\1\n' + posts_section + r'\n        \3'
+            pattern = r'(<div class="posts-header">.*?</div>).*?(</section>)'
+            replacement = r'\1\n' + posts_section + r'\n        \2'
             
             new_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
             
