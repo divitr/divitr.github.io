@@ -16,92 +16,122 @@ document.addEventListener('DOMContentLoaded', () => {
                 top: 120px;
                 left: 20px;
                 z-index: 1000;
-                width: 250px;
+                width: 200px;
                 transition: all 0.3s ease;
             }
 
             #toc-container a:hover {
-                text-decoration: none;
+                text-decoration: underline;
             }
-            
+
             #toc-header {
-                font-weight: bold;
-                color: #333;
-                margin-bottom: 15px;
-                font-size: 1.1em;
+                font-weight: 600;
+                color: #4a4a4a;
+                margin-bottom: 1rem;
+                font-size: 1rem;
                 padding-left: 0px;
+                padding-bottom: 0.5rem;
+                font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                cursor: pointer;
+                user-select: none;
+                border-bottom: 1px solid transparent;
+                transition: border-color 0.2s ease;
+                position: relative;
             }
-            
+
+            #toc-header::after {
+                content: '(hide)';
+                position: absolute;
+                right: 0;
+                font-weight: normal;
+                font-size: 0.85rem;
+                color: #999;
+            }
+
+            #toc-container.collapsed #toc-header::after {
+                content: '(show)';
+            }
+
+            #toc-header:hover {
+                border-bottom-color: #ddd;
+            }
+
+            #toc-container.collapsed #toc-header {
+                margin-bottom: 0;
+                border-bottom-color: transparent;
+            }
+
+            #toc-menu.collapsed {
+                display: none;
+            }
+
             #toc-menu {
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
-                opacity: 0.8;
-                transition: all 0.3s ease;
+                gap: 0.5rem;
+                opacity: 1;
+                transition: opacity 0.2s ease;
             }
-            
+
             .toc-section {
                 position: relative;
                 cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 10px;
+                padding: 0.25rem 0;
+                border-left: 2px solid transparent;
+                padding-left: 0.75rem;
+                transition: border-color 0.2s ease;
             }
-            
-            .toc-line {
-                width: 30px;
-                height: 2px;
-                background-color: #333;
-                transition: all 0.3s ease;
-                flex-shrink: 0;
+
+            .toc-section:hover,
+            .toc-section.active {
+                border-left-color: #4a4a4a;
             }
-            
-            .toc-section:hover .toc-line,
-            .toc-section.active .toc-line {
-                background-color: #6B46C1;
-                width: 50px;
-            }
-            
+
             .toc-subsections {
                 display: none;
-                margin-left: 40px;
-                margin-top: 5px;
-                font-size: 0.9em;
+                margin-left: 0.75rem;
+                margin-top: 0.5rem;
+                font-size: 0.85rem;
             }
-            
+
             .toc-section:hover .toc-subsections,
             .toc-section.active .toc-subsections {
                 display: block;
-                margin-left: 30px;
             }
-            
+
             .toc-subsection {
-                margin-bottom: 5px;
+                margin-bottom: 0.25rem;
                 opacity: 0.7;
-                transition: opacity 0.3s ease;
+                transition: opacity 0.2s ease;
             }
-            
+
             .toc-subsection:hover {
                 opacity: 1;
             }
-            
+
             .toc-section-title,
             .toc-subsection-title {
                 text-decoration: none;
-                color: #1a1a1a;
+                color: #4a4a4a;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 max-width: 180px;
-                transition: color 0.3s ease;
+                transition: color 0.2s ease;
+                font-size: 0.9rem;
+                font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             }
-            
-            .toc-section.active .toc-section-title,
+
+            .toc-section.active .toc-section-title {
+                color: #4a4a4a;
+            }
+
             .toc-subsection.active .toc-subsection-title {
-                font-weight: bold;
-                color: #6B46C1;
+                color: #4a4a4a;
+                opacity: 1;
+                font-weight: 600;
             }
-            
+
             @media (max-width: 1400px) {
                 #toc-container {
                     display: none;
@@ -114,6 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.body.appendChild(tocContainer);
     const tocMenu = document.getElementById('toc-menu');
+    const tocHeader = document.getElementById('toc-header');
+
+    // Add toggle functionality
+    tocHeader.addEventListener('click', () => {
+        tocMenu.classList.toggle('collapsed');
+        tocContainer.classList.toggle('collapsed');
+    });
     
     const h2Elements = document.querySelectorAll('h2');
     const h3Elements = document.querySelectorAll('h3');
@@ -139,18 +176,15 @@ document.addEventListener('DOMContentLoaded', () => {
     Array.from(h2Elements).forEach((h2) => {
         const sectionElement = document.createElement('div');
         sectionElement.className = 'toc-section';
-        
-        const line = document.createElement('div');
-        line.className = 'toc-line';
-        
+
         const sectionLink = document.createElement('a');
         sectionLink.href = `#${h2.id}`;
         sectionLink.className = 'toc-section-title';
-        sectionLink.textContent = truncateText(h2.textContent);
-        
+        sectionLink.textContent = truncateText(h2.textContent, 25);
+
         const subsectionsContainer = document.createElement('div');
         subsectionsContainer.className = 'toc-subsections';
-        
+
         const h3sInSection = [];
         let next = h2.nextElementSibling;
         while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
@@ -159,62 +193,87 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             next = next.nextElementSibling;
         }
-        
+
         h3sInSection.forEach(h3 => {
             const subsectionLink = document.createElement('a');
             subsectionLink.href = `#${h3.id}`;
             subsectionLink.className = 'toc-subsection-title';
-            subsectionLink.textContent = truncateText(h3.textContent);
-            
+            subsectionLink.textContent = truncateText(h3.textContent, 25);
+
             const subsectionElement = document.createElement('div');
             subsectionElement.className = 'toc-subsection';
             subsectionElement.appendChild(subsectionLink);
-            
+
             subsectionsContainer.appendChild(subsectionElement);
         });
-        
-        sectionElement.appendChild(line);
+
         sectionElement.appendChild(sectionLink);
         sectionElement.appendChild(subsectionsContainer);
-        
+
         tocMenu.appendChild(sectionElement);
     });
     
     function highlightCurrentSection() {
-        const scrollPosition = window.scrollY;
-        let h3Index = 0;
-        h2Elements.forEach((h2, index) => {
-            const sectionElement = tocMenu.children[index];
-            const nextH2 = h2Elements[index + 1];
-            const currentSectionTop = h2.offsetTop;
-            const nextSectionTop = nextH2 ? nextH2.offsetTop : document.body.scrollHeight;
+        // Get viewport information
+        const viewportTop = window.scrollY;
+        const viewportMiddle = viewportTop + (window.innerHeight / 3); // Use top third of viewport as "current"
 
-            if (scrollPosition >= currentSectionTop - 100 && scrollPosition < nextSectionTop - 100) {
-                sectionElement.classList.add('active');
-                const subsections = sectionElement.querySelectorAll('.toc-subsection');
-                const h3sInSection = [];
-                let next = h2.nextElementSibling;
-                while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
-                    if (next.tagName && next.tagName.toLowerCase() === 'h3') {
-                        h3sInSection.push(next);
-                    }
-                    next = next.nextElementSibling;
-                }
-                subsections.forEach((subsection, subIdx) => {
-                    const h3 = h3sInSection[subIdx];
-                    const nextH3 = h3sInSection[subIdx + 1];
-                    if (h3 && scrollPosition >= h3.offsetTop - 100 && scrollPosition < (nextH3 ? nextH3.offsetTop : nextSectionTop) - 100) {
-                        subsection.classList.add('active');
-                    } else {
-                        subsection.classList.remove('active');
-                    }
-                });
-            } else {
-                sectionElement.classList.remove('active');
+        // Find which h2 section we're currently in
+        let currentH2Index = -1;
+        let currentH3Index = -1;
+
+        // First, determine which h2 section contains the viewport middle
+        for (let i = h2Elements.length - 1; i >= 0; i--) {
+            const h2 = h2Elements[i];
+            if (h2.offsetTop <= viewportMiddle) {
+                currentH2Index = i;
+                break;
             }
+        }
+
+        // Clear all active states
+        Array.from(tocMenu.children).forEach(section => {
+            section.classList.remove('active');
+            section.querySelectorAll('.toc-subsection').forEach(sub => {
+                sub.classList.remove('active');
+            });
         });
+
+        // If we found a current section, highlight it
+        if (currentH2Index >= 0) {
+            const sectionElement = tocMenu.children[currentH2Index];
+            const h2 = h2Elements[currentH2Index];
+
+            // Get all h3s in this section
+            const h3sInSection = [];
+            let next = h2.nextElementSibling;
+            while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
+                if (next.tagName && next.tagName.toLowerCase() === 'h3') {
+                    h3sInSection.push(next);
+                }
+                next = next.nextElementSibling;
+            }
+
+            // Check if we're in a subsection
+            let foundActiveH3 = false;
+            for (let i = h3sInSection.length - 1; i >= 0; i--) {
+                const h3 = h3sInSection[i];
+                if (h3.offsetTop <= viewportMiddle) {
+                    const subsections = sectionElement.querySelectorAll('.toc-subsection');
+                    if (subsections[i]) {
+                        subsections[i].classList.add('active');
+                        foundActiveH3 = true;
+                    }
+                    break;
+                }
+            }
+
+            // Always highlight the parent h2 section
+            sectionElement.classList.add('active');
+        }
     }
-    
+
     highlightCurrentSection();
     window.addEventListener('scroll', highlightCurrentSection);
+    window.addEventListener('resize', highlightCurrentSection);
 });

@@ -1,13 +1,13 @@
 :root {
     --primary-color: #4a4a4a;
     --link-color: #6B46C1;
-    --background-color: #fffdf92e;
+    --background-color: #fefdf5;
     --hover-color: #fffdfd;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.6;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
     color: var(--primary-color);
     max-width: 800px;
     margin: 0 auto;
@@ -55,7 +55,7 @@ nav a:hover {
 
 .profile-img {
     width: 100%;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 .bio h1 {
@@ -96,47 +96,37 @@ a:hover {
 .contact-item {
     display: flex;
     align-items: baseline;
-    margin-bottom: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    position: relative;
+}
+
+.contact-item:last-of-type {
+    border-bottom: none;
 }
 
 .contact-label {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #666;
+    min-width: 100px;
     flex-shrink: 0;
-    position: relative;
-    background-color: var(--background-color);
-    padding-right: 8px;
 }
 
 .contact-value {
-    font-size: 1.2rem;
-    color: #333;
-    margin-left: auto;
+    font-size: 1rem;
+    color: #4a4a4a;
+    flex-grow: 1;
     text-align: right;
-    position: relative;
-    background-color: var(--background-color);
-    padding-left: 8px;
 }
 
 .contact-value a {
-    text-decoration: underline;
+    text-decoration: none;
     color: var(--primary-color);
     transition: color 0.2s;
 }
 
 .contact-value a:hover {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.dotted-line {
-    flex-grow: 1;
-    margin: 0 8px;
-    border-bottom: 1px dotted #ccc;
-    height: 1px;
-    align-self: center;
+    text-decoration: underline;
 }
 
 .news {
@@ -213,4 +203,157 @@ a:hover {
 
 .news-btn:hover {
     text-decoration: none;
+}
+
+/* Notes page styling */
+.notes-section {
+    margin-top: 2rem;
+}
+
+.notes-section h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.notes-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.notes-item:last-child {
+    border-bottom: none;
+}
+
+.notes-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.notes-item a:hover {
+    text-decoration: underline;
+}
+
+/* Misc page styling */
+.misc-section {
+    margin-bottom: 3rem;
+}
+
+.misc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-left: 2rem;
+}
+
+.misc-list li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.misc-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #4a4a4a;
+}
+
+/* Research page styling */
+.current-work-section {
+    margin-bottom: 3rem;
+}
+
+.current-work-section h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.research-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.research-list {
+    margin-left: 2rem;
+}
+
+.research-list li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.research-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #4a4a4a;
+}
+
+/* Papers page styling */
+.papers-section {
+    margin-top: 2rem;
+}
+
+.papers-section h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.paper-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.paper-item:last-child {
+    border-bottom: none;
+}
+
+.paper-year {
+    font-size: 0.9rem;
+    color: #666;
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+.paper-content {
+    flex-grow: 1;
+}
+
+.paper-title {
+    font-weight: normal;
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+}
+
+.paper-meta {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.paper-meta a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.paper-meta a:hover {
+    text-decoration: underline;
+}
+
+.contribution-note {
+    font-style: italic;
+    color: #999;
+}
+
+.contribution-note::before {
+    content: '(';
+}
+
+.contribution-note::after {
+    content: ')';
 }

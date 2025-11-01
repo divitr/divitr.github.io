@@ -631,30 +631,31 @@ class MDTXCompiler:
         
         posts.sort(key=sort_key, reverse=True)
         
-        # Generate the blog posts HTML  
+        # Generate the blog posts HTML in the new clean format
         posts_html = []
         for post in posts:
-            posts_html.append(f'''            <article class="blog-post-card">
-                <h2><a href="/blog/{post['filename']}">{post['title']}</a></h2>
-                <div class="post-date">{post['date']}</div>
-                <p>{post['desc']}</p>
-            </article>
-            <br />''')
-        
+            posts_html.append(f'''            <div class="blog-post-item">
+                <span class="post-date">{post['date']}</span>
+                <div class="post-content">
+                    <h3><a href="/blog/{post['filename']}">{post['title']}</a></h3>
+                    <p class="post-description">{post['desc']}</p>
+                </div>
+            </div>''')
+
         posts_section = '\n'.join(posts_html)
-        
+
         # Read the current blog index template
         index_path = self.root_dir / "index.html"
         if index_path.exists():
             current_content = index_path.read_text(encoding='utf8')
-            
-            # Replace the posts section (between the posts-header and </section>)
+
+            # Replace the posts section (between <h2>Posts</h2> and </section>)
             import re
-            pattern = r'(<div class="posts-header">.*?</div>).*?(</section>)'
+            pattern = r'(<h2>Posts</h2>).*?(</section>)'
             replacement = r'\1\n' + posts_section + r'\n        \2'
-            
+
             new_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
-            
+
             # Write the updated index
             index_path.write_text(new_content, encoding='utf8')
             print(f"Updated blog index with {len(posts)} posts")
@@ -732,7 +733,6 @@ class MDTXCompiler:
 
 <head>
 {head_reqs}    <meta charset="UTF-8">
-    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../blog.css">
     <script src="../blog_header.js"></script>

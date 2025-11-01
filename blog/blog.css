@@ -1,23 +1,51 @@
-/* CSS Variables to match main site */
-:root {
-    --primary-color: #4a4a4a;
-    --link-color: #6B46C1;
-    --background-color: #fffdf92e;
-    --hover-color: #fffdfd;
+/* Blog index styles */
+.blog-posts {
+    margin-top: 2rem;
 }
 
-.blog-post-card {
-    background: #ebebeb2e;
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: transform 0.2s;
-    border: 1px solid #f5f5f0;
-    margin-bottom: 1rem;
+.blog-post-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
 }
 
-.blog-post-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.blog-post-item:last-child {
+    border-bottom: none;
+}
+
+.blog-post-item .post-date {
+    font-size: 0.9rem;
+    color: #666;
+    min-width: 110px;
+    flex-shrink: 0;
+    padding-top: 0.1rem;
+}
+
+.blog-post-item .post-content {
+    flex-grow: 1;
+}
+
+.blog-post-item h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+
+.blog-post-item h3 a {
+    color: var(--primary-color, #4a4a4a);
+    text-decoration: none;
+}
+
+.blog-post-item h3 a:hover {
+    text-decoration: underline;
+}
+
+.blog-post-item .post-description {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
 }
 
 .post-date {
@@ -171,15 +199,15 @@ body header {
     max-width: 800px;
     margin: 0 auto;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.6;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
     color: var(--primary-color);
     background: var(--background-color);
 }
 
 .blog-post .intro {
     display: block;
-    margin-bottom: 0;
+    margin-bottom: 2rem;
     margin-top: 0;
 }
 
@@ -191,8 +219,13 @@ body header {
 
 .blog-post h1 {
     font-size: 2rem;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    color: var(--primary-color);
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--primary-color, #4a4a4a);
+}
+
+.blog-post h2 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
 .blog-post a {
@@ -237,25 +270,28 @@ body header {
 
 /* Ensure all text elements have proper fonts */
 .blog-post p {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.6;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
     color: var(--primary-color);
 }
 
 .example-box {
-    background-color: #f4f4f4;
-    border-left: 4px solid #6a69a0;
-    border-radius: 5px 10px 10px 5px;
-    padding: 15px;
-    margin: 15px 0;
+    background-color: #faf9f6;
+    border-left: 3px solid #4a4a4a;
+    border-radius: 0;
+    padding: 1.5rem;
+    margin: 2rem 0;
     color: #4a4a4a;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
 .example-box-title {
     display: block;
-    margin-bottom: 10px;
-    color: #6a69a0;
-    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #4a4a4a;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 .example-box-prompt {

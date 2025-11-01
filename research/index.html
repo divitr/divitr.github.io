@@ -15,33 +15,54 @@
 
     <main>
         <h1>Research</h1>
-        <section>
-            <p>My current work is in</p>
-            <ul>
-                <li>deep learning theory @ <a href="https://bair.berkeley.edu/" target="_blank"
-                        rel="noopener noreferrer">BAIR</a>, advised by Dr. Michael DeWeese;</li>
-                <li>neutron production in (\(\alpha\), n) reactions @ <a href="https://www.llnl.gov/" target="_blank"
-                        rel="noopener noreferrer">LLNL</a> and <a href="https://coesiefman.wpenginepowered.com/" target="_blank"
-                        rel="noopener noreferrer">BARN</a>;</li>
-                <li>and information geometry (funded by a grant from <a href="https://vessl.ai/" target="_blank"
-                        rel="noopener noreferrer">VESSL AI</a>).</li>
-            </ul>
 
-            <p>I've also worked on machine learning methods for high-energy physics, advised by Dr. Daniel Whiteson.</p>
-            
-        </section>
-        <section>
-            <h2>Some Papers I've Worked On</h2>
-            <ul>
-                <li>Cisco Foundation AI. 2025. Foundation-Sec-8B-Instruct Technical Report. <a href="https://arxiv.org/abs/2508.01059" target="_blank"
-                        rel="noopener noreferrer">[arXiv:2508.01059]</a>. (my contributions were primarily automating data collection and processing)
-                </li>
-                <li>Cisco Foundation AI. 2025. Foundation-Sec-8B Technical Report. <a href="https://arxiv.org/abs/2504.21039" target="_blank" rel="noopener noreferrer">[arXiv:2504.21039]</a>. (my contributions were primarily automating data collection and processing)</li>
-                <li>ATLAS Collaboration. 2024. Measurement of off-shell Higgs boson production in the \(H^* \to ZZ \to 4\ell\) decay channel using a neural simulation-based inference technique in 13 TeV \(\text{pp}\) collisions with the ATLAS detector. <em>Reports on Progress in Physics</em>. <a href="https://arxiv.org/abs/2412.01548#" target="_blank" rel="noopener noreferrer">[arXiv:2412.01548]</a>. (my contributions were primarily toy problems and proof of concepts in the Whiteson Lab)
-                </li>
-                <li>ATLAS Collaboration. 2024. An implementation of neural simulation-based inference for parameter estimation in ATLAS. <em>Reports on Progress in Physics</em>. <a href="https://arxiv.org/abs/2412.01600#" target="_blank" rel="noopener noreferrer">[arXiv:2412.01600]</a>. (my contributions were primarily toy problems and proof of concepts in the Whiteson Lab)
-                </li>
+        <section class="current-work-section">
+            <h2>Current Work</h2>
+            <p>My current work is in</p>
+            <ul class="research-list">
+                <li>deep learning theory at <a href="https://bair.berkeley.edu/" target="_blank" rel="noopener noreferrer">BAIR</a>, advised by Dr. Michael DeWeese;</li>
+                <li>neutron production in (\(\alpha\), n) reactions at <a href="https://www.llnl.gov/" target="_blank" rel="noopener noreferrer">LLNL</a> and <a href="https://coesiefman.wpenginepowered.com/" target="_blank" rel="noopener noreferrer">BARN</a>;</li>
+                <li>and information geometry, supported by a grant from <a href="https://vessl.ai/" target="_blank" rel="noopener noreferrer">VESSL AI</a>.</li>
             </ul>
+        </section>
+        <section class="papers-section">
+            <h2>Papers</h2>
+            <div class="paper-item">
+                <span class="paper-year">2025</span>
+                <div class="paper-content">
+                    <div class="paper-title">ALPHANSO: Open-Source Modeling of (\(\alpha\),n) Neutron Source Terms</div>
+                    <div class="paper-meta">Rawal et al. | Under review at <em>Nuclear Instruments and Methods in Physics Research, Section A</em> | <a href="https://github.com/tonyjnel/alphanso" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+                </div>
+            </div>
+            <div class="paper-item contributed">
+                <span class="paper-year">2025</span>
+                <div class="paper-content">
+                    <div class="paper-title">Foundation-Sec-8B-Instruct Technical Report</div>
+                    <div class="paper-meta">Cisco Foundation AI | <a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Instruct" target="_blank"
+                        rel="noopener noreferrer">HuggingFace</a> | <a href="https://arxiv.org/abs/2508.01059" target="_blank" rel="noopener noreferrer">arXiv:2508.01059</a> | <span class="contribution-note">automated data collection and processing pipelines</span></div>
+                </div>
+            </div>
+            <div class="paper-item contributed">
+                <span class="paper-year">2025</span>
+                <div class="paper-content">
+                    <div class="paper-title">Foundation-Sec-8B Technical Report</div>
+                    <div class="paper-meta">Cisco Foundation AI | <a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B" target="_blank" rel="noopener noreferrer">HuggingFace</a> | <a href="https://arxiv.org/abs/2504.21039" target="_blank" rel="noopener noreferrer">arXiv:2504.21039</a> | <span class="contribution-note">automated data collection and processing pipelines</span></div>
+                </div>
+            </div>
+            <div class="paper-item contributed">
+                <span class="paper-year">2024</span>
+                <div class="paper-content">
+                    <div class="paper-title">Measurement of off-shell Higgs boson production in the \(H^* \to ZZ \to 4\ell\) decay channel using a neural simulation-based inference technique in 13 TeV \(\text{pp}\) collisions with the ATLAS detector</div>
+                    <div class="paper-meta">ATLAS Collaboration | <em>Reports on Progress in Physics</em> | <a href="https://arxiv.org/abs/2412.01548" target="_blank" rel="noopener noreferrer">arXiv:2412.01548</a> | <span class="contribution-note">neural nets for soft extrapolation</span></div>
+                </div>
+            </div>
+            <div class="paper-item contributed">
+                <span class="paper-year">2024</span>
+                <div class="paper-content">
+                    <div class="paper-title">An implementation of neural simulation-based inference for parameter estimation in ATLAS</div>
+                    <div class="paper-meta">ATLAS Collaboration | <em>Reports on Progress in Physics</em> | <a href="https://arxiv.org/abs/2412.01600" target="_blank" rel="noopener noreferrer">arXiv:2412.01600</a> | <span class="contribution-note">particle reconstruction algorithms</span></div>
+                </div>
+            </div>
         </section>
 
     </main>
