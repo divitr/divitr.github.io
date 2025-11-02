@@ -1,30 +1,46 @@
 // footnote-sidebar.js - Moves footnotes to sidebar on wide screens
 
+console.log('[Footnote Sidebar] Script loaded!');
+
 (function() {
     'use strict';
 
     function initSidebarFootnotes() {
+        console.log('[Footnote Sidebar] Initializing...');
+        console.log('[Footnote Sidebar] Window width:', window.innerWidth);
+
         // Only run on wide screens
         if (window.innerWidth < 1200) {
+            console.log('[Footnote Sidebar] Screen too narrow, skipping');
             return;
         }
 
         const footnotesSection = document.querySelector('.footnotes');
         if (!footnotesSection) {
+            console.log('[Footnote Sidebar] No .footnotes section found');
             return;
         }
+        console.log('[Footnote Sidebar] Found footnotes section');
 
         const footnotesList = footnotesSection.querySelector('ol');
         if (!footnotesList) {
+            console.log('[Footnote Sidebar] No ol in footnotes section');
             return;
         }
+        console.log('[Footnote Sidebar] Found footnotes list');
 
         const footnoteItems = footnotesList.querySelectorAll('li');
         const blogPost = document.querySelector('.blog-post');
 
+        console.log('[Footnote Sidebar] Footnote items:', footnoteItems.length);
+        console.log('[Footnote Sidebar] Blog post element:', blogPost ? 'found' : 'not found');
+
         if (!blogPost || footnoteItems.length === 0) {
+            console.log('[Footnote Sidebar] Missing blog post or no footnote items');
             return;
         }
+
+        console.log('[Footnote Sidebar] Starting to process footnotes...');
 
         const sidenotes = [];
         const footnoteData = [];
@@ -169,9 +185,14 @@
     }
 
     // Run on load
+    console.log('[Footnote Sidebar] Setting up event listeners...');
+    console.log('[Footnote Sidebar] Document ready state:', document.readyState);
+
     if (document.readyState === 'loading') {
+        console.log('[Footnote Sidebar] Waiting for DOMContentLoaded...');
         document.addEventListener('DOMContentLoaded', initSidebarFootnotes);
     } else {
+        console.log('[Footnote Sidebar] Document already loaded, running immediately');
         initSidebarFootnotes();
     }
 
@@ -196,22 +217,28 @@
         }, 250);
     });
 
-    // Wait for MathJax to finish rendering before positioning sidenotes
-    if (window.MathJax) {
-        if (MathJax.startup && MathJax.startup.promise) {
-            MathJax.startup.promise.then(() => {
-                // Recalculate positions after MathJax rendering
-                setTimeout(() => {
-                    document.querySelectorAll('.sidenote').forEach(el => el.remove());
-                    initSidebarFootnotes();
-                }, 200);
-            });
-        }
-    } else {
-        // If no MathJax, wait a bit for page to settle
+    // Wait for MathJax to finish rendering before repositioning sidenotes
+    let mathJaxRendered = false;
+
+    const reinitAfterMathJax = () => {
+        if (mathJaxRendered) return; // Only run once
+        mathJaxRendered = true;
+
+        console.log('[Footnote Sidebar] MathJax rendered, reinitializing...');
         setTimeout(() => {
             document.querySelectorAll('.sidenote').forEach(el => el.remove());
             initSidebarFootnotes();
-        }, 500);
+        }, 300);
+    };
+
+    if (window.MathJax) {
+        if (MathJax.startup && MathJax.startup.promise) {
+            MathJax.startup.promise.then(reinitAfterMathJax).catch(err => {
+                console.error('[Footnote Sidebar] MathJax error:', err);
+            });
+        } else {
+            // MathJax exists but no startup promise, wait a bit
+            setTimeout(reinitAfterMathJax, 1000);
+        }
     }
 })();
