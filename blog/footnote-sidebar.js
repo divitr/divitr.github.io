@@ -217,28 +217,4 @@ console.log('[Footnote Sidebar] Script loaded!');
         }, 250);
     });
 
-    // Wait for MathJax to finish rendering before repositioning sidenotes
-    let mathJaxRendered = false;
-
-    const reinitAfterMathJax = () => {
-        if (mathJaxRendered) return; // Only run once
-        mathJaxRendered = true;
-
-        console.log('[Footnote Sidebar] MathJax rendered, reinitializing...');
-        setTimeout(() => {
-            document.querySelectorAll('.sidenote').forEach(el => el.remove());
-            initSidebarFootnotes();
-        }, 300);
-    };
-
-    if (window.MathJax) {
-        if (MathJax.startup && MathJax.startup.promise) {
-            MathJax.startup.promise.then(reinitAfterMathJax).catch(err => {
-                console.error('[Footnote Sidebar] MathJax error:', err);
-            });
-        } else {
-            // MathJax exists but no startup promise, wait a bit
-            setTimeout(reinitAfterMathJax, 1000);
-        }
-    }
 })();
