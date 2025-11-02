@@ -4,7 +4,6 @@
 <head>
     <div style='display:none'>\(\require{physics}\)</div>
     <meta charset="UTF-8">
-    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../blog.css">
     <script src="../blog_header.js"></script>
@@ -32,8 +31,7 @@
 <div class="example-box">
 <div class="example-box-title">Heat Exchange is a Markov Jump Process</div>
 <div class="example-box-prompt">
-<ul><li><strong>Holding time</strong>: the next ring time is the minimum of \(N-1\) independent \(\operatorname{Exp}(\lambda)\) clocks; thus \(\Delta T \sim \operatorname{Exp}(\lambda(N-1))\)</li><li><strong>Conservation of Total Energy</strong>: By construction, our interaction model preserves total energy between neighbors, summing over all bonds gives that total energy of the system is conserved.</li><li><strong>Generator</strong>: the generator \(\mathcal{L}\) encodes the infinitesimal evolution of the process. It is defined as \((\mathcal{L}f)(\mathbf{e}) = \lim_{h \to 0} \frac{\mathbb{E}[f(\mathbf{e}_{t+h}) - f(\mathbf{e}_t) \mid \mathbf{e}_t = \mathbf{e}]}{h}.\) Intuitively, this is just the expectation of the change in \(f\) over an infinitesimal time period \(h\), conditioned on the current state (and normalized by \(h\)). In our case, the probability that bond \(i\) rings in a time period \([t, t+h]\) is approximately \(\lambda h + o(h)\). If that bond rings, the system jumps to a new state (as specified by the transition above) and the expectation of the difference is \(\mathbb{E}_U [f(\mathbf{e}^{(i, U)}) - f(\mathbf{e})]\), and summing over all \(N-1\) bonds gives the generator</li></ul>
-\begin{equation}
+<ul><li><strong>Holding time</strong>: the next ring time is the minimum of \(N-1\) independent \(\operatorname{Exp}(\lambda)\) clocks; thus \(\Delta T \sim \operatorname{Exp}(\lambda(N-1))\)</li><li><strong>Conservation of Total Energy</strong>: By construction, our interaction model preserves total energy between neighbors, summing over all bonds gives that total energy of the system is conserved.</li><li><strong>Generator</strong>: the generator \(\mathcal{L}\) encodes the infinitesimal evolution of the process. It is defined as \((\mathcal{L}f)(\mathbf{e}) = \lim_{h \to 0} \frac{\mathbb{E}[f(\mathbf{e}_{t+h}) - f(\mathbf{e}_t) \mid \mathbf{e}_t = \mathbf{e}]}{h}.\) Intuitively, this is just the expectation of the change in \(f\) over an infinitesimal time period \(h\), conditioned on the current state (and normalized by \(h\)). In our case, the probability that bond \(i\) rings in a time period \([t, t+h]\) is approximately \(\lambda h + o(h)\). If that bond rings, the system jumps to a new state (as specified by the transition above) and the expectation of the difference is \(\mathbb{E}_U [f(\mathbf{e}^{(i, U)}) - f(\mathbf{e})]\), and summing over all \(N-1\) bonds gives the generator</li></ul>\begin{equation}
             (\mathcal{L}f)(\mathbf{e}) = \lambda \sum_{i=1}^{N-1} \left(\mathbb{E}_U[f(\mathbf{e}^{(U,i)})] - f(\mathbf{e})\right).
 \end{equation}
 </div>
@@ -61,7 +59,7 @@
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Sep 13, 2025 at 02:03 | <a href="../src/markov-heat.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Nov 02, 2025 at 14:56 | <a href="../src/markov-heat.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 
@@ -80,5 +78,8 @@
     
     <!-- Table of Contents Generator -->
     <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar -->
+    <script src="../footnote-sidebar.js"></script>
 </body>
 </html>

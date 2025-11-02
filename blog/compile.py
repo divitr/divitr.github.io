@@ -240,16 +240,25 @@ class MDTXCompiler:
         return pattern.sub(repl, text)
 
     def process_lists(self, text: str) -> str:
-        pattern = re.compile(
+        # First try to match lists with explicit 'end list;' markers
+        pattern_with_end = re.compile(
             r'list\[([^\]]+)\]:\s*\n'
             r'((?:\s*-\s*[^\n]*\n(?:[^\n]*\n)*?)+)'  # List items that may contain multiple lines
             r'\s*end list;?',  # Look for end list marker (with or without newline)
             re.DOTALL
         )
+
+        # Then match lists without explicit 'end list;' markers
+        # These end at the first non-list content (blank line followed by non-indented text)
+        pattern_without_end = re.compile(
+            r'list\[([^\]]+)\]:\s*\n'
+            r'((?:[ \t]*-[ \t]*[^\n]*(?:\n[ \t]+[^\n]*)*\n?)+)',  # List items and their continuations
+            re.DOTALL
+        )
         def repl(m):
             list_type = m.group(1)
             content = m.group(2)
-            
+
             # Parse nested list structure
             def parse_nested_list(lines):
                 items = []
@@ -259,12 +268,12 @@ class MDTXCompiler:
                     if not line.strip():
                         i += 1
                         continue
-                    
+
                     # Check if this is a list item
                     if line.strip().startswith('- '):
                         item_text = line.strip()[2:].strip()
                         sub_items = []
-                        
+
                         # Look ahead for nested items
                         j = i + 1
                         while j < len(lines):
@@ -272,16 +281,16 @@ class MDTXCompiler:
                             if not next_line.strip():
                                 j += 1
                                 continue
-                            
+
                             # Check indentation level
                             current_indent = len(line) - len(line.lstrip())
                             next_indent = len(next_line) - len(next_line.lstrip())
-                            
+
                             if next_indent > current_indent and next_line.strip().startswith('- '):
                                 # This is a nested item
                                 nested_text = next_line.strip()[2:].strip()
                                 nested_sub_items = []
-                                
+
                                 # Look for deeper nesting
                                 k = j + 1
                                 while k < len(lines):
@@ -289,7 +298,7 @@ class MDTXCompiler:
                                     if not deeper_line.strip():
                                         k += 1
                                         continue
-                                    
+
                                     deeper_indent = len(deeper_line) - len(deeper_line.lstrip())
                                     if deeper_indent > next_indent and deeper_line.strip().startswith('- '):
                                         deeper_text = deeper_line.strip()[2:].strip()
@@ -297,11 +306,11 @@ class MDTXCompiler:
                                         k += 1
                                     else:
                                         break
-                                
+
                                 if nested_sub_items:
                                     nested_html = f'<ul>{"".join(nested_sub_items)}</ul>'
                                     nested_text += nested_html
-                                
+
                                 sub_items.append(f'<li>{self.apply_emphasis(nested_text)}</li>')
                                 j = k
                             elif next_indent == current_indent and next_line.strip().startswith('- '):
@@ -311,28 +320,33 @@ class MDTXCompiler:
                                 # Continuation of current item
                                 item_text += " " + next_line.strip()
                                 j += 1
-                        
+
                         if sub_items:
                             sub_html = f'<ul>{"".join(sub_items)}</ul>'
                             item_text += sub_html
-                        
+
                         items.append(f'<li>{self.apply_emphasis(item_text)}</li>')
                         i = j
                     else:
                         i += 1
-                
+
                 return items
-            
+
             lines = content.splitlines()
             items = parse_nested_list(lines)
             lis = ''.join(items)
-            
+
             if list_type.startswith('o'):
                 parts = list_type.split('-', 1)
                 att = f' type="{parts[1]}"' if len(parts)==2 else ''
                 return f'<ol{att}>{lis}</ol>'
             return f'<ul>{lis}</ul>'
-        return pattern.sub(repl, text)
+
+        # First process lists with explicit 'end list;' markers
+        text = pattern_with_end.sub(repl, text)
+        # Then process lists without 'end list;' markers
+        text = pattern_without_end.sub(repl, text)
+        return text
 
     def process_lists_in_example(self, text: str) -> str:
         """Process lists in example boxes that don't have explicit 'end list;' markers"""
@@ -775,6 +789,9 @@ class MDTXCompiler:
     
     <!-- Table of Contents Generator -->
     <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar -->
+    <script src="../footnote-sidebar.js"></script>
 </body>
 </html>"""
 

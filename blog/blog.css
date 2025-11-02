@@ -268,6 +268,37 @@ body header {
     color: #d73a49;
 }
 
+/* Blog post list styling - match main site style */
+.blog-post ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-left: 2rem;
+}
+
+.blog-post ul li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.blog-post ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #4a4a4a;
+}
+
+.blog-post ol {
+    padding-left: 2rem;
+    margin: 1rem 0;
+}
+
+.blog-post ol li {
+    padding: 0.5rem 0;
+    line-height: 1.65;
+}
+
 /* Ensure all text elements have proper fonts */
 .blog-post p {
     font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -284,6 +315,36 @@ body header {
     color: #4a4a4a;
     border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
+}
+
+.example-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-left: 2rem;
+}
+
+.example-box ul li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.example-box ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #4a4a4a;
+}
+
+.example-box ol {
+    padding-left: 2rem;
+    margin: 1rem 0;
+}
+
+.example-box ol li {
+    padding: 0.5rem 0;
+    line-height: 1.65;
 }
 
 .example-box-title {
@@ -387,6 +448,92 @@ sup a {
 
 sup a:hover {
     text-decoration: underline;
+}
+
+/* Sidebar footnotes for wide screens */
+@media (min-width: 1200px) {
+    .blog-post {
+        position: relative;
+    }
+
+    /* Hide the default footnotes section on wide screens */
+    .footnotes {
+        display: none;
+    }
+
+    /* Sidebar footnote styling */
+    .sidenote {
+        position: absolute;
+        right: -300px;
+        width: 260px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: #666;
+        padding: 0.75rem;
+        margin-top: 0;
+        font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        opacity: 0;
+        transform: translateX(10px);
+        animation: fadeInSlide 0.4s ease-out forwards;
+        transition: background 0.2s ease, border-left 0.2s ease;
+        border-radius: 4px;
+    }
+
+    @keyframes fadeInSlide {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .sidenote-number {
+        color: var(--primary-color);
+        font-weight: 500;
+        margin-right: 0.4rem;
+        font-size: 0.9em;
+    }
+
+    .sidenote a {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
+
+    .sidenote a:hover {
+        color: var(--link-color);
+    }
+
+    .sidenote-backref {
+        text-decoration: none;
+        color: #999;
+        font-size: 0.9em;
+        margin-left: 0.3rem;
+    }
+
+    .sidenote-backref:hover {
+        color: var(--link-color);
+    }
+
+    /* Hover effect on footnote reference */
+    sup a {
+        transition: background 0.2s ease, border-radius 0.2s ease, padding 0.2s ease;
+    }
+
+    sup a:hover {
+        background: #faf9f6;
+        border-radius: 3px;
+        padding: 0 2px;
+    }
+
+    /* Ensure the blog post container can accommodate sidenotes */
+    body {
+        overflow-x: visible;
+    }
+
+    main.blog-post {
+        max-width: 800px;
+        margin-right: auto;
+        margin-left: auto;
+    }
 }
 
 /* Responsive design for mobile */
