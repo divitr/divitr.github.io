@@ -1,3 +1,81 @@
+/* Tag filter buttons */
+.tag-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.tag-filter {
+    padding: 0.3rem 0.75rem;
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #999;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    text-decoration: none;
+}
+
+.tag-filter:hover {
+    color: var(--primary-color);
+}
+
+.tag-filter.active {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Post tags */
+.post-tags {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.post-tags .tag {
+    font-size: 0.8rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: #999;
+    cursor: default;
+    transition: color 0.2s ease;
+    pointer-events: none;
+}
+
+.post-tags .tag::before {
+    content: '#';
+    color: #ccc;
+    margin-right: 0.1rem;
+    transition: color 0.2s ease;
+}
+
+.post-tags .tag.highlighted {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.post-tags .tag.highlighted::before {
+    color: var(--primary-color);
+}
+
+/* No hover effects on tags */
+.post-tags .tag:hover {
+    background: transparent;
+    color: inherit;
+}
+
+/* Empty state message */
+.empty-state-message {
+    padding: 2rem 0;
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+}
+
 /* Blog index styles */
 .blog-posts {
     margin-top: 2rem;
@@ -30,6 +108,9 @@
     margin: 0 0 0.25rem 0;
     font-size: 1.1rem;
     font-weight: normal;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
 }
 
 .blog-post-item h3 a {
@@ -207,20 +288,47 @@ body header {
 
 .blog-post .intro {
     display: block;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     margin-top: 0;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
 }
 
-.blog-post-date {
+.blog-post .intro h1 {
+    font-size: 2rem;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--primary-color, #4a4a4a);
+    margin: 0 0 0.5rem 0;
+}
+
+.blog-post .intro .post-tags {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.blog-post .intro .date {
     font-size: 0.9rem;
+    color: #999;
+    margin: 0;
+}
+
+.blog-post .intro .desc {
+    font-size: 1rem;
     color: #666;
-    margin-bottom: 2rem;
+    line-height: 1.5;
+    margin: 0.5rem 0 0 0;
 }
 
 .blog-post h1 {
     font-size: 2rem;
     font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--primary-color, #4a4a4a);
+}
+
+.blog-post-date {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 2rem;
 }
 
 .blog-post h2 {
@@ -450,90 +558,48 @@ sup a:hover {
     text-decoration: underline;
 }
 
-/* Sidebar footnotes for wide screens */
-@media (min-width: 1200px) {
-    .blog-post {
-        position: relative;
-    }
+/* Footnote tooltip on hover */
+.footnote-tooltip {
+    position: fixed;
+    max-width: 400px;
+    background: #fefdf5;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #666;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
-    /* Hide the default footnotes section on wide screens */
-    .footnotes {
-        display: none;
-    }
+.footnote-tooltip.visible {
+    opacity: 1;
+}
 
-    /* Sidebar footnote styling */
-    .sidenote {
-        position: absolute;
-        right: -300px;
-        width: 260px;
-        font-size: 0.85rem;
-        line-height: 1.5;
-        color: #666;
-        padding: 0.75rem;
-        margin-top: 0;
-        font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        opacity: 0;
-        transform: translateX(10px);
-        animation: fadeInSlide 0.4s ease-out forwards;
-        transition: background 0.2s ease, border-left 0.2s ease;
-        border-radius: 4px;
-    }
+.footnote-tooltip a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
 
-    @keyframes fadeInSlide {
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
+.footnote-tooltip a:hover {
+    color: var(--link-color);
+}
 
-    .sidenote-number {
-        color: var(--primary-color);
-        font-weight: 500;
-        margin-right: 0.4rem;
-        font-size: 0.9em;
-    }
+/* Hover effect on footnote reference */
+sup a {
+    transition: background 0.2s ease;
+    padding: 0 2px;
+    margin: 0 -2px;
+    border-radius: 3px;
+}
 
-    .sidenote a {
-        color: var(--primary-color);
-        text-decoration: underline;
-    }
-
-    .sidenote a:hover {
-        color: var(--link-color);
-    }
-
-    .sidenote-backref {
-        text-decoration: none;
-        color: #999;
-        font-size: 0.9em;
-        margin-left: 0.3rem;
-    }
-
-    .sidenote-backref:hover {
-        color: var(--link-color);
-    }
-
-    /* Hover effect on footnote reference */
-    sup a {
-        transition: background 0.2s ease, border-radius 0.2s ease, padding 0.2s ease;
-    }
-
-    sup a:hover {
-        background: #faf9f6;
-        border-radius: 3px;
-        padding: 0 2px;
-    }
-
-    /* Ensure the blog post container can accommodate sidenotes */
-    body {
-        overflow-x: visible;
-    }
-
-    main.blog-post {
-        max-width: 800px;
-        margin-right: auto;
-        margin-left: auto;
-    }
+sup a:hover {
+    background: #faf9f6;
 }
 
 /* Responsive design for mobile */

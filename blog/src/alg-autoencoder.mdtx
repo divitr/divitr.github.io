@@ -3,7 +3,7 @@ req: physics;
 title: Algebraic Autoencoders;
 date: [In Progress];
 desc: What happens if we remove some limitations on how latent spaces must behave?;
-tags: ;
+tags: ml, math;
 
 ## Overview
 

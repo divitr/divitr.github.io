@@ -646,12 +646,24 @@ class MDTXCompiler:
         posts.sort(key=sort_key, reverse=True)
         
         # Generate the blog posts HTML in the new clean format
+        # Define canonical tag order
+        tag_order = ['math', 'physics', 'ml', 'misc']
+
         posts_html = []
         for post in posts:
-            posts_html.append(f'''            <div class="blog-post-item">
+            # Generate tags HTML if tags exist
+            tags_html = ''
+            if post.get('tags') and post['tags'].strip():
+                tag_list = [tag.strip() for tag in post['tags'].split(',') if tag.strip()]
+                # Sort tags by canonical order
+                tag_list.sort(key=lambda t: tag_order.index(t) if t in tag_order else 999)
+                if tag_list:
+                    tags_html = '<div class="post-tags">' + ''.join([f'<span class="tag" data-tag="{tag}">{tag}</span>' for tag in tag_list]) + '</div>'
+
+            posts_html.append(f'''            <div class="blog-post-item" data-tags="{post['tags']}">
                 <span class="post-date">{post['date']}</span>
                 <div class="post-content">
-                    <h3><a href="/blog/{post['filename']}">{post['title']}</a></h3>
+                    <h3><a href="/blog/{post['filename']}">{post['title']}</a>{tags_html}</h3>
                     <p class="post-description">{post['desc']}</p>
                 </div>
             </div>''')
@@ -663,10 +675,24 @@ class MDTXCompiler:
         if index_path.exists():
             current_content = index_path.read_text(encoding='utf8')
 
-            # Replace the posts section (between <h2>Posts</h2> and </section>)
+            # Replace the posts section while preserving tag filters
             import re
-            pattern = r'(<h2>Posts</h2>).*?(</section>)'
-            replacement = r'\1\n' + posts_section + r'\n        \2'
+            if '<div class="tag-filters">' in current_content:
+                # Replace all blog-post-items after tag-filters, before </section>
+                pattern = r'(<div class="tag-filters">.*?</div>)\s*<div class="blog-post-item".*?(?=\s*</section>)'
+                replacement = r'\1\n' + posts_section + r'\n        '
+            else:
+                # No tag filters yet, add them along with posts
+                pattern = r'(<h2>Posts</h2>)\s*(.*?)(?=\s*</section>)'
+                tag_filters = '''            <div class="tag-filters">
+                <button class="tag-filter active" data-filter="all">all</button>
+                <button class="tag-filter" data-filter="math">math</button>
+                <button class="tag-filter" data-filter="physics">physics</button>
+                <button class="tag-filter" data-filter="ml">ml</button>
+                <button class="tag-filter" data-filter="misc">misc</button>
+            </div>
+'''
+                replacement = r'\1\n' + tag_filters + posts_section + r'\n        '
 
             new_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
 
@@ -732,7 +758,18 @@ class MDTXCompiler:
         else:
             head_reqs = ""
         title     = meta.get('title','Untitled')
-        
+        tags      = meta.get('tags', '')
+
+        # Generate tags HTML for the post
+        tags_html = ''
+        if tags and tags.strip():
+            tag_order = ['math', 'physics', 'ml', 'misc']
+            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+            # Sort tags by canonical order
+            tag_list.sort(key=lambda t: tag_order.index(t) if t in tag_order else 999)
+            if tag_list:
+                tags_html = '<div class="post-tags">' + ''.join([f'<span class="tag" data-tag="{tag}">{tag}</span>' for tag in tag_list]) + '</div>'
+
         # Get current timestamp for footer
         compile_time = datetime.now().strftime("%b %d, %Y at %H:%M")
         
@@ -750,11 +787,32 @@ class MDTXCompiler:
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../blog.css">
     <script src="../blog_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {{
+            startup: {{
+                pageReady: () => {{
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {{
+                        if (document.readyState === 'loading') {{
+                            document.addEventListener('DOMContentLoaded', () => {{
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            }});
+                        }} else {{
+                            setTimeout(resolve, 100);
+                        }}
+                    }}).then(() => MathJax.startup.defaultPageReady());
+                }}
+            }}
+        }};
+    </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
 </head>
 
 <body>
@@ -763,6 +821,7 @@ class MDTXCompiler:
     <main class="blog-post">
         <section class="intro">
             <h1>{title}</h1>
+            {tags_html}
 {date_html}{desc_html}        </section>
 
 {body}
@@ -774,23 +833,10 @@ class MDTXCompiler:
         </div>
     </footer>
 
-    <script>
-        // Debug header loading
-        console.log('Blog post loaded, checking header...');
-        console.log('Current path:', window.location.pathname);
-        console.log('Header script loaded:', typeof loadBlogHeader !== 'undefined');
-        
-        setTimeout(() => {{
-            const header = document.getElementById('header-placeholder');
-            console.log('Header placeholder:', header);
-            console.log('Header content:', header.innerHTML);
-        }}, 1000);
-    </script>
-    
-    <!-- Table of Contents Generator -->
+    <!-- Table of Contents Generator - loads before MathJax renders -->
     <script src="../toc-generator.js"></script>
 
-    <!-- Footnote Sidebar -->
+    <!-- Footnote Sidebar - loads before MathJax renders -->
     <script src="../footnote-sidebar.js"></script>
 </body>
 </html>"""

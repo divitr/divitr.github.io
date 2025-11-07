@@ -1,10 +1,17 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initTOC() {
     function truncateText(text, maxLength = 20) {
         return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
     }
 
     function createIdFromText(text) {
         return text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    }
+
+    function getHeadingHTML(element) {
+        // Clone the element to avoid modifying the original
+        const clone = element.cloneNode(true);
+        // Return innerHTML to preserve LaTeX markup
+        return clone.innerHTML;
     }
 
     const tocContainer = document.createElement('div');
@@ -180,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sectionLink = document.createElement('a');
         sectionLink.href = `#${h2.id}`;
         sectionLink.className = 'toc-section-title';
-        sectionLink.textContent = truncateText(h2.textContent, 25);
+        sectionLink.innerHTML = truncateText(getHeadingHTML(h2), 25);
 
         const subsectionsContainer = document.createElement('div');
         subsectionsContainer.className = 'toc-subsections';
@@ -198,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const subsectionLink = document.createElement('a');
             subsectionLink.href = `#${h3.id}`;
             subsectionLink.className = 'toc-subsection-title';
-            subsectionLink.textContent = truncateText(h3.textContent, 25);
+            subsectionLink.innerHTML = truncateText(getHeadingHTML(h3), 25);
 
             const subsectionElement = document.createElement('div');
             subsectionElement.className = 'toc-subsection';
@@ -276,4 +283,12 @@ document.addEventListener('DOMContentLoaded', () => {
     highlightCurrentSection();
     window.addEventListener('scroll', highlightCurrentSection);
     window.addEventListener('resize', highlightCurrentSection);
-});
+
+    // Trigger MathJax to render TOC content if available
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([tocContainer]).catch((err) => console.log('MathJax TOC error:', err));
+    }
+}
+
+// Initialize TOC after DOM loads (before MathJax renders)
+document.addEventListener('DOMContentLoaded', initTOC);

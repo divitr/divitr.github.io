@@ -7,11 +7,32 @@
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../blog.css">
     <script src="../blog_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algebraic Autoencoders</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {
+            startup: {
+                pageReady: () => {
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => {
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            });
+                        } else {
+                            setTimeout(resolve, 100);
+                        }
+                    }).then(() => MathJax.startup.defaultPageReady());
+                }
+            }
+        };
+    </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algebraic Autoencoders</title>
 </head>
 
 <body>
@@ -20,6 +41,7 @@
     <main class="blog-post">
         <section class="intro">
             <h1>Algebraic Autoencoders</h1>
+            <div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="ml">ml</span></div>
             <p class="date">[In Progress]</p>
             <p class="desc">What happens if we remove some limitations on how latent spaces must behave?</p>
         </section>
@@ -66,27 +88,14 @@ Notes:
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Nov 02, 2025 at 15:14 | <a href="../src/alg-autoencoder.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Nov 06, 2025 at 18:36 | <a href="../src/alg-autoencoder.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 
-    <script>
-        // Debug header loading
-        console.log('Blog post loaded, checking header...');
-        console.log('Current path:', window.location.pathname);
-        console.log('Header script loaded:', typeof loadBlogHeader !== 'undefined');
-        
-        setTimeout(() => {
-            const header = document.getElementById('header-placeholder');
-            console.log('Header placeholder:', header);
-            console.log('Header content:', header.innerHTML);
-        }, 1000);
-    </script>
-    
-    <!-- Table of Contents Generator -->
+    <!-- Table of Contents Generator - loads before MathJax renders -->
     <script src="../toc-generator.js"></script>
 
-    <!-- Footnote Sidebar -->
+    <!-- Footnote Sidebar - loads before MathJax renders -->
     <script src="../footnote-sidebar.js"></script>
 </body>
 </html>

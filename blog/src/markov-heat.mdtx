@@ -3,7 +3,7 @@ req: physics;
 title: A Markov Picture of Heat;
 date: Aug. 23, 2025;
 desc: A derivation of the heat equation from a stochastic model of energy exchange;
-tags: ;
+tags: physics;
 
 ## Motivation
 Fourier’s law and the heat equation are phenomenological; they describe how temperature fields evolve at macroscopic scales. However, statistical mechanics is concerned with deriving macroscopic properties from microscopic interactions and behaviors. Thus, a natural question is whether we can derive these laws from assumptions that are (i) local, (ii) Markov (memoryless), and (iii) energy-conserving. In the below, we go through a derivation of the discrete Laplacian and how it converges to the heat equation in the hydrodynamic limit.

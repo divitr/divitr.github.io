@@ -3,7 +3,7 @@ req: physics;
 title: Every Model is Kernel Ridge Regression;
 date: Sep 13, 2025;
 desc: Some notes on Domingos' paper: Every Model Learned by Gradient Descent Is Approximately a Kernel Machine;
-tags: ;
+tags: ml;
 
 ## Background
 

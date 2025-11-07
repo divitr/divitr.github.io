@@ -1,6 +1,7 @@
 title: Hopfield Networks;
 date: Jan 19, 2025;
 desc: A quick implementation of a Hopfield network in Python;
+tags: ml, physics;
 
 # Hopfield Networks
 
