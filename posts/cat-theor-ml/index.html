@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <div style='display:none'>\(\require{physics}\)</div>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../posts.css">
+    <script src="../posts_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Category Theoretic View of Machine Learning</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {
+            startup: {
+                pageReady: () => {
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => {
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            });
+                        } else {
+                            setTimeout(resolve, 100);
+                        }
+                    }).then(() => MathJax.startup.defaultPageReady());
+                }
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>A Category Theoretic View of Machine Learning</h1>
+            <div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div>
+            <p class="date">Nov 02, 2025</p>
+            <p class="desc">Using symmetries to better understand how to design attention kernels</p>
+        </section>
+
+<h2>Overview</h2>
+<p>Deep learning models often bake in symmetry and locality through ad-hoc tricks (e.g., convolutional tying, RoPE embeddings, \(\text{SE(3)}\)<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup> kernels, etc.). Our goal is to see if we can derive attention kernels from a declared symmetry and geometry, rather than hand-designing it.</p>
+<h2>Preliminaries</h2>
+<h3>Categories</h3>
+<div class="example-box">
+<div class="example-box-title">Category</div>
+<div class="example-box-prompt">
+A category \(\mathcal C\) composes objects. It consists of 
+
+    <ul><li>Objects (the "things"), e.g., sets, vector spaces, etc., and</li><li>Morphisms \(f: X \to Y\), the maps between objects,</li></ul>
+    so that we respect composition, i.e., \(g \circ f: X \to Z\) for \(f: X \to Y, g: Y \to Z\), and we have an identity morphism \(1_X: X\to X\) for each object.
+
+    Composition is associative (\(h \circ (g \circ f) = (h \circ g) \circ f\)), and the identity acts trivially (\(f \circ 1_X = f = 1_Y \circ f\))
+</div>
+</div>
+<p>Categories are particularly useful because they give us (i) a nice way to think about symmetry, and (ii) a way to "translate" problems from one domain to another via functors.</p>
+<h3>Functors</h3>
+<div class="example-box">
+<div class="example-box-title">Functor</div>
+<div class="example-box-prompt">
+A functor \(F: \mathcal C \to \mathcal D\) maps objects and morphisms while preserving composition:
+\begin{equation}
+        F(f: X \to Y) = F(f): F(X) \to F(Y),\quad F(g \circ f) = F(g) \circ F(f)
+\end{equation}
+</div>
+</div>
+<p>A functor acts as an embedding that maps geometric inputs into feature spaces.</p>
+<p>If this embedding respects symmetries (e.g. rotation, permutation), we call it an equivariant functor: \begin{equation} F(g \cdot x) = \rho(g)F(x), \end{equation} where \(\rho(g)\) is a tensor representation of the group action on outputs.</p>
+<h3>Natural Transformations</h3>
+<p>Two functors \(F, G: \mathcal C \to \mathcal D\) are related by a natural transformation \(\eta_X: F \Rightarrow G\) if for every object X, we have that \begin{equation} \eta_X: F(X) \to G(X) \end{equation} so that for every morphism \(f: X \to Y\), \begin{equation} G(f) \circ \eta_X = \eta_Y \circ F(f). \end{equation}</p>
+<p>This is effectively equivalent to saying that changing the representation then applying a map is the same as applying a map then changing representation.</p>
+<h3>Ends</h3>
+<div class="example-box">
+<div class="example-box-title">End</div>
+<div class="example-box-prompt">
+An end is a universal construction that represents the space of maps invariant under a family of morphisms. Formally, given a functor
+\begin{equation}
+        F: \mathcal{C}^{\rm{op}} \times \mathcal{C} \to \mathbf{Set},
+\end{equation}
+    the end
+\begin{equation}
+        \int_{C \in \mathcal{C}} F(C, C)
+\end{equation}
+    is the equalizer of all pairs of maps \(F(f, 1)\) and \(F(1, f)\) for every morphism \(f\) in \(\mathcal{C}\).
+
+    Intuitively, it is the space of "globally consistent" elements -- things that remain unchanged as we move along all morphisms.
+</div>
+</div>
+<p>Intuitively, ends enforce symmetry consistency.</p>
+<h3>Coends</h3>
+<div class="example-box">
+<div class="example-box-title">Coend</div>
+<div class="example-box-prompt">
+A coend is the dual notion of an end: instead of enforcing invariance, it glues local data into a consistent global object.
+    Formally, for a functor
+\begin{equation}
+        F: \mathcal{C}^{\mathrm{op}} \times \mathcal{C} \to \mathbf{Set},
+\end{equation}
+    the coend
+\begin{equation}
+        \int^{C \in \mathcal{C}} F(C, C)
+\end{equation}
+    is the coequalizer that identifies elements across overlaps induced by morphisms in \(\mathcal{C}\).<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup>
+</div>
+</div>
+<p>Intuitively, coends enforce spatial consistency.</p>
+<h3>Fibrations</h3>
+<p>A fibration is a morphism of categories \(\pi: \mathcal{E} \to \mathcal{B}\) that organizes "fibers" of structured objects over a base space. Intuitively, it tells us how a family of parameter spaces (the total category \(\mathcal{E}\)) projects onto model configurations (the base \(\mathcal{B}\)).</p>
+<h2>Putting it All Together</h2>
+<p>Equipped with the basic tools (categories, functors, natural transformations, and (co)ends), we are now ready to begin using these tools to better understand machine learning itself through the lens of category theory.</p>
+<p>The key theme of the following is more or less that learning is composition inside a structured category.</p>
+<h3>Computation as a Category</h3>
+<p>A deep network is a morphism in a computational category \(\mathcal C\): \begin{equation} f_\theta: X \to Y \end{equation} where objects are data/feature spaces and morphisms are differentiable<sup><a href="#fn3" id="fnref3" aria-label="Footnote 3">3</a></sup> maps parameterized by \(\theta\).</p>
+<p>Then,</p>
+<ul><li>composition corresponds to stacking layers \((h \circ g) (x) = h(g(x))\),</li><li>identity corresponds to the skip connection,</li><li>and associativity guarantees that we may regroup computations arbitrarily (the chain rule is associative composition).</li></ul>
+<p>Then, because differentiation (backprop) is itself a functor \(RD: \mathcal C \to \mathcal C\), the category is closed under gradients. Thus, learning is not some new addition to the model -- it is a morphism living in the same category.</p>
+<h3>Symmetry and Equivariance as Functorial Structure</h3>
+<p>A symmetry group \(G\) acting on data \(X\) induces a category of representations, where morphisms represent the group action.</p>
+<p>An equivariant layer is then just a functor that preserves the action: \begin{equation} F: \rm{Rep}(G,X) \to \rm{Rep}(G,Y) \end{equation} so that \begin{equation} F(g \cdot x) = \rho_Y(g)F(x). \end{equation}</p>
+<p>Thus, CNNs, \(SE(3)\) Transformers and permutation-invariant networks are all functors that commute with their respective group actions. From this category theoretic view, we have the guarantee that a composition of equivariant functors is equivariant, so that equivariance is closed under composition.</p>
+<h3>Universality</h3>
+<p>Every architecture embeds assumptions about what should remain the same (invariance) and what should fit together (locality). Category theory expresses these as universal constructions:</p>
+<ul><li>The End \(\int_C F(C,C)\) is the “maximally consistent” object under all morphisms -- the space of global invariants.</li><li>The Coend \(\int^C F(C,C)\) is the “minimal gluing” that merges overlapping structures.</li></ul>
+Thus, together, Ends and Coends provide the principles that organize geometry and locality in learning systems.
+<h3>Learning Dynamics as Fibration</h3>
+<p>Training is more than just optimization in parameter space -- it is a geometric process.</p>
+<p>We may think of parameters \(\mathcal M\) as fibers sitting over models \(\Theta\) via a fibration \begin{equation} \pi: \mathcal M \to \Theta. \end{equation}</p>
+<p>Each point in \(\mathcal M\) (a specific parameterization) correpsonds to the same function \(f_\theta\) in \(\Theta\). A good learning rule is then one that moves "horizontally" along this bundle so that it changes the function itself, not just the coordinates.</p>
+<p>A cartesian (natural) update \begin{equation} T \circ \phi = \phi \circ T \end{equation} commutes with any reparametrization \(\phi\), meaning it is coordinate-free. This is the fundamental principle behind natural gradient and K-FAC methods.</p>
+<h2>Gauge Theories</h2>
+<p>The categorical framework we just built is near-identical to gauge theories in physics.</p>
+<h3>Fields, Bundles, and Equivariance</h3>
+<p>A field in physics assigns a quantity (e.g., a vector or tensor) to every point in space, subject to transformation laws under symmetries. Mathematically, this is a functor: \begin{equation} F: \text{(Spacetime)} \to \text{(Fields)} \end{equation} that maps each region to its field content and each coordinate transformation to the corresponding tensor transformation.</p>
+<p>Equivariance in ML plays the same role: \begin{equation} F(g \cdot x) = \rho(g) F(x), \end{equation} where \(g\) is a symmetry (rotation, translation, permutation) and \(\rho(g)\) is its representation on the output space. An equivariant network is then a discrete field theory: a functor assigning representations to points on the data manifold.</p>
+<h3>Ends as Gauge Constraints</h3>
+<p>In a gauge theory, physical quantities are those that remain invariant under local transformations. An end \begin{equation} \int_{g \in G} F(g,g) \end{equation} plays exactly this role: it collects all quantities consistent under the action of every \(g \in G\). In our framework, the end defines the space of legal attention kernels -- those consistent with the declared symmetry. This is the categorical version of a gauge constraint.</p>
+<h3>Coends as Bundle Gluing</h3>
+<p>A gauge field is not defined globally but patched together from local charts related by transition functions. The coend \begin{equation} \int^{U_i \cap U_j} F(U_i, U_j) \end{equation} formalizes this gluing. This ensures smooth global behavior, much like a well-constructed vector bundle or gauge potential.</p>
+<h3>Fibration as Connection</h3>
+<p>In gauge theory, a connection specifies how to move (parallel transport) along a fiber bundle without leaving the gauge orbit. In our framework, a fibration \begin{equation} \pi: \mathcal M \to \Theta \end{equation} plays the same role: it organizes parameter space (\(\mathcal M\)) over model space (\(\Theta\)), and the cartesian update \begin{equation} T \circ \phi = \phi \circ T \end{equation} ensures that learning follows a connection that is natural -- invariant to reparameterization, just as covariant derivatives respect the gauge connection.</p>
+<h2>Deriving Known Kernels</h2>
+<p>This is cool and all, but without any application, it's not particularly useful. Here, we use the categorical language to derive some known results.</p>
+<p>Namely, by recognizing that an end computes the space of all symmetry-consistent kernels, we may see that all equivariant attention mechanisms are instances of this same universal construction.</p>
+<h3>The End to Equivariant Kernels</h3>
+<p>Given a group \(G\) acting on an input manifold \(X\) and an output representation \(\rho_Y\) on \(Y\), the space of all admissible kernels is the end: \begin{equation} \mathsf{Ker}_G(X, Y) = \int_{g \in G} \mathcal{C}\left(g \cdot (X \times X),\, g \cdot \mathrm{End}(Y)\right). \end{equation}</p>
+<p>In other words, that means that \(K\) commutes with the symmetry action, the categorical analog of a gauge-invariant kernel.</p>
+<h3>Translations: Convolutions and CNN Tying</h3>
+<p>For \(G = \mathbb{R}^2\) (translations on the image plane) acting by shifts \(g \cdot x = x + g\), equivariance requires \begin{equation} K(q + g, k + g) = K(q, k). \end{equation} Thus, \(K(q, k) = \kappa(k - q)\): the kernel depends only on relative position. This is exactly the weight-tying rule of convolution -- a convolution layer is simply an end over the translation group.</p>
+<h3>Rotations: RoPE and \(SO(2)\) Equivariant Attention</h3>
+<p>For \(G = \mathrm{SO}(2)\)<sup><a href="#fn4" id="fnref4" aria-label="Footnote 4">4</a></sup>, the end yields kernels invariant under rotation: \begin{equation} K(R_\phi q, R_\phi k) = R_\phi K(q, k) R_\phi^{-1}. \end{equation} Parameterizing \(K\) in polar coordinates gives \begin{equation} K(q, k) = \sum_{\ell=0}^{L} f_\ell(r) [\cos(\ell \phi), \sin(\ell \phi)], \end{equation} where \(r = \abs{k - q}\) and \(\phi\) is the relative angle. This recovers rotational position embeddings (RoPE) and circular harmonics kernels as the unique solutions to the equivariance constraint.</p>
+<h3>3D Rotations: \(SE(3)\) and Molecular Attention</h3>
+<p>For \(G = \mathrm{SO}(3)\)<sup><a href="#fn5" id="fnref5" aria-label="Footnote 5">5</a></sup> or \(E(3)\)<sup><a href="#fn6" id="fnref6" aria-label="Footnote 6">6</a></sup>, the end requires rotational (and possibly translational) invariance: \begin{equation} K(g q, g k) = K(q, k). \end{equation} Expanding in spherical harmonics gives \begin{equation} K(x, y) = \sum_{\ell=0}^L a_\ell P_\ell(x \cdot y), \end{equation} where \(P_\ell\) are Legendre polynomials or real spherical harmonics. These are the basis functions used in \(SE(3)\) Transformers and tensor field networks.</p>
+<h3>Permutations: DeepSets and Graph Attention</h3>
+<p>For \(G = S_n\)<sup><a href="#fn7" id="fnref7" aria-label="Footnote 7">7</a></sup>, equivariance requires \begin{equation} K(\sigma q, \sigma k) = K(q, k). \end{equation} The unique linear form is \begin{equation} K = \alpha I + \beta \mathbf{1}\mathbf{1}^\top, \end{equation} which is exactly the kernel used in DeepSets and permutation-equivariant graph networks. If we further restrict interactions by adjacency, we recover message passing.</p>
+<h2>Conclusion</h2>
+<p>Thus, we have that <ul><li>category theory gives the language (composition, functors, ends, coends, fibrations),</li><li>physics supplies the intuition (symmetries, gluing, connections),</li><li>machine learning is the instantiation (attention, patches, optimization).</li></ul> At some point, it'd probably be cool to write up some code that computes legal kernels given the symmetries that your data respects, but that's a project for later.</p>
+<div class="footnotes">
+<ol>
+<li id="fn1">\(SE(3)\) is the special Euclidean group in 3D: the group of rigid body motions (rotations + translations) in 3D space. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn2">Note the superscript \(C \in \mathcal{C}\) instead of the subscript in the end; this is how we denote duality and know that this is a coend not an end (similar to upper-lower index notation). <a href="#fnref2" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn3">We require differentiability so that backprop works. <a href="#fnref3" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn4">\(SO(2)\) is the special orthogonal group in 2D: the group of rotations in the plane. <a href="#fnref4" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn5">Similarly to \(SO(2)\), \(SO(3)\) is the special orthogonal group in 3D: the group of rotations in 3D space. <a href="#fnref5" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn6">\(E(3)\) is the Euclidean group in 3D: rotations, reflections, translations in 3D (similar to \(SE(3)\)). \(SE(3)\) is a subgroup of \(E(3)\). <a href="#fnref6" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn7">\(S_n\) is the symmetric group: the group of all permutations of \(n\) elements. <a href="#fnref7" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+</ol></div>
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled Nov 06, 2025 at 18:36 | <a href="../src/cat-theor-ml.mdtx" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <!-- Table of Contents Generator - loads before MathJax renders -->
+    <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar - loads before MathJax renders -->
+    <script src="../footnote-sidebar.js"></script>
+</body>
+</html>

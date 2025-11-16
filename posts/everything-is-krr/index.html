@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <div style='display:none'>\(\require{physics}\)</div>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../posts.css">
+    <script src="../posts_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Every Model is Kernel Ridge Regression</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {
+            startup: {
+                pageReady: () => {
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => {
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            });
+                        } else {
+                            setTimeout(resolve, 100);
+                        }
+                    }).then(() => MathJax.startup.defaultPageReady());
+                }
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>Every Model is Kernel Ridge Regression</h1>
+            <div class="post-tags"><span class="tag" data-tag="ml">ml</span></div>
+            <p class="date">Sep 13, 2025</p>
+            <p class="desc">Some notes on Domingos' paper: Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</p>
+        </section>
+
+<h2>Background</h2>
+<p>Over the past year or so, I've been working a lot with kernel ridge regression. It provides a lot of neat theoretical tools and insights (see e.g. <a href="http://divitr.github.io/posts/eigenlearning">this post</a>), but much of the criticism of studying something like KRR is that it's rarely used anymore -- nearly all modern ML is deep learning, and KRR is not. <a href="https://arxiv.org/abs/2012.00152">Domingos' paper</a> shows that every gradient descent learned algorithm is approximately a kernel machine<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>, allowing a lot of the theoretical analysis that we have for KRR to be ported over to deep learning. In what follows, we'll first study the "richness scale" of neural networks and formally define the kernel regime (for more on the NTK, see <a href="http://divitr.github.io/posts/ntk">this post</a>), then go through Domingos' paper and reproduce the main proof.</p>
+<h2>The Richness Scale</h2>
+<p>Training a neural network can be broken down into two complementary processes: inference and backpropagation. In the inference stage, we get predictions from our model on some data; then in the backprop stage, we update our model's hidden representations to reduce its loss (some metric of how "wrong" our model's prediction was). Via some nice math<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup>, we may show that this entire process of training a neural network is dependent only on a single hyperparameter: the step size \(\norm{\Delta h}\) we use in gradient descent.</p>
+<p>This step size governs where on a so-called "richness" scale a model lives. At one end, we have the lazy regime (NTK). Here, updates are infinitesimal and hidden representations barely move. The neural network behaves like a fixed feature map and training reduces to kernel ridge regression with the neural tangent kernel (NTK). All the expressive power of our model comes from the initialization, not any representation learning. On the other end, we have the rich regime (\(\mu\)P); here updates are large enough that hidden features evolve significantly during training. Now the network learns new representations, breaking away from the fixed NTK. A good statistical mechanics analogy is to think of the effective update size as a control parameter for our system. In the lazy regime, the model behaves almost as a fixed lattice, but in the rich regime, it's less rigid and more like a fluid.</p>
+<p>Formally, we index the richness scale by how the step size compares to width. For a layer of width \(n\), if the effective learning rate scales like \(O(1/n)\), then activations barely move (lazy), but if it scales like \(O(1)\) representations evolve substantially (rich). If we take our model to the infinite-width limit, we recover the NTK, where our model is identically a kernel machine. In the next section, we show how even at intermediate richness or in the \(\mu\)P regime, we may approximate a model as a sequence of effective kernels.</p>
+<h2>Preliminaries</h2>
+<h3>Kernel Machines</h3>
+<p>Before beginning the main result, it's a good idea to formally define kernel machines. Taken from Domingos, a kernel machine is a model of the form \begin{equation} \hat{y} = g\left(\sum_i a_i K(x, x_i) + b \right), \end{equation} where \(g\) is some nonlinearity, \((x_i)\) are training data points, \(x\) is our query data point, \(K\) is our kernel, which measures the similarity of its inputs, and \((a_i), b\) are learned parameters. Kernels can be predefined or learned, but the main idea is that they give us some comparison or notion of similarity between data points. From the above form, it is clear that we may view a kernel machine as a single-layer neural network, with the kernel as the nonlinearity.</p>
+<h3>Gradient Descent</h3>
+<p>It's also useful to recap gradient descent before moving on: gradient descent is an iterative algorithm used to train deep neural networks, in which we define a loss function \(\mathcal{L}(y_i, \hat{y}_i)\) which tells us how wrong our model's prediction \(\hat{y}_i\) is given the true answer \(y_i\). Now, given an initial parameter vector \(w_0\), gradient descent computes the loss as a function of the model's parameters (since \(\hat{y}_i\) is a function of the model's parameters at any given step \(w_s\), we may write \(\mathcal{L}(w_s)\)) and iteratively updates the parameter vector \(w\) by some step size \(\eta\) until we reach a point where the gradient is 0. Written out, we have \begin{equation} w_{s+1} = w_s - \eta \nabla_w \mathcal{L}(w_s). \end{equation}</p>
+<h3>Path Kernels</h3>
+<p>The result in the paper shows that the kernel machine resulting from gradient descent uses the path kernel, defined as \begin{equation} K(x, x^\prime) = \int_{c(t)} \nabla_w y(x) \cdot \nabla_w y(x^\prime) \ dt. \end{equation}</p>
+<p>Here, \(c(t)\) is the path taken by the parameters during gradient descent, so the full path kernel \(K\) is simply the integral of the dot product of the model’s gradients at the two points over the path. Intuitively, this measures how similarly the model at the two data points varies during learning.</p>
+<h2>Derivation</h2>
+<p>Let us first define the tangent kernel: the tangent kernel associated with a function \(f_w(x)\) and parameter vector \(v\) is \begin{equation} K_{f,v}^g (x, x^\prime) = \nabla_w f_w(x) \cdot \nabla_w f_w(x^\prime), \end{equation} with the gradients taken at \(v\). Then, we may define the path kernel associated with function \(f_w(x)\) and curve \(c(t)\) is \begin{equation} K^p_{f,c}(x, x^\prime) = \int_{c(t)} K^g_{f,w(t)}(x, x^\prime) \ dt. \end{equation}</p>
+<h3>Theorem</h3>
+<p>Let us consider a model \(\hat{y} = f_w(x)\), where \(f\) is a differentiable function of \(w\), that is learned via gradient descent from data \(\{(x_i, y_i)\}_{i=1}^m\) with a differentiable loss function \(\mathcal{L} = \sum_i \mathcal{L}(y_i, \hat{y}_i)\) and learning rate \(\eta\). Then, \begin{equation} \lim_{\eta \to 0} \hat{y} = \sum_{i=1}^m a_i K(x, x_i) + b, \end{equation} where \(K\) is the path kernel associated with \(f_w(x)\) and the path taken by the parameters during gradient descent, \(a_i \doteq - \pdv{\mathcal{L}}{y_i}\) along the path weighted by the corresponding tangent kernel, and \(b\) is the initial model.</p>
+<h3>Proof</h3>
+<p>In the infinitesimal update limit (\(\eta \to 0\)), we recover the gradient flow ODE \begin{equation} \dv{w(t)}{t} = - \nabla_w \mathcal{L}(w(t)). \end{equation}</p>
+<p>Then, for any differentiable function of the weights, we have by chain rule that \begin{equation} \dv{y}{t} = \sum_{j=1}^d \pdv{y}{w_j} \pdv{w_j}{t} = \sum_{j=1}^d \pdv{y}{w_j} \left(-\pdv{\mathcal{L}}{w_j}\right), \end{equation} where the second equality follows from the gradient flow ODE. Since the loss function is additive by construction, and invoking the chain rule, we may rewrite as \begin{equation} \dv{y}{t} = \sum_{j=1}^d \pdv{y}{w_j} \left(- \sum_{i=1}^d \pdv{\mathcal{L}}{y_i} \pdv{y_i}{w_j}\right), \end{equation} and rearranging terms gives \begin{equation} \dv{y}{t} = - \sum_{i=1}^d \pdv{\mathcal{L}}{y_i} \sum_{j=1}^d \pdv{y}{w_j} \pdv{y_i}{w_j}. \end{equation}</p>
+<p>Defining \(\mathcal{L}^\prime (y_i, \hat{y}_i) \doteq \pdv{\mathcal{L}}{y_i}\) as the loss derivative for the \(i\)th output and invoking the definition of the tangent kernel, we have \begin{equation} \dv{y}{t} = - \sum_{i=1}^m \mathcal{L}^\prime (y_i, \hat{y}_i) K^{g}_{f, w(t)}(x, x_i). \end{equation}</p>
+<p>Let \(y_0\) denote the initial model prior to gradient descent. Then, for the final model \(y\), \begin{equation} \lim_{\eta \to 0} y = y_0 - \int_{c(t)} \sum_{i=1}^m \mathcal{L}^\prime(y_i, \hat{y}_i) K^{g}_{f, w(t)}(x, x_i) \ dt. \end{equation}</p>
+<p>If we multiply and divide by \(\int_{c(t)} K^{g}_{f, w(t)}(x, x_i) \ dt\), we have \begin{equation} \lim_{\eta \to 0} y = y_0 - \sum_{i=1}^m \left( \frac{\int_{c(t)} K^{g}_{f, w(t)}(x, x_i) \mathcal{L}^\prime(y_i, \hat{y}_i) \ dt}{\int_{c(t)} K^{g}_{f, w(t)}(x, x_i) \ dt}\right) \int_{c(t)} K^{g}_{f, w(t)}(x, x_i) \ dt. \end{equation}</p>
+<p>Defining the average loss derivative weighted by similarity to \(x\) as \(\bar{\mathcal{L}}^\prime(y_i, \hat{y}_i) = \int_{c(t)} K^{g}_{f, w(t)}(x, x_i) \mathcal{L}^\prime(y_i, \hat{y}_i) \ dt / \int_{c(t)} K^{g}_{f, w(t)}(x, x_i) \ dt\) and substituting the definition of the path kernel yields \begin{equation} \lim_{\eta \to 0} y = y_0 - \sum_{i=1}^m \bar{\mathcal{L}}^\prime(y_i, \hat{y}_i) K^p_{f,c}(x, x_i) \end{equation} as claimed. Note that this follows exactly the form of a kernel machine, with \(K(x, x_i) \doteq K^p_{f,c}(x, x_i)\), \(a_i \doteq -\bar{\mathcal{L}}^\prime(y_i, \hat{y}_i)\), and \(b \doteq y_0\).</p>
+<h2>Interpretation</h2>
+<p>The proof of the above is a rather simple and straightforward result, but has many important implications. Firstly and most importantly, it justifies the use of kernel methods in the analysis of deep learning models. It tells us that regardless of where models lie on the richness scale, they behave as kernel machines; either described by a fixed Neural Tangent Kernel in the lazy regime, or by an evolving path kernel in the intermediate and rich regimes. On a broader scale, the result presented tells us that there exists a deep theoretical connection between kernel machines and deep learning: all deep learning models are continuously interpolating between different kernel machines.</p>
+<h2>References</h2>
+<ol><li><a href="https://arxiv.org/abs/2404.19719">The lazy (NTK) and rich (\(\mu\)P) regimes: a gentle tutorial</a></li><li><a href="https://arxiv.org/abs/2012.00152">Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</a></li></ol>
+<div class="footnotes">
+<ol>
+<li id="fn1">I use the term KRR somewhat broadly, in reality KRR is a specific algorithm within a family of kernel methods; this family are referred to as kernel machines. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn2">The "nice math" is shown in Sec. 2.2 of arXiv:2404.19719, linked in references. (This tutorial goes far more in depth and is a really good reference on the richness scale.) <a href="#fnref2" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+</ol></div>
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled Nov 06, 2025 at 18:36 | <a href="../src/everything-is-krr.mdtx" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <!-- Table of Contents Generator - loads before MathJax renders -->
+    <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar - loads before MathJax renders -->
+    <script src="../footnote-sidebar.js"></script>
+</body>
+</html>

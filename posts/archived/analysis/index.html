@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    \(\require{physics}\)
+    <meta charset="UTF-8">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Analysis</title>
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --link-color: #6B46C1;
+            --background-color: #fffdf92e;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--background-color);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .intro {
+            margin-bottom: 1rem;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .example-box {
+            background-color: #f4f4f4;
+            border-left: 4px solid #6a69a0;
+            border-radius: 5px 10px 10px 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a4a4a;
+        }
+
+        .example-box-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a69a0;
+            font-weight: bold;
+        }
+
+        .example-box-prompt {
+            margin: 10px 0;
+        }
+
+        .code {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .example-box-completion {
+            margin: 10px 0;
+        }
+
+        .example-box-description {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .topic-summary {
+            margin-bottom: 1rem;
+        }
+
+        .topic-summary a {
+            color: inherit;
+            text-decoration: underline;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .topic-summary a:hover {
+            opacity: 1;
+        }
+
+        .analysis-section {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .toggle-analysis {
+            display: inline;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-analysis {
+                display: none;
+            }
+            .analysis-section {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <script src="../toc-generator.js"></script> -->
+    <header>
+        <div class="logo"><a style="text-decoration: none; color:#4a4a4a" href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <!-- <a href="/projects">Projects</a> -->
+            <a href="/blog">Blog</a>
+        </nav>
+
+    </header>
+    <main>
+        <article class="intro">
+            <h1>Blog Analysis</h1>
+            <p class="date">May 21, 2025</p>
+        </article>
+        <p>
+            For some time I've been meaning to run some type of PCA-style analysis on my blog to see what topics I write about, and how they evolve over time. (Plus, maybe this will help me figure out my interests and help me declare a major -- being undeclared in my junior year is insane.) Not sure how much I'll use this, but it's fun to see and I'm hoping to run the script every time I post so the charts and topics are always up to date.
+        </p>
+
+        <p>
+            The analysis was done as follows:
+        </p>
+
+        <h2>Content Extraction</h2>
+        <p>
+            This is a pretty simple BS4 script that extracts all blog post titles and content from my blog's HTML files. This includes both published posts and upcoming topics. The script extracts
+        </p>
+        <ul>
+            <li>Blog post titles and descriptions</li>
+            <li>Publication dates</li>
+            <li>Upcoming topics from the introduction</li>
+        </ul>
+
+        <h2>Text Embedding</h2>
+        <p>
+            The extracted content is fed through some embedding model. I forget which one, but it's not super important.
+        </p>
+
+        <h2>Topic Analysis</h2>
+        <p>
+            This was the meat of the analysis. It proceeds in two parts:
+        </p>
+        <ul>
+            <li>PCA: This reduces the 384-dimensional embeddings to 2 dimensions, so we can see how different posts relate to each other. Posts that are closer together in the plot are more similar in context.</li>
+            <li>Topic Clustering: K-means clustering identifies the main topics in the blog. Each is characterized by core content and connections to other posts.</li>
+        </ul>
+
+        <p>
+            Identifying and mapping the key terms followed a two-level approach:
+        </p>
+        <ul>
+            <li>Term Mappings: I had GPT create a mapping of individual terms to their broader topics. For example, "neural" might map to "Neural Networks", "kernel" to "Kernel Methods", etc. This helps identify the main themes in each post.</li>
+            <li>Compound Topics: I also GPT'd a list of compound topics that emerge when certain terms appear together. For instance, when "neural" and "kernel" appear together, they map to "Neural Tangent Kernels". This helps capture some more nuanced topics.</li>
+        </ul>
+
+        <p>
+            The process of identifying topics for each post is likely not as efficient as it could be, but it works fine enough.
+        </p>
+        <ol>
+            <li>First, look for compound topics by checking if the key term pairs appear in the post's content</li>
+            <li>If no compound topic is found, look for individual term mappings</li>
+            <li>If still no match, use the most frequent significant terms to create a new topic name</li>
+            <li>Finally, calculate the topic's strength (how many posts it appears in) and coherence (how closely related the posts are)</li>
+        </ol>
+
+
+        <h2>Word Frequency Analysis</h2>
+        <p>
+            I also analyzed the frequency of words across all posts (filtering out common stop words and short terms). This gives us a quick overview of the main themes.
+        </p>
+
+        <h2>Visualization</h2>
+        <p>
+            I did not know how to do this bit so I just saved the data to several CSV files and had GPT come up with the code for the visualizations.
+        </p>
+
+        <h2>Code</h2>
+        <p>
+            The code for this analysis is available in the repo for this site: <a href="https://github.com/divitr/posts/analysis.py" target="_blank" rel="noopener">https://github.com/divitr/posts/analysis.py</a>.
+        </p>
+
+    </main>
+</body>
+
+</html>

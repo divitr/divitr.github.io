@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../posts.css">
+    <script src="../posts_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Magic</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {
+            startup: {
+                pageReady: () => {
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => {
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            });
+                        } else {
+                            setTimeout(resolve, 100);
+                        }
+                    }).then(() => MathJax.startup.defaultPageReady());
+                }
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>Cookie Magic</h1>
+            <div class="post-tags"><span class="tag" data-tag="misc">misc</span></div>
+            <p class="date">Apr 19, 2025</p>
+            <p class="desc">How I got ~$500 worth of cookies for free</p>
+        </section>
+
+<p>A bit of a deviation from my usual (mostly) technical posts, but I was chatting with a friend about this earlier today and figured that since I won't get the chance to ever use it again, this is a good place to write about Cookie Magic.</p>
+<p>During my freshman year of college, my friends and I were obsessed with cookies. Especially Insomnia Cookies, which were usually open until around 3 am, perfect for a midnight snack. It got to a point where we would visit Insomnia up to three times a day -- usually totalling ~$10.00 for the day.</p>
+<p>Insomnia had (has?) 2 "tiers" of cookie: the regular, and the deluxe. The regular is about what you would expect from a cookie, but the deluxe is larger and generally a bit better (imo). Accordingly, it is also priced higher; back then, the regular cookies went for $2.50 per cookie, while the deluxe was priced at $5.00 per cookie. So, during the peak of this cookie obsession, we would have around 2 regular cookies and 1 deluxe cookie a day. Naturally this wasn't sustainable.</p>
+<p>I forget exactly when, but at some point during our cookie obsession, Insomnia cookies started a promo called Cookie Magic. For $10.00 a month, you could get a free cookie every 24 hours. One of my friends bought Cookie Magic, and tried it out. It didn't take us long to figure out that Cookie Magic didn't do anything too advanced, it was just a 5 minute countdown on a screen with some text.</p>
+<p>Since I was too cheap to buy Cookie Magic myself, I figured I'd write the screen in a standalone app and see if that'd work to get the cookie. After clearing enough space on my hard disk (so I could install Xcode), and an hour or so of GPTing, I finally had a working clone of the cookie magic app.</p>
+<p>Finally, sometime in October (I think), we debuted my Cookie Magic app at the Berkeley Insomnia to get a free birthday cake cookie. After that first success, I became bolder; sometimes going back multiple times in a day when when a different staff member was on shift to get free cookies. I used the app at 3 Insomnia locations; Berkeley, UCLA, and UCI, and continued using it until we found out the promo was shut down early in my sophomore year. By rough estimate, I ate around 200 cookies in that time, which at $2.50 a cookie comes out to around ~$500 worth of cookies.</p>
+<p>On top of that, I let a few friends download the app as well, so there's no telling how many cookies were taken from Insomnia during this time.</p>
+<div class="image-grid">
+<figure><img src="insomnia.JPEG" alt="Insomnia cookie sleeve"><figcaption>The debut of my cookie magic app (I got hungry and ate the cookie inside the store, so that's just the empty sleeve)</figcaption></figure>
+
+<figure><img src="screen.jpeg" alt="Cookie magic app screen"><figcaption>The main screen of the (fake) cookie magic app</figcaption></figure>
+</div>
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled Nov 06, 2025 at 18:36 | <a href="../src/cookie-magic.mdtx" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <!-- Table of Contents Generator - loads before MathJax renders -->
+    <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar - loads before MathJax renders -->
+    <script src="../footnote-sidebar.js"></script>
+</body>
+</html>

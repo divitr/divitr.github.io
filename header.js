@@ -8,12 +8,12 @@ function loadHeader() {
     if (currentPath.includes('/research/') || currentPath.includes('/notes/') || currentPath.includes('/misc/')) {
         headerPath = '../header.html';
     }
-    // If we're in a blog post subdirectory, go up two levels to find header.html
-    else if (currentPath.includes('/blog/') && currentPath.split('/').length > 3) {
+    // If we're in a post subdirectory, go up two levels to find header.html
+    else if (currentPath.includes('/posts/') && currentPath.split('/').length > 3) {
         headerPath = '../../header.html';
     }
-    // If we're in the main blog directory, go up one level
-    else if (currentPath.includes('/blog/')) {
+    // If we're in the main posts directory, go up one level
+    else if (currentPath.includes('/posts/')) {
         headerPath = '../header.html';
     }
     

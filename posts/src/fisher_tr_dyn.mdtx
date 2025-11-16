@@ -1,0 +1,371 @@
+req: physics;
+
+title: Deep Learning Training Dynamics are not Fisher Geodesics;
+date: Nov 16, 2025;
+desc: A cool bit of math that falls apart empirically;
+tags: ml, math, physics;
+
+**[NOTE]** This post is mostly just because the idea was pretty cool (imo) and once the empirics failed, I wanted somewhere to keep it. Most of this post is transcribed from the original LATEX document by GPT, and as such, may have some innaccuracies or syntax errors.
+
+## Introduction
+
+Different optimizers like SGD and Adam often produce similar loss curves and generalization behavior, even though they use different update rules. SGD does Euclidean gradient descent, Adam uses adaptive diagonal preconditioning, and natural gradient uses the Fisher information matrix. So why do they end up with similar training dynamics?
+
+Over the past couple months I worked on a theoretical framework that training paths are approximately geodesics in Fisher information space[^1], and that different optimizers' metrics conformally align at large width, causing their paths to coincide. The theory has three main components: (i) all preconditioned gradient descent methods are equivalent to Riemannian gradient flow under different metrics, (ii) stochastic gradient noise concentrates paths near geodesics via large deviations, and (iii) in overparameterized networks, different optimizers' metrics align with the Fisher metric at rate {O(p^{-1/2})}.
+
+This would explain why neural scaling laws work, why hyperparameter transfer schemes like {\mu}P succeed, and why training is robust across optimizer choices. However, this theory doesn't hold empirically (due to problems with misspecified models and short time limits).
+
+## Preliminaries
+
+Before diving into the theory, we need some background concepts from differential geometry, information geometry, and stochastic analysis. This section provides the necessary mathematical foundation.
+
+### Information Geometry and Statistical Manifolds
+
+Information geometry studies probability distributions as geometric objects. A parametric family of probability distributions {\{p_\theta(y|x)\}_{\theta \in \Theta}} forms a statistical manifold, where each point {\theta \in \Theta} represents a different distribution. This lets us measure distances between distributions, define geodesics (the "straight lines" of the manifold), and understand how optimization moves through the space of models.
+
+The space of probability distributions has geometric structure that doesn't depend on parameterization. The Fisher information metric captures this structure and provides a way to measure distances and angles.
+
+### Riemannian Manifolds and Metrics
+
+A Riemannian manifold {(\Theta, g)} consists of a smooth manifold {\Theta} equipped with a metric tensor {g}: a smoothly varying inner product {g(\theta): T_\theta\Theta \times T_\theta\Theta \to \mathbb{R}} on each tangent space. The tangent space {T_\theta\Theta} at a point {\theta} consists of all possible directions in which we can move from {\theta}; in the context of neural networks, these are directions of parameter change.
+
+In coordinates, if {\theta \in \mathbb{R}^p}, the metric is a symmetric positive definite matrix {g(\theta) \in \mathbb{R}^{p \times p}}, defining the inner product {\langle u, v \rangle_{g(\theta)} = u^\top g(\theta) v} and inducing the norm {\norm{v}_{g(\theta)} = \sqrt{v^\top g(\theta) v}} for tangent vectors {u, v \in T_\theta\Theta \cong \mathbb{R}^p}. The metric tensor tells us how to measure lengths and angles in the tangent space, which varies smoothly as we move through the manifold.
+
+Different metrics give different notions of distance. The Euclidean metric {g = I} treats all parameter directions equally, while the Fisher metric weights directions by how much they affect the model's predictions.
+
+### Geodesics
+
+A geodesic is a curve {\gamma: [0,T] \to \Theta} that locally minimizes distance. In Euclidean space, geodesics are straight lines. On a curved manifold, geodesics are curves with zero acceleration in the Riemannian sense.
+
+Geodesics satisfy the geodesic equation {\frac{\mathrm D}{\mathrm dt}\dot{\gamma}(t) = 0}, where {\frac{D}{dt}} is the Levi-Civita covariant derivative[^2] of {g}. This means the velocity vector {\dot{\gamma}} is parallel-transported along the curve—it doesn't rotate relative to the local geometry.
+
+A minimizing geodesic between two points is the shortest path connecting them; in a normal convex neighborhood, such geodesics are unique. The length of a curve {\gamma: [0,T] \to \Theta} is given by {\int_0^T \norm{\dot{\gamma}(t)}_{g(\gamma(t))} \mathrm{d}t}, and geodesics minimize this length among all curves connecting their endpoints.
+
+### Fisher Information Metric
+
+For a parametric family of probability distributions {\{p_\theta(y|x)\}_{\theta \in \Theta}} with log-likelihood {\ell(\theta; x, y) = \log p_\theta(y|x)} and score function {s(\theta; x, y) = \nabla_\theta \ell(\theta; x, y)}, the Fisher information matrix is
+{
+    \mathcal{I}(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[s(\theta; x, y) s(\theta; x, y)^\top\right],
+}
+where {\mathcal{D}} is the data distribution and the expectation is taken under the model distribution {y \sim p_\theta(\cdot|x)}. The score function measures how sensitive the log-likelihood is to parameter changes, and the Fisher information captures the expected squared sensitivity.
+
+The Fisher information defines a Riemannian metric on the statistical manifold {\Theta}, known as the Fisher-Rao metric. This metric is uniquely characterized (up to scaling) by its invariance under sufficient statistics and reparameterizations. The Fisher metric has several important properties:
+
+list[u]:
+- It measures distances between probability distributions in a way that's invariant to how we parameterize the model
+- It weights parameter directions by their impact on the model's predictions
+- It provides a natural geometry for understanding optimization in the space of models
+- In the context of neural networks, it captures how sensitive the network's output is to changes in each parameter
+end list;
+
+Under regularity conditions, the Fisher information also equals the negative expected Hessian: {\mathcal{I}(\theta) = -\mathbb{E}\left[\nabla_\theta^2 \ell(\theta; x, y)\right]}, connecting it to the curvature of the log-likelihood surface.
+
+### Natural Gradient Descent
+
+Gradient descent in the Fisher metric is called natural gradient descent. The natural gradient is defined as {\nabla^{\mathcal{I}} L(\theta) = \mathcal{I}(\theta)^{-1} \nabla L(\theta)}, where {\nabla L} is the standard Euclidean gradient. Natural gradient descent follows the update rule:
+{
+    \theta_{k+1} = \theta_k - \eta \mathcal{I}(\theta_k)^{-1} \nabla L(\theta_k).
+}
+
+Natural gradient descent has several appealing properties: it's invariant to reparameterizations of the model, it accounts for the geometry of the parameter space, and it can converge faster than standard gradient descent in certain settings. However, computing and inverting the full Fisher information matrix is computationally expensive for large neural networks, which is why practical optimizers use approximations.
+
+### Conformal Equivalence
+
+Two metrics {g} and {\tilde{g}} on {\Theta} are conformally equivalent if {\tilde{g}(\theta) = c(\theta) g(\theta)} for some positive scalar field {c: \Theta \to \mathbb{R}_{>0}}. Conformally equivalent metrics have the same geodesics (as unparameterized curves), differing only in how they are traversed in time.
+
+Specifically, if {\gamma(t)} is a geodesic of {g}, then {\gamma(\tau(t))} is a geodesic of {\tilde{g}} where {\tau} satisfies {\mathrm d\tau/\mathrm dt = c(\gamma(t))}. This time reparameterization property is central to our analysis: if two optimizers' metrics are conformally equivalent, they follow the same paths through parameter space, just at different speeds.
+
+Conformal equivalence is weaker than metric equality but stronger than just having similar geodesics. It means the metrics differ only by a scalar factor at each point, preserving angles and the shape of geodesics while allowing different traversal speeds.
+
+### Large Deviations Theory and Stochastic Processes
+
+Large deviations theory[^3] studies the asymptotic behavior of rare events. For our purposes, we use it to show that stochastic processes concentrate on certain "most probable" paths. The Onsager-Machlup functional provides a rate function that characterizes the probability of paths deviating from the most probable one.
+
+When we add noise to gradient descent (as in mini-batch SGD), the resulting stochastic process can be analyzed using large deviations theory. The theory tells us that, as the noise strength goes to zero, the process concentrates on paths that minimize a certain "action" functional. For diffusions on Riemannian manifolds, these most probable paths are often geodesics.
+
+This suggests that noisy optimization might follow geodesic paths in the limit of small noise. However, this breaks down for long time horizons and misspecified models.
+
+## The Theoretical Framework
+
+The theory rests on three pillars:
+
+list[o-a]:
+- **Optimizers as Riemannian gradient flows**: All preconditioned gradient descent methods are equivalent to Riemannian gradient flow under different metric tensors.
+- **Stochastic dynamics concentrate near geodesics**: Mini-batch gradient noise is Fisher-covariant, and stochastic bridge processes concentrate on geodesics via large deviations.
+- **Metric alignment in overparameterized networks**: In the NTK regime, different optimizers' metrics conformally align with the Fisher metric at rate {O(p^{-1/2})}.
+end list;
+
+Let's develop each of these in detail.
+
+## Optimizers as Riemannian Gradient Flows
+
+The first part of the theory shows that preconditioned gradient descent methods are all instances of Riemannian gradient descent under different metrics. This lets us compare optimizers by comparing their metrics.
+
+### Setup
+
+Consider a loss function {L: \Theta \subset \mathbb{R}^p \to \mathbb{R}} and a preconditioner {P: \Theta \to \mathbb{R}^{p \times p}} that is symmetric positive definite at each point. The preconditioner {P} modifies the gradient before applying the update. Define the metric tensor {G(\theta) = P(\theta)^{-1}}. This inverse relationship is key: the preconditioner and the metric are dual to each other.
+
+### The Main Result
+
+example:
+title: Preconditioned Gradient Descent is Riemannian Steepest Descent;
+content: {
+Let {L: \Theta \subset \mathbb{R}^p \to \mathbb{R}} be {C^1}, and let {P: \Theta \to \mathbb{R}^{p \times p}} be continuous with {P(\theta)} symmetric positive definite for all {\theta}. Define the metric {G(\theta) = P(\theta)^{-1}}. Consider the preconditioned gradient descent update
+{
+    \theta_{k+1} = \theta_k - \eta P(\theta_k) \nabla L(\theta_k).
+}
+Then:
+list[o-a]:
+- This update performs Riemannian gradient descent with respect to metric {G}.
+- The continuous-time limit as {\eta \to 0} is the Riemannian gradient flow {\dot{\theta}(t) = -P(\theta(t))\nabla L(\theta(t)) = -\nabla^G L(\theta(t))}.
+- If {P(\theta) = c(\theta) g(\theta)^{-1}} for scalar {c(\theta) > 0} and metric {g}, then trajectories coincide with {g}-gradient flow up to time reparameterization {\mathrm{d}\tau = c(\theta(t))\mathrm{d}t}.
+};
+end example;
+
+### Proof
+
+The key insight is that preconditioned gradient descent minimizes a local first-order approximation subject to a trust region constraint in the {G}-metric.
+
+#### Part 1: One-Step Minimizer
+
+The update {\theta^+ = \theta + \Delta^{\ast}} where {\Delta^{\ast}(\theta) = \arg \min_{\Delta \in \mathbb{R}^p} \left\{\langle \nabla L(\theta), \Delta\rangle + \frac{1}{2\eta} \norm{\Delta}^2_{G(\theta)}\right\}}.
+
+The objective is strictly convex since {G(\theta) \succ 0}. Taking the gradient with respect to {\Delta}:
+{
+    \nabla_\Delta \left(\langle\nabla L(\theta), \Delta\rangle + \frac{1}{2\eta} \Delta^\top G(\theta) \Delta\right) = \nabla L(\theta) + \frac{1}{\eta}G(\theta)\Delta.
+}
+
+Setting to zero: {G(\theta)\Delta^{\ast} = -\eta\nabla L(\theta)}. Multiplying by {G(\theta)^{-1} = P(\theta)} gives {\Delta^{\ast} = -\eta P(\theta)\nabla L(\theta)}. Uniqueness follows from strict convexity.
+
+#### Part 2: Continuous-Time Limit
+
+Define the piecewise-linear interpolation {\theta_{\eta}(t)} with {\theta_\eta(k\eta) = \theta_k} and slope {\frac{\theta_{k+1} - \theta_k}{\eta} = -P(\theta_k) \nabla L(\theta_k)} on {[k\eta, (k+1)\eta)}. Under local Lipschitz assumptions on {P} and {\nabla L}, the ODE method for deterministic numerical schemes implies {\theta_\eta \to \theta} uniformly on compact time intervals, where {\theta} solves {\dot{\theta} = -P(\theta) \nabla L(\theta)}.
+
+To identify this as Riemannian gradient flow, recall the Riemannian gradient {\nabla^{G}L} is the unique vector field satisfying
+{
+    \langle \nabla^G L(\theta), v \rangle_{G(\theta)} = \mathrm{d}L(\theta)[v] = \langle\nabla L(\theta), v\rangle \quad \text{for all } v.
+}
+
+Thus {G(\theta) \nabla^{G} L(\theta) = \nabla L(\theta)}, so {\nabla^{G} L(\theta) = G(\theta)^{-1}\nabla L(\theta) = P(\theta) \nabla L(\theta)}. Therefore the ODE is {\dot{\theta} = - \nabla^{G} L(\theta)}, which is steepest descent under {G}.
+
+#### Part 3: Conformal Equivalence
+
+If {P = cg^{-1}} with scalar {c(\theta) > 0}, then {\dot{\theta} = -c(\theta)g^{-1}\nabla L(\theta)}. Let {\tau} satisfy {\mathrm{d}\tau = c(\theta(t))\mathrm{d}t}. Then {\frac{\mathrm{d}\theta}{\mathrm{d}\tau} = -g^{-1}\nabla L(\theta)}, so the curves (images in {\Theta}) match natural gradient descent, only their speeds differ.
+
+### Examples
+
+list[u]:
+- **SGD**: {P = I} gives {G = I}, so SGD performs Euclidean gradient flow.
+- **Adam**: {P = \mathrm{diag}(v_t)^{-1/2}} where {v_t} tracks coordinate-wise gradient variances, so Adam performs gradient flow under a diagonal adaptive metric.
+- **Natural Gradient**: {P = \mathcal{I}(\theta)^{-1}} gives {G = \mathcal{I}(\theta)}, the Fisher metric.
+end list;
+
+If two optimizers' metrics are approximately conformal, {P_1(\theta) \approx c(\theta) P_2(\theta)}, their training trajectories will approximately coincide as curves in parameter space, differing only in how fast they're traversed.
+
+## Stochastic Dynamics and Geodesic Concentration
+
+The second part asks: why would noisy optimization follow smooth geometric paths? Large deviations theory shows that stochastic processes concentrate on "most probable" paths, and for diffusions on Riemannian manifolds, these are geodesics.
+
+### Mini-Batch Gradient Noise is Fisher-Covariant
+
+Gradient noise from mini-batches has a covariance structure that matches the Fisher information matrix. This follows from the structure of likelihood-based learning, not an assumption.
+
+example:
+title: Mini-Batch Gradient Noise is Fisher-Covariant;
+content: {
+Let {Z = (X,Y)} be a training example from data distribution {\mathsf{P}}, and consider a parametric conditional model {p_\theta(y \vert x)} with log likelihood {\ell(\theta;Z) = \log p_\theta(Y \vert X)} and score {s(\theta; Z) = \nabla_\theta \ell(\theta;Z)}.
+
+For mini-batch SGD with batch size {b}, let {\hat{g}_b(\theta) = \frac{1}{b} \sum_{i=1}^b s(\theta; Z_i)} be the mini-batch gradient estimator, and {g(\theta) = \mathbb{E}_\mathsf{P} \left[-s(\theta; Z)\right]} the full-batch gradient. Write the gradient noise as {\xi_b(\theta) = \hat{g}_b(\theta) - g(\theta)}.
+
+**With Replacement**: If {Z_1, \dots, Z_b} are i.i.d. from {\mathsf{P}}, then
+{
+    \operatorname{Cov}(\xi_b(\theta)) = \frac{1}{b} \operatorname{Cov}_\mathsf{P}(s(\theta; Z)).
+}
+
+**Well-Specified Case**: If, in addition, the model is well-specified at {\theta} (i.e., {Y \vert X \sim p_\theta(\cdot \vert X)} under {\mathsf P}), then {\mathbb{E}[s(\theta; Z)] = 0} and
+{
+    \operatorname{Cov}(\xi_b(\theta)) = \frac{1}{b} \mathbb{E}[s(\theta; Z)s(\theta; Z)^\top] = \frac{1}{b} \mathcal{I}(\theta),
+}
+where {\mathcal{I}(\theta)} is the Fisher information matrix.
+};
+end example;
+
+### Proof
+
+Since {\hat{g}_b(\theta) = -(1/b)\sum_{i=1}^b s(\theta; Z_i)} and the {Z_i} are i.i.d.,
+{
+    \operatorname{Cov}\left(\hat{g}_b(\theta)\right) = \frac{1}{b^2}\sum_{i=1}^b \operatorname{Cov}\left(s(\theta; Z_i)\right) = \frac{1}{b} \operatorname{Cov}_{\mathsf{P}}\left(s(\theta; Z)\right).
+}
+
+Because {g(\theta) = \mathbb{E}[-s(\theta; Z)]} is deterministic, we have {\operatorname{Cov}(\xi_b) = \operatorname{Cov}(\hat{g}_b)}.
+
+If the model is well-specified at {\theta}, then the score has mean zero:
+{
+    \mathbb{E}_{\mathsf{P}}\left[s(\theta; Z)\right] = \mathbb{E}_{X}\mathbb{E}_{Y \sim p_\theta(\cdot \mid X)}\left[\nabla_\theta \log p_\theta(Y \mid X)\right] = 0,
+}
+where the inner expectation vanishes by the standard score identity. Hence the covariance equals the second moment:
+{
+    \operatorname{Cov}_{\mathsf{P}}\left(s(\theta; Z)\right) = \mathbb{E}\left[s(\theta; Z)s(\theta; Z)^\top\right] = \mathcal{I}(\theta).
+}
+
+Therefore, {\operatorname{Cov}(\xi_b(\theta)) = \mathcal{I}(\theta)/b}.
+
+**Critical Assumption**: This result requires the model to be well-specified. In practice, neural networks are almost always misspecified—they approximate complex real-world distributions but don't match them exactly. When misspecified, {\mathbb{E}[s(\theta; Z)] \neq 0}, and the covariance is not exactly the Fisher information.
+
+### MAP Bridge Paths are Near-Geodesic
+
+We model the continuous-time limit of stochastic gradient descent as the Stratonovich SDE[^4]
+{
+    \mathrm{d}\theta_t = b(\theta_t)\mathrm{d}t + \sqrt{2\varepsilon} \circ \mathrm{d}B^g_t,
+}
+where {B^g_t} is Brownian motion in the metric {g}, {b} is the drift (deterministic gradient term), and {\varepsilon = \eta/(2b)} relates learning rate {\eta} and batch size {b} to the diffusion strength.
+
+example:
+title: MAP Bridge Paths are Near-Geodesic;
+content: {
+Let {(\Theta, g)} be a complete Riemannian manifold with metric {g} (the Fisher metric). Consider the SDE above with endpoints {\theta(0) = \theta_0} and {\theta(T) = \theta_T}. Let {\mathbb{P}^{\varepsilon,T}_{\theta_0,\theta_T}} denote the bridge measure conditioned on these endpoints.
+
+**A. Driftless Case ({b \equiv 0})**: As {\varepsilon \to 0}, the bridge paths concentrate (in the sense of large deviations) on the constant-speed minimizing geodesic connecting {\theta_0} to {\theta_T}.
+
+**B. With Drift**: As {T \to 0} (short-time regime), any sequence of most-probable (MAP) paths {\theta^*_T} satisfies
+{
+    \sup_{t \in [0,T]} d_g(\theta^*_T(t), \gamma(t)) = O(T),
+}
+where {\gamma} is the constant-speed {g}-geodesic connecting the endpoints.
+};
+end example;
+
+### Proof Sketch
+
+The proof uses Freidlin-Wentzell large deviations theory[^5] for diffusions on manifolds. The Onsager-Machlup (OM) functional[^6] for paths is
+{
+    \mathcal{I}_T[\theta] = \frac{1}{4}\int_0^T \|\dot{\theta}_t - b(\theta_t)\|^2_{g(\theta_t)} \mathrm{d}t.
+}
+
+For the driftless case, minimizers satisfy the Euler-Lagrange equation, which is precisely the geodesic equation {\frac{\mathrm{D}}{\mathrm{d}t}\dot{\gamma}(t) = 0}.
+
+For the case with drift, the proof uses {\Gamma}-convergence[^7] as {T \to 0}. After time rescaling {s = t/T}, the functional becomes
+{
+    \hat{\mathcal{I}}_T^b[\theta] = \frac{1}{4} \int_0^1 \norm{\vartheta^\prime}_g^2 \mathrm{d}s - \frac{T}{2} \int_0^1 \langle \vartheta^\prime, b(\vartheta) \rangle_g \mathrm{d}s + \frac{T^2}{4} \int_0^1 \norm{b(\vartheta)}^2_g \mathrm ds.
+}
+
+As {T \to 0}, this {\Gamma}-converges to the pure geodesic energy {\frac{1}{4}\int_0^1 \norm{\vartheta^\prime(s)}^2_{g(\vartheta(s))} \mathrm ds}, showing that the geodesic term dominates in the short-time limit.
+
+The {O(T)} bound follows from second-variation analysis: in a normal convex neighborhood, the index form is strictly positive, giving a quadratic lower bound on the energy difference from the geodesic. The drift terms contribute only linear corrections, leading to the {O(T)} path closeness.
+
+**Critical Assumption**: Part B only holds as {T \to 0}. The {O(T)} bound means the deviation grows linearly with time. For long training runs (many epochs), this bound doesn't control the deviation—the paths can drift arbitrarily far from geodesics.
+
+## Metric Alignment in Overparameterized Networks
+
+The third part explains why different optimizers produce similar paths: their metrics conformally align with the Fisher metric at large width. In overparameterized networks, the Fisher information matrix becomes approximately isotropic, and many optimizers' metrics also become isotropic. Conformally equivalent metrics share the same geodesics.
+
+example:
+title: Metric Alignment in the NTK Regime;
+content: {
+Consider a neural network with {p} parameters in the NTK/lazy training regime, where the network remains close to its random initialization. Let {\mathcal{I}(\theta)} be the Fisher information matrix and {G_{\mathrm{opt}}(\theta)} be the effective metric induced by an optimizer's preconditioner.
+
+Then:
+{
+    \norm{G_{\mathrm{opt}}(\theta) - c(\theta) \mathcal{I}(\theta)}_{\mathrm{op}} = O_{\mathbb{P}}(p^{-1/2}),
+}
+where {c(\theta) = \mathrm{Tr}(G_{\mathrm{opt}})/\mathrm{Tr}(\mathcal{I})} is a normalization constant, and the bound holds uniformly over finite training horizons.
+
+This applies to:
+list[u]:
+- SGD with {G_{\mathrm{opt}} = I}
+- Adam with {G_{\mathrm{opt}} = \mathrm{diag}(v_t)} where {v_t} tracks gradient second moments
+};
+end example;
+
+### Proof Sketch
+
+At random initialization with NTK scaling[^8], the Fisher matrix is approximately isotropic: {\mathcal{I}(\theta_0) = \alpha I_p + R} where {\norm{R}_{\mathrm{op}} = O_{\mathbb{P}}(p^{-1/2})}. This follows from coordinate independence of gradients at initialization (tensor program limit[^9]) and matrix concentration for sums of rank-one outer products.
+
+In the NTK regime, the Jacobian (hence Fisher) remains frozen near its initialization value. For SGD, {G = I} is already isotropic. For Adam, coordinate-wise gradient variances {v_i} concentrate around their common value {\alpha} with uniform deviation {O_{\mathbb{P}}(p^{-1/2})}, giving {\mathrm{diag}(v) \approx \alpha I + O(p^{-1/2})}.
+
+By conformal equivalence, since {G_{\mathrm{SGD}}}, {G_{\mathrm{Adam}}}, and {\mathcal{I}} are all conformally aligned to within {O(p^{-1/2})}, their geodesics converge as {p \to \infty}.
+
+**Critical Assumption**: This proof only establishes alignment in the NTK regime where training is approximately linear and the Fisher metric remains constant. In the feature-learning regime where representations evolve, the metric changes significantly, and alignment may not hold.
+
+## Why the Theory Fails Empirically
+
+Empirically, training paths are not near-geodesic in Fisher information space. The theory fails because of assumptions that don't hold in practice.
+
+### The Short-Time Assumption
+
+Theorem 2 part B only proves {O(T)} deviation as {T \to 0}. For neural network training, we have:
+
+list[u]:
+- Training happens over long time horizons (many epochs, potentially thousands of steps)
+- The {O(T)} bound means errors accumulate linearly with time
+- Over a full training run, paths can drift arbitrarily far from geodesics
+end list;
+
+The {\Gamma}-convergence argument only controls behavior in the short-time limit. There's no mechanism to prevent long-term drift away from geodesic paths. In fact, the drift term {b(\theta_t)} in the SDE can systematically push paths away from geodesics over time.
+
+### The Well-Specified Model Assumption
+
+The Fisher-covariant noise result requires the model to be well-specified: {Y \vert X \sim p_\theta(\cdot \vert X)} under the data distribution. In practice:
+
+list[u]:
+- Neural networks are almost always misspecified—they approximate but don't match the true data distribution
+- When misspecified, {\mathbb{E}[s(\theta; Z)] \neq 0} (the score has non-zero mean)
+- The gradient noise covariance is {\operatorname{Cov}(\xi_b) = \frac{1}{b}\mathcal{I}(\theta) + \frac{1}{b}\mathbb{E}[s]\mathbb{E}[s]^\top}, not just {\frac{1}{b}\mathcal{I}(\theta)}
+- The additional bias term {\mathbb{E}[s]\mathbb{E}[s]^\top} breaks the Fisher-covariant structure
+end list;
+
+This misspecification error accumulates over training, causing paths to deviate from the Fisher geometry.
+
+### The NTK Regime Assumption
+
+The metric alignment result only holds in the NTK/lazy training regime. However:
+
+list[u]:
+- Modern neural networks operate in the feature-learning regime where representations evolve significantly
+- The Fisher metric changes substantially during training, not just near initialization
+- Metric alignment at initialization doesn't guarantee alignment throughout training
+end list;
+
+Even if metrics align initially, they can diverge as the network learns features and the Fisher information evolves.
+
+## Conclusion
+
+This whole project is more or less a lesson in empirically verifying predictions before diving into developing the theory, but in any case, it was still an interesting idea.
+
+## References
+
+list[o]:
+- [Information Geometry and Its Applications](https://link.springer.com/10.1007/978-4-431-55978-8) - Amari (2016)
+- [Neural Learning in Structured Parameter Spaces](https://proceedings.neurips.cc/paper/1996/hash/39e4973ba3321b80f37d9b55f63ed8b8-Abstract.html) - Amari (1996)
+- [Riemannian Geometry](https://www.springer.com/gp/book/9780817634902) - do Carmo (1992)
+- [Large Deviations Techniques and Applications](https://link.springer.com/10.1007/978-3-642-03311-7) - Dembo & Zeitouni (2010)
+- [Random Perturbations of Dynamical Systems](https://link.springer.com/10.1007/978-3-642-25847-3) - Freidlin & Wentzell (2012)
+- [Brownian bridges on Riemannian manifolds](https://doi.org/10.1007/BF01288561) - Hsu (1990)
+- [Neural Tangent Kernel](https://arxiv.org/abs/1806.07572) - Jacot, Gabriel & Hongler (2020)
+- [On Lazy Training in Differentiable Programming](https://arxiv.org/abs/1812.07956) - Chizat, Oyallon & Bach (2020)
+- [Wide Neural Networks of Any Depth Evolve as Linear Models](https://arxiv.org/abs/1902.06720) - Lee et al. (2020)
+- [Tensor Programs V](https://arxiv.org/abs/2203.03466) - Yang et al. (2022)
+- [Universal Statistics of Fisher Information in Deep Neural Networks](https://arxiv.org/abs/1806.01316) - Karakida, Akaho & Amari (2019)
+- [Stochastic Gradient Descent as Approximate Bayesian Inference](https://arxiv.org/abs/1704.04289) - Mandt & Hoffman
+- [Stochastic Modified Equations](https://arxiv.org/abs/1511.06251) - Li & Tai
+- [Adam: A Method for Stochastic Optimization](https://arxiv.org/abs/1412.6980) - Kingma & Ba (2017)
+end list
+
+[^1]: The Fisher information matrix measures the amount of information that an observable random variable carries about an unknown parameter. In machine learning, it quantifies how sensitive the model's predictions are to parameter changes.
+
+[^2]: The covariant derivative generalizes the notion of directional derivative to curved spaces. The Levi-Civita connection is the unique torsion-free, metric-compatible connection on a Riemannian manifold.
+
+[^3]: Large deviations theory provides asymptotic estimates for probabilities of rare events. It's particularly useful for understanding the concentration behavior of stochastic processes.
+
+[^4]: The Stratonovich interpretation of stochastic differential equations is often preferred in physics and geometry because it obeys the chain rule, making it coordinate-independent. It's denoted by the \(\circ\) symbol.
+
+[^5]: Freidlin-Wentzell theory extends large deviations principles to stochastic differential equations, characterizing the most probable paths of diffusions.
+
+[^6]: The Onsager-Machlup functional gives the probability density of paths for a diffusion process. Minimizing it yields the most probable path (MAP path).
+
+[^7]: {\Gamma}-convergence is a notion of convergence for functionals that ensures minimizers converge. It's particularly useful for studying asymptotic behavior as parameters go to zero.
+
+[^8]: The Neural Tangent Kernel (NTK) regime, also called "lazy training," occurs when networks are so wide that they remain close to initialization during training, making the dynamics approximately linear.
+
+[^9]: Tensor programs provide a mathematical framework for analyzing infinite-width neural networks, showing that gradients and activations converge to Gaussian processes in the limit.
+

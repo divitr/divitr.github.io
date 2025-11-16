@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../posts.css">
+    <script src="../posts_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopfield Networks</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {
+            startup: {
+                pageReady: () => {
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => {
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            });
+                        } else {
+                            setTimeout(resolve, 100);
+                        }
+                    }).then(() => MathJax.startup.defaultPageReady());
+                }
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>Hopfield Networks</h1>
+            <div class="post-tags"><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div>
+            <p class="date">Jan 19, 2025</p>
+            <p class="desc">A quick implementation of a Hopfield network in Python</p>
+        </section>
+
+<h1>Hopfield Networks</h1>
+<p>Hopfield networks are a type of recurrent neural network that can store and recall patterns. They are based on the idea of associative memory, where a network can "remember" a pattern and recall it when given a similar input.</p>
+<h2>Theory</h2>
+<h3>Energy Function</h3>
+<p>The Hopfield network has an energy function given by: \begin{equation} E = -\frac{1}{2} \displaystyle\sum_{i,j} w_{ij} s_i s_j \end{equation}</p>
+<p>where \(w_{ij}\) is the weight between neurons \(i\) and \(j\), and \(s_i\) is the state of neuron \(i\).</p>
+<h3>Dynamics</h3>
+<p>The network is updated either synchronously or asynchronously (each node one at a time or all nodes at once, respectively). Each neuron's state is computed as a function of the weighted sum of the other neurons: \begin{equation} s_i = \text{sign} \left(\displaystyle\sum_{j} w_{ij}s_j\right) \end{equation}</p>
+<h3>Computing Weights</h3>
+<p>For a given pattern, the weights are computed according to a Hebbian Learning rule. The goal is to strengthen the connection (increase the weight) of nodes that are active at the same time (which is why we use \(\pm 1\)). For a Hopfield network with \(N\) nodes and a pattern \(\xi\), weights are computed as \begin{equation} w_{ij} = \xi_i \xi_j \end{equation}</p>
+<p>If \(\xi_i\) and \(\xi_j\) are in the same state, their product is positive and the weight is bigger. Intuitively, this translates to each node having a larger impact on the state of the other.</p>
+<p>To memorize multiple patterns \(\{\xi^\mu\}_{\mu=1}^P\), each weight is the sum of the weights for each pattern: \begin{equation} w_{ij} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi_i^\mu \xi_j^\mu \end{equation}</p>
+<h2>Implementation</h2>
+<h3>Matrix-Vector Notation</h3>
+<p>If we encode the state of the network as an \(N\)-dimensional vector, a synchronous update rule is given by multiplying by a \(N \times N\)-dimensional weight matrix. This weight matrix is given by the sum of the outer product of each pattern with itself: \begin{equation} \mathbf{W} = \frac{1}{P} \displaystyle\sum_{\mu=1}^P \xi^\mu \otimes \xi^\mu = \frac{1}{P} \displaystyle\sum_{\mu=1}^P {\xi^\mu}^\top \xi^\mu \end{equation}</p>
+<p>To understand why this has each memorized vector as the stable point of the network dynamics, consider a transition: \begin{equation} W \xi = (\xi \xi^\top) \xi = \xi (\xi^\top \xi) \propto \xi \end{equation}</p>
+<p>since \(\xi^\top \xi\) is a scalar. Then, we simply superimpose the contributions of each memorized vector \(\xi\).</p>
+<h3>Python Implementation</h3>
+<pre><code class="language-python">class HopfieldNetwork:
+    def __init__(self, patterns):
+        self.patterns = patterns
+        self.num_neurons = patterns.shape[1]
+        self.weights = self.create_weights(patterns)
+            
+    def create_weights(self, patterns):
+        weights = np.zeros((self.num_neurons, self.num_neurons))
+        for pattern in patterns:
+            pattern = pattern.reshape(-1, 1)
+            weights += np.outer(pattern, pattern)
+        np.fill_diagonal(weights, 0) # no self-connections
+        return weights / patterns.shape[0]
+            
+    def update_state(self, state):
+        net_inputs = self.weights @ state
+        state = np.sign(net_inputs)
+        return state
+    
+    def energy(self, state):
+        return -0.5 * state @ (self.weights @ state) 
+
+    def recall(self, initial_state, max_iterations=10):
+        state = initial_state.copy()
+        energy = self.energy(state)
+        for _ in range(max_iterations):
+            updated_state = self.update_state(state)
+            new_energy = self.energy(updated_state)
+            if new_energy == energy:
+                break
+            state = updated_state
+            energy = new_energy
+        return state</code></pre>
+<h3>Toy Problem</h3>
+<p>As an example, consider a Hopfield network meant to store 128 x 128 px images. Using the above implementation to learn 4 patterns, the network is able to accurately recall the patterns with up to 40% of the pixels flipped. The specific code used is available for download <a href="hopfield_net.py">here</a>.</p>
+<div class="example-box">
+<div class="example-box-title">Hopfield Network Recall Results</div>
+<div class="example-box-prompt">
+<div class="image-grid">
+<figure><img src="10.png" alt="Recall Result 10" style="width:45%"><figcaption>Recall results with 10% noise</figcaption></figure>
+
+<figure><img src="20.png" alt="Recall Result 20" style="width:45%"><figcaption>Recall results with 20% noise</figcaption></figure>
+
+<figure><img src="30.png" alt="Recall Result 30" style="width:45%"><figcaption>Recall results with 30% noise</figcaption></figure>
+
+<figure><img src="40.png" alt="Recall Result 40" style="width:45%"><figcaption>Recall results with 40% noise</figcaption></figure>
+</div>
+<p>Note: This display style and the specific patterns were adapted from <a href="https://github.com/takyamamoto/Hopfield-Network">takyamamoto/Hopfield-Network</a>. </div> </div></p>
+<h2>Statistical Mechanics and Deep Learning</h2>
+<p>Hopfield networks have a wide variety of applications in statistical physics and deep learning theory.</p>
+<h3>Ising Model</h3>
+<p>The Hopfield network is closely tied to the Ising model in statistical mechanics. In physics, the Ising model is a lattice structure used to describe ferromagnetic materials. In the Hopfield network, the neurons are analogous to spins at each lattice point, the weights represent the coupling strength between spins, and the energy function describes the total energy of the system.</p>
+<div class="example-box">
+<div class="example-box-title">Ising Model</div>
+<div class="example-box-prompt">
+<figure><img src="ising.png" alt="Ising Model" style="width:100%"><figcaption>An Ising model, where each lattice point is an electron with either spin up or down.</figcaption></figure>
+
+Source: <a href="https://personal.math.ubc.ca/~andrewr/research/intro_html/node14.html">The Ising Model and Counting Graphs</a>
+</div>
+</div>
+<h3>Temperature and Simulated Annealing</h3>
+<p>We can also introduce a temperature into the Hopfield network, which allows it to explore many more states and escape local minima. As the temperature decreases, the model settles into a single minima. Simulated annealing is a process by which the model starts at high temperature and "cools down" over time. This prevents the model from getting stuck in local minima early on and increasing its chances of settling into a global minima (one of the memorized patterns).</p>
+<h3>Memory and Attention Mechanisms</h3>
+<p><a href="https://arxiv.org/abs/2008.02217">Ramsauer et al. (2020)</a> showed that attention mechanisms in transformers can be viewed as a continuous generalization of Hopfield Networks, implying that Transformers use something similar to associative memory. The same way that tokens attend to each other in transformers, patterns "attend" to each other in Hopfield networks, predicting which pattern to converge to, or which token to predict.</p>
+<h2>References</h2>
+<ol><li><a href="https://neuronaldynamics.epfl.ch/online/Ch17.S2.html">Hopfield Network | Neural Dynamics</a></li><li><a href="https://github.com/takyamamoto/Hopfield-Network">takyamamoto/Hopfield-Network</a></li></ol>
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled Nov 06, 2025 at 18:36 | <a href="../src/hopfield-networks.mdtx" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <!-- Table of Contents Generator - loads before MathJax renders -->
+    <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar - loads before MathJax renders -->
+    <script src="../footnote-sidebar.js"></script>
+</body>
+</html>
