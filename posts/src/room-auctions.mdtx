@@ -1,0 +1,193 @@
+title: Room Auctions;
+date: Dec 12, 2025;
+desc: Designing an auction system for rooms in our house;
+tags: misc, stats;
+
+## Auctions
+
+Over the last couple days, my roommates and I have been deciding how to do rent splits for the 5 rooms in our house (there's 5 of us so everyone gets a room). However, rooms aren't valued the same, e.g. some are bigger, have better lighting, etc. The natural solution is to just bid for rooms and be done, but [standard first-price bidding has a few problems](https://www.avenga.com/magazine/first-price-second-price-auction/). The usual solution is Vickrey or second-price auctions, but both of those feel a bit annoying to run (also I wanted to see if I could design a different auction strategy).
+
+Before continuing, it is worth noting that this was never actually used we just handled it by discussing it, but I still thought the idea was cool.
+
+### Problem
+
+Rent-splitting (like any auction or voting system) has the usual [trilemma](https://web.stanford.edu/~mohamwad/Credible.pdf); no auction can be more than 2 of the following: static (sealed-bid), strategy-proof (truthful bidding is optimal), and credible (the auctioneer can't cheat). In addition, we have the additional constraint that the price paid must sum to the total rent due (the straightforward solution is to just normalize the sum of rents to reach that but then you get into a whole host of other issues regarding fairness and if room value should be evaluated relatively or absolutely, etc.). In addition, we want a strategy that gives 0 envy; i.e. no one would be happier paying the agreed price for any other room.
+
+## Gradient Descent on Happiness
+
+Since we can't have all 3 criteria, we relax the static constraint. Instead of a single sealed bid, we run a dynamic process (a tatonnement mechanism). We treat the auction as a statistical inference problem. We assume the "true" fair prices are hidden parameters {p}, and our roommates' choices are samples from a probability distribution. Our goal is to find the Maximum Likelihood Estimator (MLE) for the prices that clear the market. This gives us the Nash-gradient auction.
+
+First, we will present the algorithm, then we will explain why certain choices were made.
+
+### Notation
+
+list[u]:
+- {R}: total rent due each month.
+- {N}: number of rooms/roommates.
+- {p_j}: price of room {j} with the simplex constraint {\sum_j p_j = R}.
+- {D_j}: demand for room {j} (number or weighted count of people choosing it).
+- {u_i}: surplus for roommate {i}: {\text{Value} - \text{Price}} of their chosen room.
+- {\eta}: learning rate for the price update.
+- {\delta}: hysteresis band / switching cost.
+end list;
+
+### Algorithm
+
+The algorithm is simple and runs in rounds:
+
+list[o]:
+
+- Initialize: Set all room prices equal: {p_j = R / N}.
+
+- Elicit Demand: Ask everyone, "At these prices, which room do you want?"
+
+- Check Equilibrium: If every room has exactly one taker, stop. We are done.
+
+- Update: If a room is over-demanded (>1 person), raise its price. If a room is under-demanded (0 people), lower its price.
+
+- Normalize: Project prices back onto the budget simplex so they still sum to {R}. Repeat.
+
+end list;
+
+More explicitly, we can think of this as a gradient descent update of the form:
+
+{
+    p_j^{(t+1)} = p_j^{(t)} + \eta \cdot (D_j^{(t)} - 1)
+}
+
+where {D_j} is the (weighted) demand for room {j}, and {\eta} is a learning rate. For sufficiently small {\eta}, this behaves like standard tatonnement and empirically converges to a clearing price vector. Note that oscillations and slow drift are possible failure modes for poorly chosen step sizes.[^1]
+
+### Weighting by Unhappiness
+
+If we simply raise the price of an over-demanded room by a fixed amount (e.g., $10), we are implicitly assuming linear utility -- that is, every dollar matters equally to everyone. But this is flawed; a $10 price hike hurts someone with a $50 surplus much more than it hurts someone with a $500 surplus.
+
+To fix this, we implement weighted gradient descent. We scale the "vote" of each roommate by the inverse of their current happiness (surplus):
+
+{
+    \text{Weight}_i = \frac{1}{u_i(p) + \varepsilon} = \frac{1}{\text{Value} - \text{Price} + \varepsilon}
+}
+
+Here {\varepsilon > 0} is a small cushion to avoid exploding weights when someone is near zero surplus; we still treat vanishing surplus as "loudly" as we want by keeping {\varepsilon} small. If an individual has a low surplus, their weight increases, pushing prices aggressively to accommodate. If they are comfortable, their weight is low. This naturally implements a barrier method that prevents anyone's utility from dropping to zero.
+
+Note that although utilities are continuous, the elicited data is discrete (room choices). This can be interpreted as a random utility model, where observed choices are noisy samples from an underlying argmax. Under this interpretation, the gradient updates correspond to maximum likelihood estimation.
+
+### Nash Social Welfare
+
+This specific weighting turns out to be exactly the requirement for maximizing Nash social welfare.
+
+Standard efficiency maximizes the sum of utilities (which can let the rich eat the poor). We want to maximize the product of surpluses. Formally, we are minimizing the negative log-likelihood of the assignment:
+
+{
+    \mathcal{L}(p) = - \sum_{i=1}^N \log(u_i(p)) \quad \text{s.t.} \sum p = R
+}
+
+When we take the derivative of this loss function to find the gradient, the term {1/u_i} comes out naturally:
+
+{
+    \nabla \mathcal{L} = - \sum \frac{1}{u_i} \nabla u_i
+}
+
+This confirms that our "weighted update" is actually finding the Maximum Likelihood Estimator for a market equilibrium that prioritizes proportional fairness.
+
+At convergence, the clearing condition implies envy-freeness: for every individual {i},
+
+{
+    u_i(\text{assigned room}) \ge u_i(\text{any other room})
+}
+
+since otherwise they would demand a different room at the prevailing prices.
+
+## Pump and Dump
+
+Note that this is a zero-sum game because of the fixed constraint that we must pay rent exactly. This creates an incentive for a "pump and dump" strategy. Consider an individual who actually wants the basement. If they pretend to bid for the master bedroom, they create fake demand, driving its price up and thus the price of the basement down. Then, at the last second, they switch to the basement, securing it for much less than they value it for.
+
+### Making Pump and Dump Risky
+
+The [Myerson-Satterthwaite Theorem](https://en.wikipedia.org/wiki/Myerson%E2%80%93Satterthwaite_theorem) tells us that we can't have efficiency, budget balance, and strategy-proofness all at once. Since we require efficiency and budget balance, the solution is to make running a pump and dump incredibly risky for an individual to de-incentivize them from trying it.
+
+To do this, we can borrow a concept from control theory: [hysteresis](https://control.com/technical-articles/hysteresis-errors-and-compensation-in-control-systems/). In switched dynamical systems (systems that jump between states), we often get chattering: quick, unstable switching. We can introduce a hysteresis loop into the utility function to minimize this.
+
+Instead of a roommate maximizing pure utility {u_j = v_j - p_j}, we model them as maximizing utility minus switching cost. If a roommate is currently in Room A, they will only switch to Room B if:
+
+{
+    u_B > u_A + \delta
+}
+
+where {\delta} is the hysteresis band: pick it as a small fraction of typical surplus (e.g., $10–$50) so casual flips are suppressed but true preference reversals still trigger.
+
+This prevents the "dump" phase. After bidding up Room A, you see the price of Room B drop. Because of the {\delta} term, Room B has to get significantly cheaper than Room A before you're allowed to switch. By the time the price gap is wide enough to overcome {\delta}, the price of Room A is likely so high that the equilibrium is damaged for everyone and the potential profit from the switch is eaten by the switching cost.
+
+For example, if you value the basement at $600 and it's currently priced at $400, but you temporarily bid up the master bedroom (which you value at $1000) from $800 to $900, the basement might drop to $350. But to switch, you'd need the basement's utility ($600 - $350 = $250) to exceed the master's current utility ($1000 - $900 = $100) by at least {\delta} = $20. By the time that happens, other bidders may have already claimed the basement, or the prices may have settled differently.
+
+## Convergence Sketch
+
+Below is a brief *sketch* of why the procedure converges under mild assumptions.
+
+This mechanism is a discrete-time tatonnement process with a strictly convex potential. Specifically, consider the objective:
+
+{
+    \mathcal{L}(p) = - \sum_{i=1}^N \log(u_i(p)) \quad \text{s.t.} \quad \sum_j p_j = R
+}
+
+Assume:
+
+list[o]:
+- Each roommate has quasi-linear utility {u_i = v_{ij} - p_j}.
+- For any price vector {p}, each roommate demands exactly one room.
+- Ties are broken consistently (or with infinitesimal noise).
+end list;
+
+Under these assumptions, {\mathcal{L}} is strictly convex over the feasible price simplex whenever all utilities are positive. The feasible region is compact due to the budget constraint. Therefore, there exists a unique minimizer.
+
+Each update step performs a stochastic gradient descent step on {\mathcal{L}}, projected onto the affine constraint {\sum p = R}. For sufficiently small learning rate {\eta}, standard results from convex optimization imply that:
+
+list[u]:
+- The loss decreases monotonically in expectation.
+- Prices remain in the interior of the feasible region due to the barrier term.
+- The process converges to the unique minimizer.
+end list;
+
+## A Statistical Inference View
+
+In fact, we can formalize this as maximum likelihood estimation for a discrete choice model.[^2]
+
+Assume each roommate's preferences follow a random utility model: for roommate {i} and room {j},
+{
+    U_{ij} = v_{ij} - p_j + \varepsilon_{ij}, 
+}
+where {v_{ij}} is the true valuation, {p_j} is the price, and {\varepsilon_{ij} \sim \text{Gumbel}(0, 1/\beta)} are i.i.d. extreme-value noise. This gives logit choice probabilities:
+{
+    \operatorname{Pr}[i \text{ chooses } j \mid p] = \frac{\exp\{\beta(v_{ij} - p_j)\}}{\sum_k \exp\{\beta(v_{ik} - p_k)\}},
+}
+where {\beta} controls how sharply choices respond to utility differences.
+
+### Market Clearing as Parameter Estimation
+
+Given observed choices {D = (j_1, \dots, j_N)} (one room per person), we wish to find prices {p} that make this allocation most likely. The log-likelihood is then
+{
+    \ell(p) = \sum_{i=1}^N \log \operatorname{Pr}[i \text{ chooses } j \mid p].
+}
+But we also require {\sum_j p_j = R} so this is a constrained MLE problem with prices as parameters.
+
+Our auction performs stochastic gradient ascent on {\ell(p)}: at current prices {p(t)}, we observe choices {D(t)} (samples from the logit model). The score function (gradient of log-likelihood) points toward prices that increase the probability of observed choices. We take a small step in this direction, then project back to the budget simplex.
+
+The weighted update rule emerges naturally: in expectation, the gradient points toward reducing excess demand, since over-chosen rooms have higher prices in the likelihood model.
+
+The model belongs to an exponential family where prices {p} are natural parameters and room assignments are sufficient statistics. The maximum entropy principle is the dual: the equilibrium prices are those that maximize entropy (uncertainty in assignments) subject to the market-clearing constraint.
+
+As {\beta \to \infty} (low noise), choices become deterministic: each person picks their utility-maximizing room. The MLE problem then becomes: *Find prices* {p} *such that, when everyone chooses optimally, exactly one person picks each room.*
+
+This is exactly our envy-free equilibrium condition.
+
+The iterative auction is essentially Expectation-Maximization:
+
+list[u]:
+ - E-step: Given current prices, "observe" choices (roommates pick rooms).
+ - M-step: Adjust prices to make observed choices more likely, subject to the rent constraint.
+end list;
+
+Convergence occurs when the empirical demand (one person per room) matches the expected demand under the model -- the moment matching condition in exponential families.
+
+[^1]: A formal convergence proof would have to deal with all this but we can just assume we live in some "nice" regime where we converge.
+
+[^2]: Admittedly, this is a bit unnecessary, but if I'm writing this instead of studying for my STAT 210A final, I might as well.

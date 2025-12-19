@@ -4,6 +4,7 @@ title: Algebraic Autoencoders;
 date: [In Progress];
 desc: What happens if we remove some limitations on how latent spaces must behave?;
 tags: ml, math;
+visibility: hidden;
 
 ## Overview
 

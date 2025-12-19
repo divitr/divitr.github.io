@@ -2,7 +2,7 @@ req: physics;
 
 title: Eigenlearning;
 date: Jun 11, 2025;
-desc: Some notes the Eigenlearning paper by Simon et al.;
+desc: Some notes on the Eigenlearning paper by Simon et al.;
 tags: ml;
 
 ## Preliminaries

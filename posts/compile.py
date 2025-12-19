@@ -594,6 +594,13 @@ class MDTXCompiler:
                 _, body = self.process_requires(raw)
                 meta, _ = self.parse_metadata(body)
                 
+                # Visibility gate: default visible, hide if explicitly set to hidden
+                visibility = meta.get('visibility', 'visible').strip().lower()
+                if visibility not in ('visible', 'hidden'):
+                    visibility = 'visible'
+                if visibility == 'hidden':
+                    continue
+                
                 # Skip files that don't have required fields
                 if not meta.get('title') or not meta.get('desc'):
                     continue
@@ -653,7 +660,7 @@ class MDTXCompiler:
         
         # Generate the blog posts HTML in the new clean format
         # Define canonical tag order
-        tag_order = ['math', 'physics', 'ml', 'misc']
+        tag_order = ['math', 'physics', 'ml', 'stats', 'misc']
 
         posts_html = []
         for post in posts:
@@ -695,6 +702,7 @@ class MDTXCompiler:
                 <button class="tag-filter" data-filter="math">math</button>
                 <button class="tag-filter" data-filter="physics">physics</button>
                 <button class="tag-filter" data-filter="ml">ml</button>
+                <button class="tag-filter" data-filter="stats">stats</button>
                 <button class="tag-filter" data-filter="misc">misc</button>
             </div>
 '''
@@ -717,6 +725,14 @@ class MDTXCompiler:
         raw  = self.remove_comments(raw)
         reqs, body = self.process_requires(raw)
         meta, body = self.parse_metadata(body)
+        
+        # Honor visibility flag when compiling single files; default visible
+        visibility = meta.get('visibility', 'visible').strip().lower()
+        if visibility not in ('visible', 'hidden'):
+            visibility = 'visible'
+        if visibility == 'hidden':
+            print(f"Skipping {path.name}: visibility=hidden")
+            return
         fns,  body = self.extract_footnotes(body)
         
         # ←── minimal fix: strip any leftover 'desc:' or 'tags:' lines 
@@ -769,7 +785,7 @@ class MDTXCompiler:
         # Generate tags HTML for the post
         tags_html = ''
         if tags and tags.strip():
-            tag_order = ['math', 'physics', 'ml', 'misc']
+            tag_order = ['math', 'physics', 'ml', 'stats', 'misc']
             tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
             # Sort tags by canonical order
             tag_list.sort(key=lambda t: tag_order.index(t) if t in tag_order else 999)

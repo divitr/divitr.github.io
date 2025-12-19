@@ -1,0 +1,101 @@
+req: physics;
+
+title: Let {\mathcal X} be a {\sigma}-Algebra;
+date: Nov 30, 2025;
+desc: The role of formalism in communicating, teaching, and doing science;
+tags: misc;
+visibility: hidden;
+
+This semester I'm taking Statistical Learning Theory with Ben Recht.[^1] On the first day of class, before we saw a single theorem, he told us a story about one of his professors during his PhD.  
+
+Every course this professor taught, no matter the topic, started the same way. He would walk into the room, pick up a piece of chalk, and write on the board:
+{
+    \text{Let $\mathcal X$ be a $\sigma$-algebra.}
+}
+
+He told us he'd sit there thinking something like: *there is no way I'm dealing with this; what have I gotten myself into?* The point, he eventually realized, was not just to set up measure-theoretic probability. It was also, very explicitly, to send a message: this is a serious class; if this line scares you, maybe you don't belong here.  
+
+Ben admitted that when he first started teaching, he more or less copied that playbook. The early versions of the course were heavy on formalism right out of the gate. Partly because the tools really do matter, and partly because there is a certain satisfaction in proving that what you are doing is "real" math. But also, in hindsight, because it was an easy way to intimidate people into taking the subject seriously.  
+
+Over time, he decided this was a mistake. Yes, the formalism is important; it keeps the theorems honest and lets you generalize beyond any one special case. But front-loading it as a kind of hazing ritual mostly selects for students who already speak the language, not for students who might actually benefit from the ideas. If the goal of the class is to understand why learning works, starting with "Let {\mathcal X} be a {\sigma}-algebra" is like teaching an intro mechanics course by defining the Lie algebra of rotations; it's not strictly incorrect, but it's definitely overkill.
+
+It's pretty interesting how a single sentence is both a precise and compact way to communicate and a deliberate act of gatekeeping. That's what this note is about. "Let {\mathcal X} be a {\sigma}-algebra" is a perfectly reasonable thing to say once you're already inside the subject. As an opening line, though, it says more about the sociology of mathematics than about probability theory.  
+
+## What the {\sigma}-algebra is actually doing
+
+The funny thing is that the underlying idea is not that scary. A {\sigma}-algebra is just a way of writing down which events you are allowed to talk about and how they behave under logic.  
+
+In a probability class, {\mathcal X} might be:
+
+list[u]:
+- all of the events you can meaningfully assign probabilities to,
+- closed under "or", "and", and "not" (unions, intersections, complements),
+- stable under taking countable unions (so you do not lose closure when you talk about limits of events).
+end list;
+
+In other words, a {\sigma}-algebra is a formal notion of "the information you have access to." If you tell me which {\sigma}-algebra you are working with, you are really telling me what you are allowed to observe and condition on. It's very elegant in a sense, but that's not how it feels when the very first thing you see is a bare definition and a wall of quantifiers.  
+
+## Formalism as Compression
+
+That being said, this is not an indictment of formalism. In fact, I'm a huge fan of formalism. After seeing a few examples, the formalism is far easier than explaining the concept every time. For example, after seeing probability spaces of coin flips, random walks, etc., it's much more straightforward to generalize the idea to {\sigma}-algebras and just use that simple term rather than defining all the axioms again.
+
+This is what formalism is for: it packages a long list of background assumptions into a single line, so you can build nontrivial theorems on top of it without repeating yourself. And it's incredibly important for collaboration; it makes sure that everyone's working with the same objects under the same assumptions.
+
+The problem is not the formalism itself. The problem is when we confuse "efficient for experts" with "appropriate for beginners." If the first time you encounter {\sigma}-algebras is as an unlabeled object {\mathcal X} that you are told to accept on faith, the compression is lossy in exactly the wrong way: you lose the part where you find out *why you should care*.  
+
+## Two roles for the same sentence
+
+The same chalk line can play (at least) two different roles:
+
+list[u]:
+- As a **tool**, it lets people who already think in measure theory move quickly. It says: we are in the usual setting; all the standard theorems apply; let's get to the interesting part.
+- As a **signal**, it announces that this is a certain kind of space: rigorous, high-status, maybe a bit hostile. It reassures insiders ("this is real math") and warns outsiders ("this might not be for you").
+end list;
+
+The interesting part is that these roles are not independent. As you get more fluent, the sentence genuinely *shrinks* in your head. "Let {\mathcal X} be a {\sigma}-algebra" becomes a single mental chunk you can pick up and move around: you no longer see the closure axioms, you just see "nice enough collection of events." For you, it is pure tool.  
+
+For someone hearing it for the first time, that chunking has not happened yet. They hear every symbol separately: {\mathcal X}, {\sigma}, "algebra", the implicit ambient measure space. What was meant as a convenience for the expert brain shows up to the novice brain as a sudden spike in entropy. The *same* line is compressive on one side of the room and expansionary on the other.  
+
+You can think of this as a kind of expert blind spot: once a concept has compressed into a single unit for you, it is hard to remember that the sentence naming it is doing two jobs at once. It is both:
+
+list[u]:
+- describing an object in the mathematical universe, and
+- performing a social act about who you expect to be able to follow.
+end list;
+
+That second part is what makes "Let {\mathcal X} be a {\sigma}-algebra" so sticky as an opening line. It is not just convenient; it also quietly asserts that the conversation is pitched at people for whom that convenience is real.  
+
+## A small design problem for theory
+
+One way to read Ben's story is as a tiny piece of design work: he did not change the theorems, he changed the *API surface* that students see first. The formal object is still there, but it is now behind a couple of well-chosen examples and questions.  
+
+You could imagine a rough progression:
+
+list[u]:
+- Level 0: "Here is a coin flip. Here are the kinds of events we care about. Notice how we keep closing under `and`, `or`, `not`, and limits."
+- Level 1: "All those events form a structured collection; let's call it {\sigma}({\mathcal X}). Now we can talk about random variables as measurable functions to {\mathbb R}."
+- Level 2: Only at this point do you casually write "Let {\mathcal X} be a {\sigma}-algebra" and expect it to land as a single idea.
+end list;
+
+At each step, the formalism is doing what it does best—naming and stabilizing patterns that students have already seen in a concrete form. The nontrivial design choice is *where* in that progression you first let a line like "Let {\mathcal X} be a {\sigma}-algebra" appear without apology.  
+
+This is not just about kindness. It also affects what kinds of questions students feel licensed to ask. If the first thing you see is a bare definition, it is natural to think that the "real" work happens at the level of manipulating symbols. If, instead, the definition arrives as a compression of examples you've lived with for a while, it is easier to see it as a tool in service of understanding the underlying phenomenon (information, randomness, learning) rather than as an end in itself.  
+
+## Formalism when the audience is a computer
+
+There is one place where front-loading formalism is not a bug at all: when your audience is a computer. In his ICM 2022 talk on the Xena project, Kevin Buzzard argues that serious mathematics is gradually moving towards fully formal proofs, written in proof assistants like Lean.[^buzzard] For a proof assistant, "Let {\mathcal X} be a {\sigma}-algebra" really is the beginning of the story—all of the closure properties, measurability conditions, and background structure have to be spelled out in excruciating detail. The machine will not let you get away with handwaving.
+
+What is interesting is that this can actually make things *friendlier* for students. The computer is the one that insists on complete formality; humans are suddenly free to talk informally about what is going on, because the proof assistant will yell at you if you lie. In that setting, formalism stops being a social filter and becomes a kind of safety net. You can try a proof idea that feels half-baked, and the system will tell you exactly where it fails.
+
+From that perspective, there are really three audiences for a sentence like "Let {\mathcal X} be a {\sigma}-algebra": experts, beginners, and machines. For experts, it is compression; for beginners, it is often overload; for machines, it is just the start of a very long, very explicit definition. Good pedagogy is partly about not confusing those three cases. We should be as formal as the *theorem* needs us to be, but only as intimidating as the *people in the room* can afford.
+
+## Ending where we started
+
+I do not think the solution is to ban sentences like "Let {\mathcal X} be a {\sigma}-algebra" from first lectures. Part of the joy of taking a theory class is seeing that the subject *does* have a clean, abstract backbone. The point is just that the line carries more weight than its length suggests. It is not only a choice of notation; it is a choice of interface.  
+
+Ben's change of heart was essentially about that interface. The content of the course did not get any less formal; if anything, it grew more so. What changed was an attitude: from "if this scares you, maybe you do not belong here" to "if this scares you, that is a signal about how we should introduce it." The {\sigma}-algebra is the same. The story around it is different.  
+
+When we lead with a definition like "Let {\mathcal X} be a {\sigma}-algebra," we are compressing a lot of mathematics into eight words. We are also, whether we mean to or not, saying who we expect to be able to decompress it. Remembering that there are two messages there—and that we can choose them somewhat independently—seems like a small but real step toward teaching theory the way we actually wish we had learned it.  
+
+[^1]: Funnily enough, I'm writing this instead of typesetting my scribed lecture notes due tomorrow...
+[^buzzard]: Kevin Buzzard, *The Xena project and the future of mathematics*, ICM 2022 talk. Slides available [here](https://www.ma.imperial.ac.uk/~buzzard/xena/pdfs/BuzzardICM2022talk.pdf).
