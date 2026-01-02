@@ -3,7 +3,7 @@ function loadHeader() {
     // Determine the correct path to header.html based on current page location
     const currentPath = window.location.pathname;
     let headerPath = 'header.html';
-    
+
     // If we're in a subdirectory, go up one level to find header.html
     if (currentPath.includes('/research/') || currentPath.includes('/notes/') || currentPath.includes('/misc/')) {
         headerPath = '../header.html';
@@ -16,7 +16,7 @@ function loadHeader() {
     else if (currentPath.includes('/posts/')) {
         headerPath = '../header.html';
     }
-    
+
     fetch(headerPath)
         .then(response => response.text())
         .then(html => {
