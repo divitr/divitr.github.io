@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../posts.css">
+    <script src="../posts_header.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digits to 10</title>
+
+    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
+    <script>
+        window.MathJax = {
+            startup: {
+                pageReady: () => {
+                    // Wait for TOC and footnotes to initialize first
+                    return new Promise((resolve) => {
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => {
+                                // Give TOC/footnotes a moment to set up
+                                setTimeout(resolve, 100);
+                            });
+                        } else {
+                            setTimeout(resolve, 100);
+                        }
+                    }).then(() => MathJax.startup.defaultPageReady());
+                }
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="blog-post">
+        <section class="intro">
+            <h1>Digits to 10</h1>
+            <div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="misc">misc</span></div>
+            <p class="date">Dec 21, 2025</p>
+            <p class="desc">idek anymore</p>
+        </section>
+
+<h2>Setup</h2>
+<h3>Rules and Goal</h3>
+<p>The game is quite simple: Given \(k\) nonzero<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup> digits (\(d \in \{1, 2, \dots, 9\}\)) and only the binary operators \(+, -, \times, /\) and the unary operators \(x \mapsto x^2, x \mapsto \sqrt{x}\) (where \(\sqrt{\cdot}\) is defined only for perfect squares), construct some expression that evaluates to 10. Note that parentheses are allowed so that you can specify the order of operations.</p>
+<p>However, the constraint is that every one of the provided \(k\) digits must be used exactly once.</p>
+<p>The question we want to answer is: <em>What is the smallest number \(k\) such that you can make 10 regardless of what digits are given?</em></p>
+<h3>Notation</h3>
+<h2>Reducing the Problem</h2>
+<p>At first glance, this requires checking thousands of combinations of digits, but if we use a structural property of the reachable values, we can massively simplify the search space.</p>
+<p>We posit that the "hardest" sets to work with are "homogenous multisets" (sets where every digit is identical, e.g., \(\{7, 7, 7, 7, 7\}\)). Mixing distinct digits increases the "entropy" of the set, allowing for shortcuts (like constructing the identity 1 via \(x/x\) or \(y-x\), whereas homogeneous sets are restricted to \(x/x\)).</p>
+<div class="lemma-box env-box">
+  <p><strong>Lemma <span class="env-title">(Homogeneity Reduction)</span>.</strong> Let \(D = \{1,2,\dots,9\}\). Let \(R(M)\) denote the set of values reachable from multiset \(M\) under the game rules. Define the cost of a digit as: \begin{equation} C(d) = \min \{ n : 10 \in R(\{d\}^n) \}. \end{equation} Then, the minimal sufficient \(k\) for all multisets satisfies: \begin{equation} k_{\min} = \max_{d \in D} C(d). \end{equation}</p>
+</div>
+<details class="proof-box proof-box env-box" open>
+  <summary class="proof-box-title env-box-title"><em>Proof.</em><span class="proof-toggle-text"> (collapse)</span></summary>
+  <div class="proof-box-content env-box-content"><p>We partition the universe of multisets \(M_n\) of size \(n\) into three mutually exclusive and completely exhaustive cases.</p>
+<strong>Case I: \(M_n\) is homogeneous (\(M_n = \{d\}^n\))</strong>
+<p>This is the base case covered by the hypothesis. By definition \(10 \in R(M_n)\).</p><div class="qed-box"></div></div>
+</details>
+<div class="footnotes">
+<ol>
+<li id="fn1">We exclude 0 because it's kinda "nothing"; its useless for addition, subtraction, multiplication, squares, square rooting, and undefined for division. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+</ol></div>
+    </main>
+
+    <footer class="footer">
+        <div class="last-updated">
+            <p>Compiled Jan 01, 2026 at 19:39 | <a href="../src/digits-to-10.mdtx" target="_blank">Source</a></p>
+        </div>
+    </footer>
+
+    <!-- Table of Contents Generator - loads before MathJax renders -->
+    <script src="../toc-generator.js"></script>
+
+    <!-- Footnote Sidebar - loads before MathJax renders -->
+    <script src="../footnote-sidebar.js"></script>
+
+    <!-- Collapsible Proofs -->
+    <script src="../collapsible-proofs.js"></script>
+</body>
+</html>

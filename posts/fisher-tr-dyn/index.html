@@ -46,7 +46,7 @@
             <p class="desc">A cool bit of math that falls apart empirically</p>
         </section>
 
-<p><strong>[NOTE]</strong> This post is mostly just because the idea was pretty cool (imo) and once the empirics failed, I wanted somewhere to keep it. Most of this post is transcribed from the original LATEX document by GPT, and as such, may have some innaccuracies or syntax errors.</p>
+<p><strong>[NOTE]</strong> This post is mostly just because the idea was pretty cool (imo) and once the empirics failed, I wanted somewhere to keep it. Most of this post is transcribed from the my original proofs in LATEX by GPT, and as such, may have some minor innaccuracies or syntax errors.</p>
 <h2>Introduction</h2>
 <p>Different optimizers like SGD and Adam often produce similar loss curves and generalization behavior, even though they use different update rules. SGD does Euclidean gradient descent, Adam uses adaptive diagonal preconditioning, and natural gradient uses the Fisher information matrix. So why do they end up with similar training dynamics?</p>
 <p>Over the past couple months I worked on a theoretical framework that training paths are approximately geodesics in Fisher information space<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>, and that different optimizers' metrics conformally align at large width, causing their paths to coincide. The theory has three main components: (i) all preconditioned gradient descent methods are equivalent to Riemannian gradient flow under different metrics, (ii) stochastic gradient noise concentrates paths near geodesics via large deviations, and (iii) in overparameterized networks, different optimizers' metrics align with the Fisher metric at rate \(O(p^{-1/2})\).</p>
@@ -223,7 +223,7 @@ This applies to:
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Dec 18, 2025 at 22:30 | <a href="../src/fisher-tr-dyn.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Jan 01, 2026 at 20:01 | <a href="../src/fisher-tr-dyn.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 
@@ -232,5 +232,8 @@ This applies to:
 
     <!-- Footnote Sidebar - loads before MathJax renders -->
     <script src="../footnote-sidebar.js"></script>
+
+    <!-- Collapsible Proofs -->
+    <script src="../collapsible-proofs.js"></script>
 </body>
 </html>

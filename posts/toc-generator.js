@@ -38,7 +38,6 @@ function initTOC() {
                 font-size: 1rem;
                 padding-left: 0px;
                 padding-bottom: 0.5rem;
-                font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
                 cursor: pointer;
                 user-select: none;
                 border-bottom: 1px solid transparent;
@@ -126,7 +125,6 @@ function initTOC() {
                 max-width: 180px;
                 transition: color 0.2s ease;
                 font-size: 0.9rem;
-                font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             }
 
             .toc-section.active .toc-section-title {

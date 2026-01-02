@@ -1,7 +1,7 @@
 req: physics;
 
 title: A Markov Picture of Heat;
-date: Aug. 23, 2025;
+date: Aug 23, 2025;
 desc: A derivation of the heat equation from a stochastic model of energy exchange;
 tags: physics, stats;
 

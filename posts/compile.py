@@ -239,6 +239,75 @@ class MDTXCompiler:
             )
         return pattern.sub(repl, text)
 
+    def process_environments(self, text: str) -> str:
+        for env_name in ['proof', 'lemma', 'theorem', 'definition', 'remark', 'corollary', 'proposition']:
+            pattern = re.compile(
+                rf'{env_name}(?:\[(.*?)\])?:\s*\n'
+                r'([\s\S]*?)'
+                rf'\nend {env_name};?',
+                re.DOTALL | re.IGNORECASE
+            )
+            text = pattern.sub(self._create_env_repl(env_name), text)
+        return text
+
+    def _create_env_repl(self, env_name: str):
+        def repl(m):
+            title = m.group(1)
+            body = m.group(2).strip()
+
+            # Run all processing except paragraphs on the body first
+            body = self.apply_emphasis(body)
+            body = self.process_inline_code(body)
+            body = self.replace_display_math(body)
+            body = self.process_code(body)
+            body = self.process_image(body)
+            body = self.process_example(body)
+            body = self.process_environments(body)
+            body = self.process_lists(body)
+            body = self.process_headings(body)
+            body = self.replace_inline_math(body)
+
+            title_html = f' <span class="env-title">({title})</span>' if title else ''
+            
+            if env_name == 'proof':
+                # Keep existing proof logic
+                title_text = f'<em>{env_name.capitalize()}.</em>{title_html}'
+                toggle_text = '<span class="proof-toggle-text"> (collapse)</span>'
+                qed_html = '<div class="qed-box"></div>'
+                
+                body = self.process_paragraphs(body)
+                body += qed_html
+                
+                proof_content = f'<div class="{env_name}-box-content env-box-content">{body}</div>'
+
+                return (
+                    f'<details class="proof-box {env_name}-box env-box" open>\n'
+                    f'  <summary class="{env_name}-box-title env-box-title">{title_text}{toggle_text}</summary>\n'
+                    f'  {proof_content}\n'
+                    '</details>'
+                )
+
+            # Logic for theorem, lemma, etc.
+            title_text = f'<strong>{env_name.capitalize()}{title_html}.</strong> '
+            
+            # Process body fully, including paragraphs
+            body = self.process_paragraphs(body)
+
+            if body.startswith('<p>'):
+                # Inject title into the first paragraph
+                body = body.replace('<p>', f'<p>{title_text}', 1)
+            else:
+                # If the body doesn't start with a paragraph (e.g., a list),
+                # put the title in its own paragraph before the content.
+                body = f'<p>{title_text}</p>\n{body}' if body else f'<p>{title_text}</p>'
+
+            return (
+                f'<div class="{env_name}-box env-box">\n'
+                f'  {body}\n'
+                '</div>'
+            )
+        return repl
+
     def process_lists(self, text: str) -> str:
         # First try to match lists with explicit 'end list;' markers
         pattern_with_end = re.compile(
@@ -529,11 +598,14 @@ class MDTXCompiler:
         out    = []
         for blk in blocks:
             chunk = blk.strip()
-            # Skip if it's already HTML, a placeholder, or empty
-            if (chunk.startswith('<') and chunk.endswith('>')) or chunk.startswith('__PROTECTED_BLOCK_') or not chunk:
+            if not chunk:
+                continue  # Skip empty blocks
+
+            # If it's already HTML or a placeholder, keep it as is
+            if (chunk.startswith('<') and chunk.endswith('>')) or chunk.startswith('__PROTECTED_BLOCK_'):
                 out.append(chunk)
             else:
-                # Only process as paragraph if it's not already processed
+                # Otherwise, wrap it in a paragraph tag
                 line = ' '.join(l.strip() for l in blk.splitlines())
                 if line:  # Only add paragraph if there's content
                     line = self.apply_emphasis(line)
@@ -753,6 +825,7 @@ class MDTXCompiler:
         body = self.process_code(body)
         body = self.process_image(body)
         body = self.process_example(body)
+        body = self.process_environments(body)
         body = self.process_lists(body)
         body = self.process_headings(body)
         
@@ -860,6 +933,9 @@ class MDTXCompiler:
 
     <!-- Footnote Sidebar - loads before MathJax renders -->
     <script src="../footnote-sidebar.js"></script>
+
+    <!-- Collapsible Proofs -->
+    <script src="../collapsible-proofs.js"></script>
 </body>
 </html>"""
 

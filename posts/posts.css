@@ -11,10 +11,10 @@
     background: transparent;
     border: none;
     font-size: 0.9rem;
+    font-family: inherit;
     cursor: pointer;
     transition: all 0.2s ease;
     color: #999;
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     text-decoration: none;
 }
 
@@ -87,10 +87,6 @@
     padding: 0.75rem 0;
     border-bottom: 1px solid #eee;
     gap: 1.5rem;
-}
-
-.blog-post-item:last-child {
-    border-bottom: none;
 }
 
 .blog-post-item .post-date {
@@ -225,6 +221,7 @@ body header {
     border: 1px solid #e0e0e0;
     border-radius: 15px;
     font-size: 0.9rem;
+    font-family: inherit;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
@@ -284,7 +281,6 @@ body header {
     max-width: 800px;
     margin: 0 auto;
     padding: 0;
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.65;
     color: var(--primary-color);
     background: var(--background-color);
@@ -300,7 +296,6 @@ body header {
 
 .blog-post .intro h1 {
     font-size: 2rem;
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--primary-color, #4a4a4a);
     margin: 0 0 0.5rem 0;
 }
@@ -325,7 +320,6 @@ body header {
 
 .blog-post h1 {
     font-size: 2rem;
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--primary-color, #4a4a4a);
 }
 
@@ -346,7 +340,7 @@ body header {
 }
 
 .blog-post a:hover {
-    color: var(--link-color);
+    color: var(--primary-color);
     text-decoration: underline;
 }
 
@@ -413,20 +407,17 @@ body header {
 
 /* Ensure all text elements have proper fonts */
 .blog-post p {
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.65;
     color: var(--primary-color);
 }
 
 .example-box {
-    background-color: #faf9f6;
+    background-color: #f5f5f5;
     border-left: 3px solid #4a4a4a;
     border-radius: 0;
     padding: 1.5rem;
     margin: 2rem 0;
     color: #4a4a4a;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
 }
 
 .example-box ul {
@@ -547,13 +538,13 @@ body header {
 }
 
 .footnotes .footnote-backref:hover {
-    color: var(--link-color);
+    color: var(--primary-color);
 }
 
 /* Inline footnote references */
 sup a {
     text-decoration: none;
-    color: var(--link-color);
+    color: var(--primary-color);
     font-weight: 500;
     font-size: 0.8em;
 }
@@ -566,7 +557,7 @@ sup a:hover {
 .footnote-tooltip {
     position: fixed;
     max-width: 400px;
-    background: #fefdf5;
+    background: #fafafa;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     padding: 0.75rem 1rem;
@@ -578,7 +569,6 @@ sup a:hover {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .footnote-tooltip.visible {
@@ -591,7 +581,7 @@ sup a:hover {
 }
 
 .footnote-tooltip a:hover {
-    color: var(--link-color);
+    color: var(--primary-color);
 }
 
 /* Hover effect on footnote reference */
@@ -618,3 +608,58 @@ sup a:hover {
     }
 }
 
+/* For theorem, lemma, etc. */
+.env-box {
+    margin: 1.5rem 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+.env-box-title {
+    margin-bottom: 0.5rem;
+}
+
+.env-box-title strong {
+    font-weight: bold;
+}
+
+.env-box-title em {
+    font-style: italic;
+}
+
+.env-box-title .env-title {
+    font-weight: normal;
+}
+
+.proof-box-content::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.qed-box {
+    float: right;
+    width: 0.7em;
+    height: 0.7em;
+    border: 1px solid var(--primary-color);
+    margin-left: 1em; /* Space from text */
+    margin-bottom: 0.2em; /* Align with bottom of text */
+}
+
+/* Collapsible Proofs */
+.proof-box summary {
+    display: inline-block;
+    list-style: none; /* Hide marker in Firefox */
+}
+
+.proof-box summary::-webkit-details-marker {
+    display: none; /* Hide marker in Chrome/Safari */
+}
+
+.proof-box .proof-toggle-text {
+    font-style: normal;
+    font-weight: normal;
+    color: #999;
+    font-size: 0.9em;
+}

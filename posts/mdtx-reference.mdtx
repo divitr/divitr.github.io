@@ -71,6 +71,39 @@ The physics package provides useful commands like:
 {\(\partial_t T = D \nabla^2 T\)} for the heat equation
 {\(\nabla \cdot \mathbf{E} = \frac{\rho}{\epsilon_0}\)} for Gauss's law
 
+## Theorem-like Environments
+
+You can create theorem, lemma, proof, and other similar blocks.
+
+### Syntax
+
+```mdtx
+<environment>[Optional Title]:
+... content ...
+end <environment>;
+```
+
+-   `<environment>` can be `theorem`, `lemma`, `definition`, `corollary`, `remark`, or `proof`.
+-   The `[Optional Title]` part is for giving your environment a name or number, which will be displayed in parentheses.
+
+### Theorem Example
+
+```mdtx
+theorem[Fermat's Little Theorem]:
+For any integer {a} and any prime {p}, we have {a^p \equiv a \pmod{p}}.
+end theorem;
+```
+
+### Proof Example
+
+The `proof` environment has a slightly different style and automatically adds a QED symbol at the end.
+
+```mdtx
+proof:
+The proof is left as an exercise for the reader.
+end proof;
+```
+
 ## Lists
 
 ### Unordered Lists

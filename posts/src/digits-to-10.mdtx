@@ -1,0 +1,46 @@
+title: Digits to 10;
+date: Dec 21, 2025;
+desc: idek anymore;
+tags: misc, math;
+visibility:hidden;
+
+## Setup
+
+### Rules and Goal
+
+The game is quite simple: Given {k} nonzero[^1] digits ({d \in \{1, 2, \dots, 9\}}) and only the binary operators {+, -, \times, /} and the unary operators {x \mapsto x^2, x \mapsto \sqrt{x}} (where {\sqrt{\cdot}} is defined only for perfect squares), construct some expression that evaluates to 10. Note that parentheses are allowed so that you can specify the order of operations.
+
+However, the constraint is that every one of the provided {k} digits must be used exactly once.
+
+The question we want to answer is: *What is the smallest number {k} such that you can make 10 regardless of what digits are given?*
+
+### Notation
+
+## Reducing the Problem
+
+At first glance, this requires checking thousands of combinations of digits, but if we use a structural property of the reachable values, we can massively simplify the search space.
+
+We posit that the "hardest" sets to work with are "homogenous multisets" (sets where every digit is identical, e.g., {\{7, 7, 7, 7, 7\}}). Mixing distinct digits increases the "entropy" of the set, allowing for shortcuts (like constructing the identity 1 via {x/x} or {y-x}, whereas homogeneous sets are restricted to {x/x}).
+
+lemma[Homogeneity Reduction]:
+Let {D = \{1,2,\dots,9\}}. Let {R(M)} denote the set of values reachable from multiset {M} under the game rules. Define the cost of a digit as:
+{
+C(d) = \min \{ n : 10 \in R(\{d\}^n) \}.
+}
+Then, the minimal sufficient {k} for all multisets satisfies:
+{
+k_{\min} = \max_{d \in D} C(d).
+}
+
+end lemma;
+
+proof:
+We partition the universe of multisets {M_n} of size {n} into three mutually exclusive and completely exhaustive cases.
+
+**Case I: {M_n} is homogeneous ({M_n = \{d\}^n})**
+
+This is the base case covered by the hypothesis. By definition {10 \in R(M_n)}.
+
+end proof;
+
+[^1]: We exclude 0 because it's kinda "nothing"; its useless for addition, subtraction, multiplication, squares, square rooting, and undefined for division.
