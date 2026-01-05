@@ -283,18 +283,8 @@ a:hover {
 }
 
 .paper-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 0.75rem 0;
+    padding: 1.25rem 0;
     border-bottom: 1px solid #eee;
-}
-
-.paper-year {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #666;
-    min-width: 60px;
-    flex-shrink: 0;
 }
 
 .paper-content {
@@ -303,15 +293,16 @@ a:hover {
 
 .paper-title {
     font-weight: 600;
-    font-size: 1.05rem;
-    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
     line-height: 1.4;
+    color: var(--primary-color);
 }
 
 .paper-authors {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 0.1rem;
 }
 
 .paper-venue {
@@ -322,7 +313,15 @@ a:hover {
 
 .paper-links {
     font-size: 0.9rem;
-    line-height: 1.4;
+    color: #aaa;
+}
+
+@media (min-width: 600px) {
+    .paper-authors, 
+    .paper-venue, 
+    .paper-links {
+        padding-left: 1.25rem;
+    }
 }
 
 .paper-links a {
