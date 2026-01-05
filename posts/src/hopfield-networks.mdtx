@@ -1,9 +1,9 @@
 title: Hopfield Networks;
 date: Jan 19, 2025;
 desc: A quick implementation of a Hopfield network in Python;
-tags: ml, physics;
+tags: physics, ml;
 
-# Hopfield Networks
+## Introduction
 
 Hopfield networks are a type of recurrent neural network that can store and recall patterns. They are based on the idea of associative memory, where a network can "remember" a pattern and recall it when given a similar input.
 

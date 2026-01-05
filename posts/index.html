@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="posts.css">
     <script src="../header.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
@@ -26,78 +29,83 @@
                 <button class="tag-filter" data-filter="stats">stats</button>
                 <button class="tag-filter" data-filter="misc">misc</button>
             </div>
-            <div class="blog-post-item" data-tags="misc, stats">
+            <div class="blog-post-item" data-tags="ml, physics" data-emoji="📉🚚">
+                <span class="post-date">Jan 05, 2026</span>
+                <div class="post-content">
+                    <h3><a href="/posts/ot-mup">\(\mu\)P as Optimal Transport in a Vanilla MLP</a><div class="post-tags"><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div></h3>
+                    <p class="post-description">Deriving \(\mu\)P as the unique scaling maximizing Wasserstein transport under stability constraints</p>
+                </div>
+            </div>
+            <div class="blog-post-item" data-tags="misc, stats" data-emoji="🏠">
                 <span class="post-date">Dec 12, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/room-auctions">Room Auctions</a><div class="post-tags"><span class="tag" data-tag="stats">stats</span><span class="tag" data-tag="misc">misc</span></div></h3>
                     <p class="post-description">Designing an auction system for rooms in our house</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="ml, math, physics">
+            <div class="blog-post-item" data-tags="ml, math, physics" data-emoji="">
                 <span class="post-date">Nov 16, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/fisher-tr-dyn">Deep Learning Training Dynamics are not Fisher Geodesics</a><div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div></h3>
                     <p class="post-description">A cool bit of math that falls apart empirically</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="math, ml, physics">
+            <div class="blog-post-item" data-tags="math, ml, physics" data-emoji="">
                 <span class="post-date">Nov 02, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/cat-theor-ml">A Category Theoretic View of Machine Learning</a><div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div></h3>
                     <p class="post-description">Using symmetries to better understand how to design attention kernels</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="ml">
+            <div class="blog-post-item" data-tags="ml" data-emoji="">
                 <span class="post-date">Sep 13, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/everything-is-krr">Every Model is Kernel Ridge Regression</a><div class="post-tags"><span class="tag" data-tag="ml">ml</span></div></h3>
                     <p class="post-description">Some notes on Domingos' paper: Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="physics, stats">
+            <div class="blog-post-item" data-tags="physics, stats" data-emoji="🔥">
                 <span class="post-date">Aug 23, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/markov-heat">A Markov Picture of Heat</a><div class="post-tags"><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="stats">stats</span></div></h3>
                     <p class="post-description">A derivation of the heat equation from a stochastic model of energy exchange</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="ml">
+            <div class="blog-post-item" data-tags="ml" data-emoji="">
                 <span class="post-date">Jun 11, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/eigenlearning">Eigenlearning</a><div class="post-tags"><span class="tag" data-tag="ml">ml</span></div></h3>
                     <p class="post-description">Some notes on the Eigenlearning paper by Simon et al.</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="math">
+            <div class="blog-post-item" data-tags="math" data-emoji="">
                 <span class="post-date">Jun 03, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/rkhs">Reproducing Kernel Hilbert Spaces</a><div class="post-tags"><span class="tag" data-tag="math">math</span></div></h3>
                     <p class="post-description">Building up RKHSs from the Riesz Representation Theorem</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="misc">
+            <div class="blog-post-item" data-tags="misc" data-emoji="🍪">
                 <span class="post-date">Apr 19, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/cookie-magic">Cookie Magic</a><div class="post-tags"><span class="tag" data-tag="misc">misc</span></div></h3>
                     <p class="post-description">How I got ~$500 worth of cookies for free</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="ml">
+            <div class="blog-post-item" data-tags="ml" data-emoji="">
                 <span class="post-date">Apr 11, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/ntk">Neural Tangent Kernels</a><div class="post-tags"><span class="tag" data-tag="ml">ml</span></div></h3>
                     <p class="post-description">A rough derivation of the neural tangent kernel</p>
                 </div>
             </div>
-            <div class="blog-post-item" data-tags="ml, physics">
+            <div class="blog-post-item" data-tags="physics, ml" data-emoji="">
                 <span class="post-date">Jan 19, 2025</span>
                 <div class="post-content">
                     <h3><a href="/posts/hopfield-networks">Hopfield Networks</a><div class="post-tags"><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div></h3>
                     <p class="post-description">A quick implementation of a Hopfield network in Python</p>
                 </div>
             </div>
-        
-        
         </section>
     </main>
     <footer>
@@ -108,6 +116,38 @@
     </footer>
 
     <script>
+        // Emoji Title Appender
+        document.addEventListener('DOMContentLoaded', () => {
+            const postItems = document.querySelectorAll('.blog-post-item');
+            
+            postItems.forEach(item => {
+                let timer;
+                const emoji = item.getAttribute('data-emoji');
+                if (!emoji) return;
+
+                item.addEventListener('mouseenter', () => {
+                    timer = setTimeout(() => {
+                        const titleLink = item.querySelector('h3 a');
+                        if (titleLink && !titleLink.querySelector('.title-emoji')) {
+                            const emojiSpan = document.createElement('span');
+                            emojiSpan.className = 'title-emoji';
+                            emojiSpan.innerText = ` (${emoji})`;
+                            emojiSpan.style.fontSize = '0.9em';
+                            emojiSpan.style.fontWeight = 'normal';
+                            titleLink.appendChild(emojiSpan);
+                        }
+                    }, 800); // 800ms delay
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    clearTimeout(timer);
+                    const titleLink = item.querySelector('h3 a');
+                    const emojiSpan = titleLink ? titleLink.querySelector('.title-emoji') : null;
+                    if (emojiSpan) emojiSpan.remove();
+                });
+            });
+        });
+
         // Tag filtering functionality with multi-select
         document.addEventListener('DOMContentLoaded', function() {
             const filterButtons = document.querySelectorAll('.tag-filter');

@@ -61,6 +61,10 @@ class MDTXCompiler:
             k, v = entry.split(':', 1)
             meta[k.strip()] = v.strip()
         
+        # Ensure emoji is captured if present
+        if 'emoji' not in meta:
+            meta['emoji'] = ''
+        
         return meta, body
 
 
@@ -682,7 +686,8 @@ class MDTXCompiler:
                     'title': meta.get('title', 'Untitled'),
                     'date': meta.get('date', ''),
                     'desc': meta.get('desc', ''),
-                    'tags': meta.get('tags', '')
+                    'tags': meta.get('tags', ''),
+                    'emoji': meta.get('emoji', '')
                 })
             except Exception as e:
                 print(f"Warning: Could not parse {mdtx_file.name}: {e}")
@@ -745,11 +750,15 @@ class MDTXCompiler:
                 if tag_list:
                     tags_html = '<div class="post-tags">' + ''.join([f'<span class="tag" data-tag="{tag}">{tag}</span>' for tag in tag_list]) + '</div>'
 
-            posts_html.append(f'''            <div class="blog-post-item" data-tags="{post['tags']}">
+            # Process title and desc for inline math
+            title_processed = self.replace_inline_math(post['title'])
+            desc_processed = self.replace_inline_math(post['desc']) if post.get('desc') else ''
+
+            posts_html.append(f'''            <div class="blog-post-item" data-tags="{post['tags']}" data-emoji="{post['emoji']}">
                 <span class="post-date">{post['date']}</span>
                 <div class="post-content">
-                    <h3><a href="/posts/{post['filename']}">{post['title']}</a>{tags_html}</h3>
-                    <p class="post-description">{post['desc']}</p>
+                    <h3><a href="/posts/{post['filename']}">{title_processed}</a>{tags_html}</h3>
+                    <p class="post-description">{desc_processed}</p>
                 </div>
             </div>''')
 
@@ -760,16 +769,19 @@ class MDTXCompiler:
         if index_path.exists():
             current_content = index_path.read_text(encoding='utf8')
 
-            # Replace the posts section while preserving tag filters
+            # Replace the posts section while preserving tag filters and other content
             import re
             if '<div class="tag-filters">' in current_content:
                 # Replace all blog-post-items after tag-filters, before </section>
-                pattern = r'(<div class="tag-filters">.*?</div>)\s*<div class="blog-post-item".*?(?=\s*</section>)'
-                replacement = r'\1\n' + posts_section + r'\n        '
+                # Match: tag-filters div, then any blog-post-items (including none), up to </section>
+                pattern = r'(<div class="tag-filters">.*?</div>)\s*(?:<div class="blog-post-item".*?</div>\s*)*(?=\s*</section>)'
+                def replacement(m):
+                    return m.group(1) + '\n' + posts_section + '\n        '
             else:
-                # No tag filters yet, add them along with posts
-                pattern = r'(<h2>Posts</h2>)\s*(.*?)(?=\s*</section>)'
-                tag_filters = '''            <div class="tag-filters">
+                # No tag filters yet, check for <h2>Posts</h2> or <section class="blog-posts">
+                if '<h2>Posts</h2>' in current_content:
+                    pattern = r'(<h2>Posts</h2>)\s*(.*?)(?=\s*</section>)'
+                    tag_filters = '''            <div class="tag-filters">
                 <button class="tag-filter active" data-filter="all">all</button>
                 <button class="tag-filter" data-filter="math">math</button>
                 <button class="tag-filter" data-filter="physics">physics</button>
@@ -778,7 +790,27 @@ class MDTXCompiler:
                 <button class="tag-filter" data-filter="misc">misc</button>
             </div>
 '''
-                replacement = r'\1\n' + tag_filters + posts_section + r'\n        '
+                    def replacement(m):
+                        return m.group(1) + '\n' + tag_filters + posts_section + '\n        '
+                elif '<section class="blog-posts">' in current_content:
+                    # Handle the original structure: <section class="blog-posts"> with tag-filters inside
+                    pattern = r'(<section class="blog-posts">\s*<div class="tag-filters">.*?</div>)\s*(?:<div class="blog-post-item".*?</div>\s*)*(?=\s*</section>)'
+                    def replacement(m):
+                        return m.group(1) + '\n' + posts_section + '\n        '
+                else:
+                    # Fallback: try to find any section and add content
+                    pattern = r'(<section[^>]*>)\s*(.*?)(?=\s*</section>)'
+                    tag_filters = '''            <div class="tag-filters">
+                <button class="tag-filter active" data-filter="all">all</button>
+                <button class="tag-filter" data-filter="math">math</button>
+                <button class="tag-filter" data-filter="physics">physics</button>
+                <button class="tag-filter" data-filter="ml">ml</button>
+                <button class="tag-filter" data-filter="stats">stats</button>
+                <button class="tag-filter" data-filter="misc">misc</button>
+            </div>
+'''
+                    def replacement(m):
+                        return m.group(1) + '\n' + tag_filters + posts_section + '\n        '
 
             new_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
 
@@ -810,9 +842,14 @@ class MDTXCompiler:
         # ←── minimal fix: strip any leftover 'desc:' or 'tags:' lines 
         body = re.sub(r'(?m)^(?:desc|tags):.*\n', '', body)
 
-        # now build date + desc blocks from meta, with emphasis processing
+        # now build date + desc blocks from meta, with emphasis and math processing
         date_html = f'            <p class="date">{self.apply_emphasis(meta["date"])}</p>\n' if meta.get("date") else ""
-        desc_html = f'            <p class="desc">{self.apply_emphasis(meta["desc"])}</p>\n'  if meta.get("desc") else ""
+        desc_raw = meta.get("desc", "")
+        if desc_raw:
+            desc_processed = self.replace_inline_math(desc_raw)
+            desc_html = f'            <p class="desc">{self.apply_emphasis(desc_processed)}</p>\n'
+        else:
+            desc_html = ""
 
         # Process emphasis and inline code first
         body = self.apply_emphasis(body)
@@ -852,7 +889,9 @@ class MDTXCompiler:
             head_reqs = f"    <div style='display:none'>{req_text}</div>\n"
         else:
             head_reqs = ""
-        title     = meta.get('title','Untitled')
+        title_raw = meta.get('title','Untitled')
+        # Process title for inline math (convert { ... } to \( ... \))
+        title     = self.replace_inline_math(title_raw)
         tags      = meta.get('tags', '')
 
         # Generate tags HTML for the post
@@ -882,6 +921,9 @@ class MDTXCompiler:
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../posts.css">
     <script src="../posts_header.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
 

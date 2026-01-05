@@ -118,17 +118,22 @@ function initTOC() {
             .toc-section-title,
             .toc-subsection-title {
                 text-decoration: none;
-                color: #4a4a4a;
+                color: #888;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 max-width: 180px;
-                transition: color 0.2s ease;
+                transition: all 0.2s ease;
                 font-size: 0.9rem;
             }
 
+            .toc-section:hover .toc-section-title,
             .toc-section.active .toc-section-title {
                 color: #4a4a4a;
+            }
+
+            .toc-section.active .toc-section-title {
+                font-weight: 500;
             }
 
             .toc-subsection.active .toc-subsection-title {

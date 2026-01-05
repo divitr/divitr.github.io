@@ -1,0 +1,373 @@
+req: physics;
+
+title: {\mu}P as Optimal Transport in a Vanilla MLP;
+date: Jan 05, 2026;
+desc: Deriving {\mu}P as the unique scaling maximizing Wasserstein transport under stability constraints;
+tags: ml, physics;
+emoji: 📉🚚;
+
+## Goal
+
+In the following, we will show that {\mu}P can be rederived from first principles as the solution to a variational problem in Wasserstein geometry. Concretely, we posit that the "correct" scaling for a neural network is the unique solution to the following optimization problem:
+
+example:
+title: Variational Selection Principle;
+content: {Define the function-space distance:
+
+{
+    d(f, g) \doteq \left(\mathbb{E}_{x \sim \mathcal{D}_x}[(f(x) - g(x))^2]\right)^{1/2}
+}
+
+Then the width-transfer discrepancy is:
+
+{
+    \mathcal{D}_T(s) \doteq \limsup_{n \to \infty} \sup_{t \in [0,T]} d(f^{(n,s)}_t, f^{(\kappa n,s)}_t)
+}
+
+where {f^{(n,s)}_t} is the trained predictor at time {t} with width {n} and scaling {s}, and {\kappa > 1} is a width ratio.
+
+Define the total Wasserstein dissipation (cumulative kinetic energy integrated over time):
+
+{
+    \mathcal{A}_T(s) \doteq \sum_{\ell=1}^L \liminf_{n \to \infty} \int_0^T \frac{1}{2n} \sum_{i=1}^n \norm{\dot{\theta}^{\ell}_i(t)}^2 dt
+}
+
+*In the warm-up, {L=1} and {\mathcal{A}_T(s) = \liminf_{n \to \infty} \int_0^T \frac{1}{2n} \sum_{i=1}^n \norm{\dot{\theta}_i(t)}^2 dt}.*
+
+*(Note: This is the Benamou-Brenier "action" functional from Optimal Transport. Unlike the Principle of Least Action in mechanics, here we maximize it subject to stability—this selects the critical mobility where dissipation is finite but nonzero.)*
+
+Then {\mu}P is the unique scaling (within power-law learning-rate scalings, modulo time-rescaling) that solves:
+
+{
+    \max_s \mathcal{A}_T(s) \quad \text{subject to} \quad \mathcal{D}_T(s) = 0
+}
+
+This is a constrained criticality problem: maximize total dissipation (cumulative transport) subject to stability.}
+end example;
+
+*This is not meant to be a new theorem about {\mu}P. I just thought it was interesting to consider a geometric "selection principle": among all width-transferable scalings, pick the one with maximal non-degenerate Wasserstein transport. This reframes {\mu}P as a critical-mobility point selected by a constrained variational problem, which is (maybe?) portable to other parameter spaces and metrics.*
+
+In this view, the standard "lazy" (kernel-like) parameterization fails because the transport distance is zero (the particles freeze). Unstable parameterizations fail because the transport distance explodes. {\mu}P emerges as the precise scaling regime where the Wasserstein speed of the layers is non-zero, finite, and coupled.
+
+We will proceed in two stages:
+
+list[o]:
+ - **Warm-Up.** We analyze a 1-hidden-layer MLP with biases under square loss. We explicitly compute the Wasserstein speed of the neuron measure and show that {\mu}P is the only scaling that allows non-degenerate transport.
+ - **Generalization.** We lift this logic to a deep MLP. We formulate a "Total Transport" objective -- summing the Wasserstein path lengths across all layers -- and show that maximizing this quantity forces every hidden layer to adopt the specific {\sqrt{n}} scaling factors characteristic of {\mu}P.
+end list;
+
+## Networks as Particle Systems
+
+We shall treat the network as a dynamic system of interacting particles.
+
+### Model
+
+We focus on a standard 1-hidden-layer (MLP) with width {n} with biases. For conceptual clarity in the OT setting, we use mean-field normalization:
+
+{
+    f_n(x) = \frac{1}{n} \sum_{i=1}^n a_i \sigma(w_i^\top x + b_i) + c
+}
+
+*(Note: Standard {\mu}P uses {\frac{1}{\sqrt{n}}} normalization. The two formulations are related by rescaling {a} and time. The mean-field form aligns perfectly with OT geometry where measures are probability distributions.)*
+
+Here, the "particles" are the hidden neurons. Each neuron {i} is defined by its parameter tuple {\theta_i}:
+
+{
+    \theta_i \doteq (a_i, w_i, b_i) \in \mathbb{R} \times \mathbb{R}^d \times \mathbb{R}
+}
+
+where {a_i} is the output weight, {w_i} is the input weight vector, and {b_i} is the bias. The scalar {c} is the global output bias.
+
+We train this network to minimize the population square loss {\mathcal{L}} over a data distribution {\mathcal{D}}:
+
+{
+    \mathcal{L}(\theta) = \mathbb{E}_{(x, y) \sim \mathcal{D}} \left[ \frac{1}{2} (f_n(x) - y)^2 \right]
+}
+
+### Mean-Field Limit
+
+In the "Mean-Field" or Optimal Transport limit, we don't track indices {i} and instead track the distribution of neurons. We define the empirical measure {\mu_t} at training time {t}:
+
+{
+    \mu_t = \frac{1}{n} \sum_{i=1}^n \delta_{\theta_i(t)}
+}
+
+This allows us to write the network output as an integral against this measure. As {n \to \infty}, if {\mu_t} converges to a smooth probability density {\rho_t}, the network becomes:
+
+{
+    f(x) = \int a \sigma(w^\top x + b) d\rho_t(\theta) + c
+}
+
+This is exactly the mean-field limit: the network function is an integral against the neuron distribution.
+
+### Dynamics and Wasserstein Speed
+
+We model training as gradient flow (continuous-time gradient descent). The parameters evolve according to:
+
+{
+    \dot{\theta}_i = -\eta_n \nabla_{\theta_i} \mathcal{L}(\theta)
+}
+
+where {\eta_n} is some width-dependent learning rate (mobility).
+
+The core quantity we care about is the *Wasserstein kinetic energy*. In Optimal Transport geometry (specifically the {W_2} metric), the instantaneous kinetic energy of the measure {\mu_t} is:
+
+{
+    E_{\text{kin}}(\mu_t) = \frac{1}{2} \int \norm{v_t(\theta)}^2 d\mu_t(\theta) \approx \frac{1}{2n} \sum_{i=1}^n \norm{\dot{\theta}_i}^2
+}
+
+where {v_t} is the velocity field. The Wasserstein speed (metric speed) is the square root of twice the kinetic energy:
+
+{
+    \text{Speed}(\mu_t) = \left( \frac{1}{n} \sum_{i=1}^n \norm{\dot{\theta}_i}^2 \right)^{1/2} = \sqrt{2 E_{\text{kin}}(\mu_t)}
+}
+
+This quantity dictates how the system behaves:
+
+list[u]:
+- If Speed {= 0}, kinetic energy vanishes and the system is frozen (lazy, kernel-like regime).
+- If Speed {= \infty}, kinetic energy diverges and the system explodes (Unstable regime).
+- If Speed {= O(1)}, kinetic energy is finite and nonzero—the system flows effectively (Feature Learning / {\mu}P).
+end list;
+
+This is exactly a phase transition story: {\mu}P sits at the critical point where kinetic energy is {O(1)}.
+
+### Learning Rates as Mobilities
+
+In physics, the relationship between force and velocity is mediated by a *mobility tensor*. Here, learning rates play the role of mobilities (inverse friction coefficients). We write the dynamics as:
+
+{
+    \dot{\theta}_i = -M(n) \nabla_{\theta_i} \mathcal{L}(\theta)
+}
+
+where {M(n)} is a block-diagonal mobility tensor that scales with width. The choice of scaling for {M(n)} determines the mobility scale: too small (lazy regime) and particles freeze; too large and particles accelerate infinitely. {\mu}P corresponds to the critical mobility where kinetic energy stays finite but nonzero.
+
+Learning rates act like mobilities (inverse friction coefficients) in an overdamped Langevin system: force is {-\nabla\mathcal{L}}, velocity is {\dot{\theta}}, and {\mathcal{A}_T} measures total dissipation.
+
+
+### Computing the Gradients
+
+To understand how the scaling affects dynamics, we need to compute the gradients. Let {u_i \doteq w_i^\top x + b_i} denote the preactivation. The gradients are:
+
+{
+    \partial_{a_i}\mathcal{L} = \mathbb{E}\left[e(x) \frac{1}{n} \sigma(u_i)\right]
+}
+
+{
+    \nabla_{w_i}\mathcal{L} = \mathbb{E}\left[e(x) \frac{1}{n} a_i \sigma'(u_i) x\right]
+}
+
+{
+    \partial_{b_i}\mathcal{L} = \mathbb{E}\left[e(x) \frac{1}{n} a_i \sigma'(u_i)\right]
+}
+
+{
+    \partial_c\mathcal{L} = \mathbb{E}[e(x)]
+}
+
+where {e(x) = f_n(x) - y} is the error.
+
+Assume we are in a well-scaled regime where {f_n(x) = O(1)} and the residual {e(x) = f_n(x) - y} remains {O(1)} on the time horizon of interest (as is standard in scaling analyses). Under standard initialization with {a_i = O(1)} and {w_i = O(1)}, this gives us:
+
+list[u]:
+- {\abs{\partial_{a_i}\mathcal{L}} = O(n^{-1})}
+- {\norm{\nabla_{w_i}\mathcal{L}} = O(n^{-1})}
+- {\abs{\partial_{b_i}\mathcal{L}} = O(n^{-1})}
+- {\abs{\partial_c\mathcal{L}} = O(1)}
+end list;
+
+### Learning Rate Scaling and Parameter Updates
+
+Now suppose we use different learning rates for different parameter types, scaling with width as:
+
+{
+    \eta_a(n) = \eta_{a,0} n^{\gamma_a}, \quad \eta_w(n) = \eta_{w,0} n^{\gamma_w}, \quad \eta_b(n) = \eta_{b,0} n^{\gamma_b}, \quad \eta_c(n) = \eta_{c,0} n^{\gamma_c}
+}
+
+Under gradient flow, the parameter velocities are:
+
+{
+    \abs{\dot{a}_i} = \eta_a(n) \abs{\partial_{a_i}\mathcal{L}} = O(n^{\gamma_a - 1})
+}
+
+{
+    \norm{\dot{w}_i} = \eta_w(n) \norm{\nabla_{w_i}\mathcal{L}} = O(n^{\gamma_w - 1})
+}
+
+{
+    \abs{\dot{b}_i} = \eta_b(n) \abs{\partial_{b_i}\mathcal{L}} = O(n^{\gamma_b - 1})
+}
+
+{
+    \abs{\dot{c}} = \eta_c(n) \abs{\partial_c\mathcal{L}} = O(n^{\gamma_c})
+}
+
+### Critical Scaling
+
+The Wasserstein speed depends on the maximum velocity across all parameter types:
+
+{
+    \text{Speed}(\mu_t) = O\left(n^{\max(\gamma_a, \gamma_w, \gamma_b) - 1}\right)
+}
+
+This gives us three regimes:
+
+list[u]:
+- **Subcritical.** {\max(\gamma_a, \gamma_w, \gamma_b) \lt 1 \implies} Speed {\to 0} as {n \to \infty}. The neurons barely move; this is the lazy (kernel-like) regime.
+- **Critical.** {\max(\gamma_a, \gamma_w, \gamma_b) = 1 \implies} Speed {= O(1)}. The neurons move at a non-degenerate rate; this is feature learning.
+- **Supercritical.** {\max(\gamma_a, \gamma_w, \gamma_b) > 1} \implies Speed {\to \infty} as {n \to \infty}. The dynamics explode and width-transferability breaks.
+end list;
+
+For the output bias {c}, the critical scaling is {\gamma_c = 0} since its gradient is already {O(1)}.
+
+### Selection Principle: Critical Mobility
+
+Width-transferability requires that the training trajectory in function space converges as {n \to \infty}. Empirically and theoretically, this rules out the supercritical regime. So {\mathcal{D}_T = 0} (the transferability constraint) effectively enforces:
+
+{
+    \max(\gamma_a, \gamma_w, \gamma_b) \le 1, \qquad \gamma_c \le 0
+}
+
+To maximize feature learning (non-zero transport), we want to maximize the Wasserstein speed subject to this constraint. This forces us to the boundary:
+
+{
+    \boxed{\gamma_a = \gamma_w = \gamma_b = 1, \qquad \gamma_c = 0}
+}
+
+This corresponds to the {\mu}P scaling: hidden-unit parameters get learning rates that scale as {n}, while the output parameters use constant learning rates. *Uniqueness is meant within the family of power-law learning-rate scalings (mobilities) considered here, modulo an overall rescaling of time.*
+
+example:
+title: Gauge Equivalence (Mean-Field {\leftrightarrow} {\mu}P Convention);
+content: {In mean-field form, the critical mobility is {\eta \asymp n} for neuron parameters {(a, w, b)} to achieve {O(1)} Wasserstein speed in the original time variable. Under the standard {\mu}P {\frac{1}{\sqrt{n}}} network, define {\tilde{a}_i \doteq a_i / \sqrt{n}}. Then:
+
+{
+    f_n(x) = \frac{1}{\sqrt{n}} \sum_{i=1}^n \tilde{a}_i \sigma(\cdot)
+}
+
+which is the standard {\frac{1}{\sqrt{n}}} form. Under this change of variables, the gradient flow time variable rescales by a factor {\sqrt{n}} (equivalently, learning rates rescale by {\sqrt{n}}). Thus the critical mobility {\eta \asymp n} in mean-field gauge corresponds to {\eta \asymp \sqrt{n}} in the standard {\mu}P gauge.}
+end example;
+
+## Deep Networks: Layerwise Transport
+
+From here on we revert to the standard {\frac{1}{\sqrt{n}}} neural tangent / {\mu}P gauge, because it matches common deep-network parameterizations. The mean-field gauge differs by a simple rescaling of output weights and time (as noted above).
+
+Now we lift this logic to a deep MLP. Consider a depth-{L} fully-connected network with width {n} in each hidden layer:
+
+{
+    h^0 = x, \qquad z^\ell = \frac{1}{\sqrt{n}} W^\ell h^{\ell-1} + b^\ell, \quad h^\ell = \sigma(z^\ell), \quad \ell = 1, \dots, L
+}
+
+{
+    f_n(x) = \frac{1}{\sqrt{n}} w^\top h^L + c
+}
+
+We train on the same population square loss: {\mathcal{L} = \tfrac{1}{2} \mathbb{E}[(f_n(x) - y)^2]}.
+
+### Row-Gradient Scaling
+
+The key observation is that gradients for *rows* of weight matrices scale as {O(n^{-1/2})}. To see this, define the backprop signal {\delta^\ell \doteq \partial f / \partial z^\ell \in \mathbb{R}^n}. Under standard forward scaling, each coordinate satisfies {\delta^\ell_i = O(n^{-1/2})}.
+
+For a row {W^\ell_{i:} \in \mathbb{R}^n} of the weight matrix, the gradient is:
+
+{
+    \nabla_{W^\ell_{i:}}\mathcal{L} = \mathbb{E}\left[e(x) \delta^\ell_i(x) \frac{1}{\sqrt{n}} h^{\ell-1}(x)\right]
+}
+
+Since {\norm{h^{\ell-1}} = O(\sqrt{n})}, we have {\norm{(1/\sqrt{n}) h^{\ell-1}} = O(1)}, hence:
+
+{
+    \boxed{\norm{\nabla_{W^\ell_{i:}}\mathcal{L}} = O(n^{-1/2})}
+}
+
+Similarly, for biases:
+
+{
+    \boxed{\abs{\partial_{b^\ell_i}\mathcal{L}} = O(n^{-1/2})}
+}
+
+For the readout and output bias, we get:
+
+{
+    \norm{\nabla_w\mathcal{L}} = O(1), \qquad \abs{\partial_c\mathcal{L}} = O(1)
+}
+
+### Layerwise Neuron Measures
+
+For each hidden layer {\ell}, we can define per-neuron parameters {\theta^\ell_i \doteq (W^\ell_{i:}, b^\ell_i)} and the empirical measure:
+
+{
+    \mu^{\ell,n}_t = \frac{1}{n} \sum_{i=1}^n \delta_{\theta^\ell_i(t)}
+}
+
+The Wasserstein speed for layer {\ell} is:
+
+{
+    \norm{\dot{\mu}^{\ell,n}_t}_{W_2} = O\left(n^{\max(\gamma_W, \gamma_b) - 1/2}\right)
+}
+
+where {\gamma_W} and {\gamma_b} are the learning rate exponents for weights and biases in hidden layers.
+
+### Total Transport Objective
+
+Define the *total transport* up to time {T} as the sum of Wasserstein path lengths across all layers:
+
+{
+    \mathcal{S}_T(s) \doteq \sum_{\ell=1}^L \liminf_{n \to \infty} \int_0^T \norm{\dot{\mu}^{\ell,n}_t}_{W_2} dt
+}
+
+This measures how much "movement" happens across all layers combined. The selection principle is the same: maximize {\mathcal{S}_T} subject to width-transferability.
+
+### Deep {\mu}P Result (Scaling Argument)
+
+For deep networks, rigorous OT gradient-flow limits are less clean than in the two-layer case. The following is a somewhat handwavy *scaling argument* that relies on the following assumptions: signals remain {O(1)}, no gradient explosion, and approximate exchangeability across neurons.
+
+If we assign learning rates as:
+
+{
+    \eta_{W^\ell}(n) = \eta_{\ell,0} n^{\gamma_W}, \quad \eta_{b^\ell}(n) = \eta_{b,0} n^{\gamma_b}, \quad \eta_w(n) = \eta_{w,0} n^{\gamma_{\text{out}}}, \quad \eta_c(n) = \eta_{c,0} n^{\gamma_c}
+}
+
+then each hidden layer has the same critical exponent {\tfrac{1}{2}}. The same vanish/explode argument applies:
+
+list[u]:
+- If {\max(\gamma_W, \gamma_b) \lt \tfrac{1}{2}}, then {\norm{\dot{\mu}^{\ell,n}_t}_{W_2} \to 0} and that layer freezes (lazy).
+- If {\max(\gamma_W, \gamma_b) > \tfrac{1}{2}}, then {\norm{\dot{\mu}^{\ell,n}_t}_{W_2} \to \infty} and width-transferability breaks.
+- The boundary {\max(\gamma_W, \gamma_b) = \tfrac{1}{2}} gives non-degenerate transport.
+end list;
+
+The mechanism is clearest at the preactivation level. For a typical neuron {i} at layer {\ell}:
+
+{
+    z^\ell_i = \frac{1}{\sqrt{n}} W^\ell_{i:} h^{\ell-1} + b^\ell_i
+}
+
+Differentiating and focusing on the dominant term:
+
+{
+    \dot{z}^\ell_i \supset \frac{1}{\sqrt{n}} \dot{W}^\ell_{i:} h^{\ell-1}
+}
+
+Since {\norm{\dot{W}^\ell_{i:}} \sim n^{\gamma_W - 1/2}} and {\norm{h^{\ell-1}} \sim \sqrt{n}}:
+
+{
+    \abs{\frac{1}{\sqrt{n}} \dot{W}^\ell_{i:} h^{\ell-1}} \sim n^{\gamma_W - 1/2}
+}
+
+This makes the vanish/critical/blow-up trichotomy immediate: if {\gamma_W \lt \tfrac{1}{2}}, preactivations freeze; if {\gamma_W > \tfrac{1}{2}}, they blow up; at {\gamma_W = \tfrac{1}{2}}, preactivation updates are {O(1)}—maximal non-degenerate update.
+
+Maximizing total transport while maintaining transferability forces every hidden layer to be critical:
+
+{
+    \boxed{\gamma_W = \gamma_b = \tfrac{1}{2}, \qquad \gamma_{\text{out}} = \gamma_c = 0}
+}
+
+This is the deep {\mu}P prescription: every hidden layer gets {\sqrt{n}} learning rate scaling, while output parameters use constant rates.
+
+## Summary
+
+We've shown that {\mu}P emerges naturally from an Optimal Transport perspective:
+
+example:
+title: The OT Characterization of {\mu}P;
+content: {Among all parameterizations that achieve width-transferability, {\mu}P is the unique one that maximizes the total Wasserstein transport distance traveled by neuron measures across all layers. This ensures maximal feature learning while maintaining stable, transferable training dynamics. The key insight is that {\mu}P corresponds to the critical mobility where kinetic energy is {O(1)}: too small and particles freeze (NTK), too large and dynamics explode.}
+end example;
