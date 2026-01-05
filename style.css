@@ -299,12 +299,6 @@ a:hover {
     color: var(--primary-color);
 }
 
-.paper-authors {
-    font-size: 0.95rem;
-    color: #444;
-    margin-bottom: 0.1rem;
-}
-
 .paper-venue {
     font-size: 0.9rem;
     color: #666;
@@ -373,4 +367,32 @@ a:hover {
 
 .contribution-note::after {
     content: ')';
+}
+
+/* Paper Author Styling - Added Jan 2026 */
+.paper-authors {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 0.1rem;
+}
+
+.paper-authors a {
+    color: #444;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 2px;
+    transition: all 0.2s ease;
+}
+
+.paper-authors a:hover {
+    color: var(--primary-color);
+    text-decoration-color: var(--primary-color);
+}
+
+.paper-authors .me {
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: underline;
+    text-decoration-color: var(--primary-color);
+    text-underline-offset: 2px;
 }
