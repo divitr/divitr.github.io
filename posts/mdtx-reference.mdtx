@@ -21,6 +21,8 @@ title: Document Title;
 date: Aug. 23, 2025;
 desc: Document description;
 tags: tag1, tag2;
+emoji: 🔬;
+visibility: visible;
 ```
 
 **Requirements (`req:`):** Specifies LaTeX packages to load (e.g., `physics`, `math`)
@@ -28,6 +30,8 @@ tags: tag1, tag2;
 **Date (`date:`):** Publication date
 **Description (`desc:`):** Brief description for the blog index
 **Tags (`tags:`):** Comma-separated tags for categorization
+**Emoji (`emoji:`):** Optional emoji icon for the post
+**Visibility (`visibility:`):** Set to `hidden` to exclude from blog index (default: `visible`)
 
 ### Headings
 
@@ -83,7 +87,7 @@ You can create theorem, lemma, proof, and other similar blocks.
 end <environment>;
 ```
 
--   `<environment>` can be `theorem`, `lemma`, `definition`, `corollary`, `remark`, or `proof`.
+-   `<environment>` can be `theorem`, `lemma`, `definition`, `corollary`, `proposition`, `remark`, or `proof`.
 -   The `[Optional Title]` part is for giving your environment a name or number, which will be displayed in parentheses.
 
 ### Theorem Example
@@ -135,7 +139,7 @@ a. First item (alpha)
 b. Second item (beta)
 c. Third item (gamma)
 
-**Note:** Lists must end with `end list;` when used outside of example boxes.
+**Note:** Lists must end with `end list;` for best results, though in example boxes the end marker can be omitted and the list will end at the next unindented content. Nested lists are supported using indentation.
 
 ## Example Boxes
 
@@ -213,6 +217,8 @@ end image
 
 ## Links
 
+All links automatically open in a new tab with security attributes (`target="_blank" rel="noopener noreferrer"`).
+
 ### Internal Links
 
 Link to other blog posts: [RKHS Theory](/posts/rkhs/)
@@ -282,13 +288,18 @@ The physics package provides additional mathematical environments:
 
 The MDTX compiler processes files in the following order:
 
-1. **Metadata extraction** - Parse title, date, description, tags
-2. **Requirements processing** - Load specified LaTeX packages
-3. **Math processing** - Convert display and inline math
-4. **Block elements** - Process code, images, examples, lists
-5. **Text formatting** - Apply emphasis and inline code
-6. **Paragraphs** - Wrap text in paragraph tags
-7. **Footnotes** - Process and format footnotes
+1. **URL extraction** - Extract all links and replace with placeholders
+2. **Comment removal** - Remove lines starting with `//`
+3. **Metadata extraction** - Parse title, date, description, tags, emoji, visibility
+4. **Requirements processing** - Load specified LaTeX packages
+5. **Footnote extraction** - Parse footnote definitions
+6. **Emphasis & inline code** - Process **bold**, *italic*, and `code`
+7. **Display math** - Convert block `{ }` to LaTeX equation environments
+8. **Block elements** - Process code blocks, images, examples, environments, lists, headings
+9. **Footnote references** - Replace footnote markers with links
+10. **Paragraphs** - Wrap text in paragraph tags
+11. **URL restoration** - Restore links as HTML with target="_blank"
+12. **Inline math** - Convert inline `{ }` to LaTeX `\( \)`
 
 ## Best Practices
 

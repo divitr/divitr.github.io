@@ -653,7 +653,7 @@ class MDTXCompiler:
         for placeholder, (link_text, link_url) in sorted_items:
             # Clean up the URL (remove extra whitespace/newlines)
             link_url = re.sub(r'\s+', '', link_url.strip())
-            html_link = f'<a href="{link_url}">{link_text}</a>'
+            html_link = f'<a href="{link_url}" target="_blank" rel="noopener noreferrer">{link_text}</a>'
             # Use exact replacement to avoid partial matches
             text = text.replace(placeholder, html_link)
         return text

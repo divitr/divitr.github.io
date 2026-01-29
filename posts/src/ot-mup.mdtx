@@ -4,7 +4,7 @@ title: {\mu}P as Optimal Transport in a Vanilla MLP;
 date: Jan 05, 2026;
 desc: Deriving {\mu}P as the unique scaling maximizing Wasserstein transport under stability constraints;
 tags: ml, physics;
-emoji: 📉🚚;
+emoji: 🚚;
 
 ## Goal
 

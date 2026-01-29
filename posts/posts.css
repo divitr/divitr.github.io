@@ -159,6 +159,19 @@ body header {
     margin: 2rem auto 1rem !important;
 }
 
+/* Lighter color for footer links */
+.footer a,
+footer a {
+    color: #888;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.footer a:hover,
+footer a:hover {
+    color: var(--primary-color);
+}
+
 .filter-container {
     margin: 0;
     font-size: 0.9rem;
