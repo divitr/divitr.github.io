@@ -1,46 +1,96 @@
 title: Digits to 10;
-date: Dec 21, 2025;
-desc: idek anymore;
+date: Feb 06, 2026;
+desc: Making things more complicated than necessary...;
+emoji: 🔟;
 tags: misc, math;
-visibility:hidden;
+req: physics;
 
-## Setup
+## Background
 
-### Rules and Goal
+Over Thanksgiving break this year, I came up with a game. Let us say we have 4 people (I made my family play this with me). Each person names a digit between 1 and 9 (inclusive)[^1]. Given only the operations {\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}}[^2] (and of course parentheses to dictate order), and the constraint that each digit must be used *exactly* once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.
 
-The game is quite simple: Given {k} nonzero[^1] digits ({d \in \{1, 2, \dots, 9\}}) and only the binary operators {+, -, \times, /} and the unary operators {x \mapsto x^2, x \mapsto \sqrt{x}} (where {\sqrt{\cdot}} is defined only for perfect squares), construct some expression that evaluates to 10. Note that parentheses are allowed so that you can specify the order of operations.
+This is simple enough, but it does beg the question, what if I want to play with more people? It also begs the question, is it ever possible to get a set of {k} numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be cool to sorta document how this goes.
 
-However, the constraint is that every one of the provided {k} digits must be used exactly once.
+## Statement, Strategy, Sketchpad, and Structure
 
-The question we want to answer is: *What is the smallest number {k} such that you can make 10 regardless of what digits are given?*
+### Statement
 
-### Notation
+It will likely be helpful to formally state out exactly what we're looking for. Given a multiset of digits {D \in [9]^k}, and the operations list {M \doteq \{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2\}} (where we note that {\sqrt{\cdot}} is defined only for integer perfect squares), is there some valid expression in which we use all the {k} digits exactly once (and use operations as many times as we wish) that will evaluate to 10?
 
-## Reducing the Problem
+We then seek the minimum {k} such that the above is always true regardless of the multiset.
 
-At first glance, this requires checking thousands of combinations of digits, but if we use a structural property of the reachable values, we can massively simplify the search space.
+### Strategy
 
-We posit that the "hardest" sets to work with are "homogenous multisets" (sets where every digit is identical, e.g., {\{7, 7, 7, 7, 7\}}). Mixing distinct digits increases the "entropy" of the set, allowing for shortcuts (like constructing the identity 1 via {x/x} or {y-x}, whereas homogeneous sets are restricted to {x/x}).
+Our strategy will be to construct increasingly tight upper and lower bounds until they meet (sort of how the Rubik's cube God's number proof was done). I also really want to do this without computer assistance or manually checking any configurations.
 
-lemma[Homogeneity Reduction]:
-Let {D = \{1,2,\dots,9\}}. Let {R(M)} denote the set of values reachable from multiset {M} under the game rules. Define the cost of a digit as:
+My first crack at this (roughly November to January) involved trying to construct some sort of homogeneity lemma (basically that a multiset where every digit is the same is the hardest case to solve). I still think this is right (particularly for 7 since it is the largest prime that is coprime to 10), but I cannot figure out how to prove it so for now we'll just leave it.
+
+### Sketchpad
+
+Right now (Feb 06) I'm particularly partial to a group theory type approach? As far as I see it, the main issue is that we could treat it as a binary tree with leaves being our numbers and internal nodes being operations (note that an order is naturally imposed here so we don't need to worry about parentheses) -- but the problem here is that we have two unary operations {\sqrt{\cdot}} and {(\cdot)^2}. I suspect that quotienting under an equivalence relation {i \equiv i^2 \mid i, i^2 \in [9]} gives us a smaller set which lends itself to a pigeonhole upper bound.
+
+I suspect the answer is {k = 5}, but this is based on the logic that I can't think of a counterexample, not a rigorous proof.
+
+### Structure
+
+The remainder of this post will probably be structured as section headers as dates and the current upper and lower bounds on {k}, I'll go through and try to update this if/when I make any progress.
+
+## \(k \leq 13\) (sometime in Dec/Jan)
+This is a pretty simple upper bound that follows from a simple pigenhole argument. First note that we can construct 10 from 4 1s:
+
 {
-C(d) = \min \{ n : 10 \in R(\{d\}^n) \}.
+    (1 + 1 + 1)^2 + 1 = 10.
 }
-Then, the minimal sufficient {k} for all multisets satisfies:
+
+Thus, if I can find some way to construct 4 ones I can reach 10. Since I have 9 unique digits, if I draw 13 I am guaranteed at least 4 overlap, which I can use to construct 1s: ({i/i = 1}). Thus, for any {k\geq13}, I can always construct 10.
+
+## \(k \geq 5\) (Feb 05)
+
+We show this explicitly by counterexample. (The proof is pretty cool imo and it's flavored in the theme of p-adic numbers).
+
+claim[k4-counter][Counterexample for {k=4}]:
+Given the operations in {M} and the multiset {\{7,7,7,7\}}, we can never construct 10.
+end claim;
+
+proof[claim@k4-counter]:
+
+*Intuition.* Basically what we want to show is that since 7 is prime and coprime to 10, multiplication/division/squaring keep you "dependent on 7s"; only addition/subtraction can create cancellations that eliminate factors of 7. We'll enumerate what those cancellations can produce and show why it doesn't work.
+
+First let us show that we don't care about squaring or square rooting. Because {\sqrt{\cdot}} is defined only on integer perfect squares, every {\sqrt{\cdot}} application returns an integer (since {\sqrt{n^2} = \abs{n} \mid n \in \mathbb{Z}}). The only way to create non-integers is through division. Since squaring is definable via multiplication, allowing {(\cdot)^2} doesn't expand the class beyond what {\times} already gives. Thus, we restrict our attention to {\{+,-,\times,\cdot / \cdot\}}.
+
+Now, with only two 7s, we can get only the values {S_2 = \{0,1,14,49\}}. Now we note that any 3-leaf binary tree must contain a 2-leaf binary subtree, so we enumerate the possible evaluations of a 3-leaf binary tree:
 {
-k_{\min} = \max_{d \in D} C(d).
+    S_3 = \{-42,-7,-6,0,\frac{1}{7}, \frac{1}{2},2,6,7,8,21,42,56,98,343\}.
 }
 
-end lemma;
+Every evaluation of a 4-leaf binary subtree has a root which uses either 2 + 2 subtrees or 1 + 3 leaves. So let us define two types, which we shall treat independently:
+{
+    A \circ B, \quad A, B \in S_2,
+}
+{
+    7 \circ T \text{ or } T \circ 7, \quad T \in S_3.
+}
 
-proof:
-We partition the universe of multisets {M_n} of size {n} into three mutually exclusive and completely exhaustive cases.
+Now we go through and show each type cannot construct 10. First the (2,2) case:
+{
+    \text{Possible Sums:} \{0, 1, 14, 15, 49, 50, 63, 98\},
+}
+{
+    \text{Possible Differences:} \{0, \pm1, \pm13, \pm14, \pm35, \pm48, \pm49\},
+}
+{
+    \text{Possible Products:} \{0, 1, 14, 49, 196, 686, 2401\},
+}
+{
+    \text{Possible Quotients:} \{1, 14, 49, \frac{1}{14}, \frac{1}{49}, \frac27, \frac72\}.
+}
 
-**Case I: {M_n} is homogeneous ({M_n = \{d\}^n})**
+None contain 10. Now the (1,3) type. To get to 10, we need {T} to take some certain values, which we will show do not exist in {S_3}.
 
-This is the base case covered by the hypothesis. By definition {10 \in R(M_n)}.
+For {7+T = 10}, we require {T=3}; for {7-T = 10, T-7=10}, we require -3, 17 respectively; for {7\times T = 10}, we require {T = \frac{10}{7}}; and for {7/T=10, T/7=10} we require {7/10, 70} respectively. Since none of these exist in {S_3}, the (1,3) case is impossible.
 
+Since neither the (2,2) or (1,3) case work (and we know these are completely exhaustive), we are done.
 end proof;
 
 [^1]: We exclude 0 because it's kinda "nothing"; its useless for addition, subtraction, multiplication, squares, square rooting, and undefined for division.
+[^2]: Square root is only defined for perfect integer squares, i.e., 1, 4, 9.

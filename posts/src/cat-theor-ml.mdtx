@@ -3,6 +3,7 @@ req: physics;
 title: A Category Theoretic View of Machine Learning;
 date: Nov 02, 2025;
 desc: Using symmetries to better understand how to design attention kernels;
+emoji: 🐱;
 tags: math, ml, physics;
 
 ## Overview

@@ -77,36 +77,103 @@ The physics package provides useful commands like:
 
 ## Theorem-like Environments
 
-You can create theorem, lemma, proof, and other similar blocks.
+You can create theorem, lemma, proof, and other similar blocks with automatic numbering and cross-referencing.
 
 ### Syntax
 
 ```mdtx
-<environment>[Optional Title]:
+<environment>[id][name]:
 ... content ...
 end <environment>;
 ```
 
--   `<environment>` can be `theorem`, `lemma`, `definition`, `corollary`, `proposition`, `remark`, or `proof`.
--   The `[Optional Title]` part is for giving your environment a name or number, which will be displayed in parentheses.
+-   `<environment>` can be `theorem`, `lemma`, `definition`, `corollary`, `proposition`, `claim`, `remark`, or `proof`.
+-   **Auto-numbering**: All environments (except proof) share a sequential numbering: Theorem 1, Lemma 2, Definition 3, etc.
+-   **`[id]`** (optional): A unique identifier for cross-referencing (e.g., `central-limit`)
+-   **`[name]`** (optional): A display name shown in parentheses (e.g., `Central Limit Theorem`)
+-   **Syntax variations**:
+  - `theorem:` - just auto-numbered (e.g., "Theorem 1")
+  - `theorem[my-id]:` - numbered with ID for referencing
+  - `theorem[my-id][My Theorem]:` - numbered with ID and display name
 
-### Theorem Example
+### Theorem Examples
 
+Simple auto-numbered theorem:
 ```mdtx
-theorem[Fermat's Little Theorem]:
+theorem:
 For any integer {a} and any prime {p}, we have {a^p \equiv a \pmod{p}}.
 end theorem;
 ```
+Renders as: **Theorem 1.** For any integer...
 
-### Proof Example
+Theorem with ID and name:
+```mdtx
+theorem[fermat-little][Fermat's Little Theorem]:
+For any integer {a} and any prime {p}, we have {a^p \equiv a \pmod{p}}.
+end theorem;
+```
+Renders as: **Theorem 2 (Fermat's Little Theorem).** For any integer...
 
-The `proof` environment has a slightly different style and automatically adds a QED symbol at the end.
+### Proof Environment
 
+The `proof` environment has special features:
+- **Visual styling**: Subtle left border to distinguish proof blocks
+- **QED symbol**: Clickable □ box at the bottom right
+- **Collapsible**: Click the QED box to collapse/expand the proof
+  - Expanded: Content visible, empty QED box (□) at bottom right
+  - Collapsed: Content hidden, filled QED box (■) at top right
+- **Reference linking**: Can reference what theorem/lemma it proves
+
+Basic proof:
 ```mdtx
 proof:
 The proof is left as an exercise for the reader.
 end proof;
 ```
+
+Proof referencing a theorem:
+```mdtx
+theorem[pythag][Pythagorean Theorem]:
+In a right triangle, {a^2 + b^2 = c^2}.
+end theorem;
+
+proof[thm@pythag]:
+Consider a square with side length {a+b}...
+end proof;
+```
+The proof will display as: ***Proof of [Theorem 1](#env-pythag).*** with "Theorem 1" being a clickable link.
+
+### Cross-Reference Abbreviations
+
+When referencing environments in proofs, use these abbreviations with `@`:
+- `thm@id` - theorem
+- `lem@id` - lemma
+- `def@id` - definition
+- `cor@id` - corollary
+- `prop@id` - proposition
+- `claim@id` - claim
+- `rem@id` - remark
+
+### Complete Example
+
+```mdtx
+lemma[helper][Helper Lemma]:
+If {x > 0}, then {x^2 > 0}.
+end lemma;
+
+theorem[main-result][Main Theorem]:
+For all positive {x}, we have {x^3 > 0}.
+end theorem;
+
+proof[thm@main-result]:
+By Lemma 1, we know {x^2 > 0}. Multiplying both sides by {x > 0}...
+end proof;
+```
+
+This produces:
+- **Lemma 1 (Helper Lemma).** If x > 0...
+- **Theorem 2 (Main Theorem).** For all positive x...
+- ***Proof of Theorem 2.*** By Lemma 1...
 
 ## Lists
 

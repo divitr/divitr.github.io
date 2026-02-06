@@ -244,73 +244,164 @@ class MDTXCompiler:
         return pattern.sub(repl, text)
 
     def process_environments(self, text: str) -> str:
-        for env_name in ['proof', 'lemma', 'theorem', 'definition', 'remark', 'corollary', 'proposition']:
-            pattern = re.compile(
-                rf'{env_name}(?:\[(.*?)\])?:\s*\n'
-                r'([\s\S]*?)'
-                rf'\nend {env_name};?',
-                re.DOTALL | re.IGNORECASE
-            )
-            text = pattern.sub(self._create_env_repl(env_name), text)
+        # Phase 1: Build ID map and assign numbers
+        # Only scan numbered environments (not proof)
+        numbered_env_names = ['lemma', 'theorem', 'definition', 'remark', 'corollary', 'proposition', 'claim']
+
+        # Find all numbered environments in document order
+        # Support syntax: env[id][name]: or env[id]: or env:
+        temp_pattern = re.compile(
+            rf'(?P<env_name>{"|".join(numbered_env_names)})(?:\[(?P<env_id>.*?)\])?(?:\[(?P<env_name_display>.*?)\])?:\s*\n',
+            re.IGNORECASE
+        )
+
+        self._env_id_map = {}
+        counter = 1
+        for match in temp_pattern.finditer(text):
+            env_name = match.group('env_name').lower()
+            env_id = match.group('env_id')
+            if env_id:
+                self._env_id_map[env_id] = (env_name, counter)
+            counter += 1
+
+        # Phase 2: Process all environments with a single pattern
+        all_env_names = ['proof', 'lemma', 'theorem', 'definition', 'remark', 'corollary', 'proposition', 'claim']
+        pattern = re.compile(
+            rf'(?P<env_name>{"|".join(all_env_names)})(?:\[(?P<env_id>.*?)\])?(?:\[(?P<env_name_display>.*?)\])?:\s*\n'
+            r'(?P<body>[\s\S]*?)'
+            r'\nend (?P=env_name);?',
+            re.DOTALL | re.IGNORECASE
+        )
+
+        self._env_counter = 1
+
+        def env_replacer(match):
+            env_name = match.group('env_name').lower()
+            env_id = match.group('env_id')
+            env_name_display = match.group('env_name_display')
+            body = match.group('body').strip()
+
+            # Determine number for numbered environments
+            number = None
+            if env_name in numbered_env_names:
+                number = self._env_counter
+                self._env_counter += 1
+
+            return self._create_env_replacement(env_name, env_id, env_name_display, body, number)
+
+        text = pattern.sub(env_replacer, text)
         return text
 
-    def _create_env_repl(self, env_name: str):
-        def repl(m):
-            title = m.group(1)
-            body = m.group(2).strip()
+    def _create_env_replacement(self, env_name: str, env_id: str, env_name_display: str, body: str, number: int) -> str:
+        """Create HTML for an environment with numbering and linking support"""
 
-            # Run all processing except paragraphs on the body first
-            body = self.apply_emphasis(body)
-            body = self.process_inline_code(body)
-            body = self.replace_display_math(body)
-            body = self.process_code(body)
-            body = self.process_image(body)
-            body = self.process_example(body)
-            body = self.process_environments(body)
-            body = self.process_lists(body)
-            body = self.process_headings(body)
-            body = self.replace_inline_math(body)
+        # Save state for recursive processing (in case of nested environments)
+        saved_id_map = getattr(self, '_env_id_map', {})
+        saved_counter = getattr(self, '_env_counter', 1)
 
-            title_html = f' <span class="env-title">({title})</span>' if title else ''
-            
-            if env_name == 'proof':
-                # Keep existing proof logic
-                title_text = f'<em>{env_name.capitalize()}.</em>{title_html}'
-                toggle_text = '<span class="proof-toggle-text"> (collapse)</span>'
-                qed_html = '<div class="qed-box"></div>'
-                
-                body = self.process_paragraphs(body)
-                body += qed_html
-                
-                proof_content = f'<div class="{env_name}-box-content env-box-content">{body}</div>'
+        # Run all processing except paragraphs on the body first
+        body = self.apply_emphasis(body)
+        body = self.process_inline_code(body)
+        body = self.replace_display_math(body)
+        body = self.process_code(body)
+        body = self.process_image(body)
+        body = self.process_example(body)
+        body = self.process_environments(body)  # Recursive
+        body = self.process_lists(body)
+        body = self.process_headings(body)
+        body = self.replace_inline_math(body)
 
-                return (
-                    f'<details class="proof-box {env_name}-box env-box" open>\n'
-                    f'  <summary class="{env_name}-box-title env-box-title">{title_text}{toggle_text}</summary>\n'
-                    f'  {proof_content}\n'
-                    '</details>'
-                )
+        # Restore state after recursive processing
+        self._env_id_map = saved_id_map
+        self._env_counter = saved_counter
 
-            # Logic for theorem, lemma, etc.
-            title_text = f'<strong>{env_name.capitalize()}{title_html}.</strong> '
-            
-            # Process body fully, including paragraphs
+        if env_name == 'proof':
+            # Handle proof (not numbered)
+            title_text = f'<em>Proof.</em>'
+
+            # Check if env_id is a reference like "thm@my-id"
+            if env_id and '@' in env_id:
+                ref_display, ref_anchor = self._resolve_proof_reference(env_id)
+                if ref_display and ref_anchor:
+                    title_text = f'<em>Proof of <a href="#{ref_anchor}">{ref_display}</a>.</em>'
+                elif env_id:
+                    # Couldn't resolve reference, treat as plain label
+                    title_text = f'<em>Proof ({env_id}).</em>'
+            elif env_id:
+                # Just a label, not a reference
+                title_text = f'<em>Proof ({env_id}).</em>'
+
             body = self.process_paragraphs(body)
 
-            if body.startswith('<p>'):
-                # Inject title into the first paragraph
-                body = body.replace('<p>', f'<p>{title_text}', 1)
-            else:
-                # If the body doesn't start with a paragraph (e.g., a list),
-                # put the title in its own paragraph before the content.
-                body = f'<p>{title_text}</p>\n{body}' if body else f'<p>{title_text}</p>'
-
             return (
-                f'<div class="{env_name}-box env-box">\n'
-                f'  {body}\n'
+                f'<div class="proof-box {env_name}-box env-box">\n'
+                f'  <div class="{env_name}-box-title env-box-title">{title_text}<div class="qed-box"></div></div>\n'
+                f'  <div class="{env_name}-box-content env-box-content">{body}</div>\n'
                 '</div>'
             )
-        return repl
+
+        # Handle numbered environments (theorem, lemma, etc.)
+        anchor_html = f' id="env-{env_id}"' if env_id else ''
+
+        # Build title with number and optional display name
+        title_parts = [f'{env_name.capitalize()} {number}']
+        if env_name_display:
+            title_parts.append(f'({env_name_display})')
+        title_text = f'<strong>{" ".join(title_parts)}.</strong> '
+
+        # Process body fully, including paragraphs
+        body = self.process_paragraphs(body)
+
+        if body.startswith('<p>'):
+            # Inject title into the first paragraph
+            body = body.replace('<p>', f'<p>{title_text}', 1)
+        else:
+            # If the body doesn't start with a paragraph (e.g., a list),
+            # put the title in its own paragraph before the content.
+            body = f'<p>{title_text}</p>\n{body}' if body else f'<p>{title_text}</p>'
+
+        return (
+            f'<div class="{env_name}-box env-box"{anchor_html}>\n'
+            f'  {body}\n'
+            '</div>'
+        )
+
+    def _resolve_proof_reference(self, ref: str) -> tuple:
+        """Resolve a proof reference like 'thm@my-id' to ('Theorem 3', 'env-my-id')"""
+        if '@' not in ref:
+            return None, None
+
+        abbrev, env_id = ref.split('@', 1)
+        abbrev = abbrev.strip().lower()
+        env_id = env_id.strip()
+
+        # Map abbreviations to full names
+        abbrev_map = {
+            'thm': 'theorem',
+            'lem': 'lemma',
+            'def': 'definition',
+            'rem': 'remark',
+            'cor': 'corollary',
+            'prop': 'proposition',
+            'claim': 'claim',
+            # Also support full names
+            'theorem': 'theorem',
+            'lemma': 'lemma',
+            'definition': 'definition',
+            'remark': 'remark',
+            'corollary': 'corollary',
+            'proposition': 'proposition'
+        }
+
+        env_type = abbrev_map.get(abbrev)
+        if not env_type or env_id not in self._env_id_map:
+            return None, None
+
+        stored_type, number = self._env_id_map[env_id]
+        if stored_type != env_type:
+            return None, None
+
+        return f"{env_type.capitalize()} {number}", f"env-{env_id}"
 
     def process_lists(self, text: str) -> str:
         # First try to match lists with explicit 'end list;' markers
