@@ -828,7 +828,7 @@ class MDTXCompiler:
         
         # Generate the blog posts HTML in the new clean format
         # Define canonical tag order
-        tag_order = ['math', 'physics', 'ml', 'stats', 'misc']
+        tag_order = ['stats', 'physics', 'math', 'ml', 'misc']
 
         posts_html = []
         for post in posts:
@@ -874,10 +874,10 @@ class MDTXCompiler:
                     pattern = r'(<h2>Posts</h2>)\s*(.*?)(?=\s*</section>)'
                     tag_filters = '''            <div class="tag-filters">
                 <button class="tag-filter active" data-filter="all">all</button>
-                <button class="tag-filter" data-filter="math">math</button>
-                <button class="tag-filter" data-filter="physics">physics</button>
-                <button class="tag-filter" data-filter="ml">ml</button>
                 <button class="tag-filter" data-filter="stats">stats</button>
+                <button class="tag-filter" data-filter="physics">physics</button>
+                <button class="tag-filter" data-filter="math">math</button>
+                <button class="tag-filter" data-filter="ml">ml</button>
                 <button class="tag-filter" data-filter="misc">misc</button>
             </div>
 '''
@@ -893,10 +893,10 @@ class MDTXCompiler:
                     pattern = r'(<section[^>]*>)\s*(.*?)(?=\s*</section>)'
                     tag_filters = '''            <div class="tag-filters">
                 <button class="tag-filter active" data-filter="all">all</button>
-                <button class="tag-filter" data-filter="math">math</button>
-                <button class="tag-filter" data-filter="physics">physics</button>
-                <button class="tag-filter" data-filter="ml">ml</button>
                 <button class="tag-filter" data-filter="stats">stats</button>
+                <button class="tag-filter" data-filter="physics">physics</button>
+                <button class="tag-filter" data-filter="math">math</button>
+                <button class="tag-filter" data-filter="ml">ml</button>
                 <button class="tag-filter" data-filter="misc">misc</button>
             </div>
 '''
@@ -988,7 +988,7 @@ class MDTXCompiler:
         # Generate tags HTML for the post
         tags_html = ''
         if tags and tags.strip():
-            tag_order = ['math', 'physics', 'ml', 'stats', 'misc']
+            tag_order = ['stats', 'physics', 'math', 'ml', 'misc']
             tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
             # Sort tags by canonical order
             tag_list.sort(key=lambda t: tag_order.index(t) if t in tag_order else 999)
