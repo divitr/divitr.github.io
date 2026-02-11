@@ -100,7 +100,7 @@
             energy = new_energy
         return state</code></pre>
 <h3>Toy Problem</h3>
-<p>As an example, consider a Hopfield network meant to store 128 x 128 px images. Using the above implementation to learn 4 patterns, the network is able to accurately recall the patterns with up to 40% of the pixels flipped. The specific code used is available for download <a href="hopfield_net.py">here</a>.</p>
+<p>As an example, consider a Hopfield network meant to store 128 x 128 px images. Using the above implementation to learn 4 patterns, the network is able to accurately recall the patterns with up to 40% of the pixels flipped. The specific code used is available for download <a href="hopfield_net.py" target="_blank" rel="noopener noreferrer">here</a>.</p>
 <div class="example-box">
 <div class="example-box-title">Hopfield Network Recall Results</div>
 <div class="example-box-prompt">
@@ -113,7 +113,7 @@
 
 <figure><img src="40.png" alt="Recall Result 40" style="width:45%"><figcaption>Recall results with 40% noise</figcaption></figure>
 </div>
-<p>Note: This display style and the specific patterns were adapted from <a href="https://github.com/takyamamoto/Hopfield-Network">takyamamoto/Hopfield-Network</a>. </div> </div></p>
+<p>Note: This display style and the specific patterns were adapted from <a href="https://github.com/takyamamoto/Hopfield-Network" target="_blank" rel="noopener noreferrer">takyamamoto/Hopfield-Network</a>. </div> </div></p>
 <h2>Statistical Mechanics and Deep Learning</h2>
 <p>Hopfield networks have a wide variety of applications in statistical physics and deep learning theory.</p>
 <h3>Ising Model</h3>
@@ -123,20 +123,20 @@
 <div class="example-box-prompt">
 <figure><img src="ising.png" alt="Ising Model" style="width:100%"><figcaption>An Ising model, where each lattice point is an electron with either spin up or down.</figcaption></figure>
 
-Source: <a href="https://personal.math.ubc.ca/~andrewr/research/intro_html/node14.html">The Ising Model and Counting Graphs</a>
+Source: <a href="https://personal.math.ubc.ca/~andrewr/research/intro_html/node14.html" target="_blank" rel="noopener noreferrer">The Ising Model and Counting Graphs</a>
 </div>
 </div>
 <h3>Temperature and Simulated Annealing</h3>
 <p>We can also introduce a temperature into the Hopfield network, which allows it to explore many more states and escape local minima. As the temperature decreases, the model settles into a single minima. Simulated annealing is a process by which the model starts at high temperature and "cools down" over time. This prevents the model from getting stuck in local minima early on and increasing its chances of settling into a global minima (one of the memorized patterns).</p>
 <h3>Memory and Attention Mechanisms</h3>
-<p><a href="https://arxiv.org/abs/2008.02217">Ramsauer et al. (2020)</a> showed that attention mechanisms in transformers can be viewed as a continuous generalization of Hopfield Networks, implying that Transformers use something similar to associative memory. The same way that tokens attend to each other in transformers, patterns "attend" to each other in Hopfield networks, predicting which pattern to converge to, or which token to predict.</p>
+<p><a href="https://arxiv.org/abs/2008.02217" target="_blank" rel="noopener noreferrer">Ramsauer et al. (2020)</a> showed that attention mechanisms in transformers can be viewed as a continuous generalization of Hopfield Networks, implying that Transformers use something similar to associative memory. The same way that tokens attend to each other in transformers, patterns "attend" to each other in Hopfield networks, predicting which pattern to converge to, or which token to predict.</p>
 <h2>References</h2>
-<ol><li><a href="https://neuronaldynamics.epfl.ch/online/Ch17.S2.html">Hopfield Network | Neural Dynamics</a></li><li><a href="https://github.com/takyamamoto/Hopfield-Network">takyamamoto/Hopfield-Network</a></li></ol>
+<ol><li><a href="https://neuronaldynamics.epfl.ch/online/Ch17.S2.html" target="_blank" rel="noopener noreferrer">Hopfield Network | Neural Dynamics</a></li><li><a href="https://github.com/takyamamoto/Hopfield-Network" target="_blank" rel="noopener noreferrer">takyamamoto/Hopfield-Network</a></li></ol>
     </main>
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Jan 09, 2026 at 00:55 | <a href="../src/hopfield-networks.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Feb 10, 2026 at 22:45 | <a href="../src/hopfield-networks.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

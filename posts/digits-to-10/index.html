@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <div style='display:none'>\(\require{physics}\)</div>
+    <div style='display:none'>\(\require{physics}\)\(\require{mathtools}\)</div>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../posts.css">
@@ -45,53 +45,116 @@
         <section class="intro">
             <h1>Digits to 10</h1>
             <div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="misc">misc</span></div>
-            <p class="date">Feb 06, 2026</p>
-            <p class="desc">Making things more complicated than necessary...</p>
+            <p class="date">Feb 10, 2026</p>
+            <p class="desc">Unnecessary proofs</p>
         </section>
 
 <h2>Background</h2>
-<p>Over Thanksgiving break this year, I came up with a game. Let us say we have 4 people (I made my family play this with me). Each person names a digit between 1 and 9 (inclusive)<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>. Given only the operations \(\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}\)<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup> (and of course parentheses to dictate order), and the constraint that each digit must be used <em>exactly</em> once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.</p>
-<p>This is simple enough, but it does beg the question, what if I want to play with more people? It also begs the question, is it ever possible to get a set of \(k\) numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be cool to sorta document how this goes.</p>
+<p>Consider the following game. Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>. Given only the operations \(\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}\)<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup> (and of course parentheses to dictate order), and the constraint that each digit must be used <em>exactly</em> once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.</p>
+<p>This is simple enough, but what if I want to play with more people? We may also ask is it ever possible to get a set of \(k\) numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be interesting to sorta document how this goes.</p>
 <h2>Statement, Strategy, Sketchpad, and Structure</h2>
 <h3>Statement</h3>
 <p>It will likely be helpful to formally state out exactly what we're looking for. Given a multiset of digits \(D \in [9]^k\), and the operations list \(M \doteq \{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2\}\) (where we note that \(\sqrt{\cdot}\) is defined only for integer perfect squares), is there some valid expression in which we use all the \(k\) digits exactly once (and use operations as many times as we wish) that will evaluate to 10?</p>
 <p>We then seek the minimum \(k\) such that the above is always true regardless of the multiset.</p>
 <h3>Strategy</h3>
-<p>Our strategy will be to construct increasingly tight upper and lower bounds until they meet (sort of how the Rubik's cube God's number proof was done). I also really want to do this without computer assistance or manually checking any configurations.</p>
+<p>Our strategy will be to construct increasingly tight upper and lower bounds until they meet (sort of how the Rubik's cube God's number proof was done). I also really want to do this without computer assistance, but we'll see how feasible that is.</p>
 <p>My first crack at this (roughly November to January) involved trying to construct some sort of homogeneity lemma (basically that a multiset where every digit is the same is the hardest case to solve). I still think this is right (particularly for 7 since it is the largest prime that is coprime to 10), but I cannot figure out how to prove it so for now we'll just leave it.</p>
 <h3>Sketchpad</h3>
 <p>Right now (Feb 06) I'm particularly partial to a group theory type approach? As far as I see it, the main issue is that we could treat it as a binary tree with leaves being our numbers and internal nodes being operations (note that an order is naturally imposed here so we don't need to worry about parentheses) -- but the problem here is that we have two unary operations \(\sqrt{\cdot}\) and \((\cdot)^2\). I suspect that quotienting under an equivalence relation \(i \equiv i^2 \mid i, i^2 \in [9]\) gives us a smaller set which lends itself to a pigeonhole upper bound.</p>
 <p>I suspect the answer is \(k = 5\), but this is based on the logic that I can't think of a counterexample, not a rigorous proof.</p>
 <h3>Structure</h3>
 <p>The remainder of this post will probably be structured as section headers as dates and the current upper and lower bounds on \(k\), I'll go through and try to update this if/when I make any progress.</p>
-<p><h2>\(k \leq 13\) (sometime in Dec/Jan)</h2> This is a pretty simple upper bound that follows from a simple pigenhole argument. First note that we can construct 10 from 4 1s: \begin{equation} (1 + 1 + 1)^2 + 1 = 10. \end{equation}</p>
-<p>Thus, if I can find some way to construct 4 ones I can reach 10. Since I have 9 unique digits, if I draw 13 I am guaranteed at least 4 overlap, which I can use to construct 1s: (\(i/i = 1\)). Thus, for any \(k\geq13\), I can always construct 10.</p>
+<h2>\(k \leq 18\) (sometime in Dec/Jan)</h2>
+<div class="claim-box env-box" id="env-k18">
+  <p><strong>Claim 1 (Achievability for \(k \geq 18\)).</strong> For every \(k \geq 18\), we can construct 10 according to the rules of the game.</p>
+</div>
+<p>Before we proceed with the proof, it'll be helpful to introduce some notation and set things up.</p>
+<p>Let our mutliset of digits be denoted \(D \subset [9]^k\). Let \(c_d\) denote the multiplicity of each digit \(d \in D\) so \(\sum_{i=1}^9 c_d =k\). Note that we can construct 10 from 4 1s: \begin{equation} (1+1+1)^2 + 1 = 10. \end{equation}</p>
+<p>We may easily obtain \(1\) via \(d/d\), which consumes 2 occurrences of the digit \(d\). Therefore, to build 4 1s of the form \(d/d\), we need 4 disjoint equal pairs among the digits. Define the number of disjoint equal pairs available in \(D\) by \begin{equation} P(D) \doteq \sum_{d=1}^9 \left\lfloor \frac{c_d}{2} \right\rfloor. \end{equation}</p>
+<p>Now, we introduce the following lemma for convenience: <div class="lemma-box env-box" id="env-pair-count-lb">
+  <p><strong>Lemma 2 (Pair-count lower bound).</strong> If \(k \geq 16\), then \(P(D) \geq 4\) for every multiset \(d \subseteq [9]^k\).</p>
+</div></p>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-pair-count-lb">Lemma 2</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Suppose \(P(D) \leq 3\). Then each digit contributes at most \(\left\lfloor \frac{c_d}{2}\right\rfloor\) pairs, so \begin{equation} c_d \leq 2 \left\lfloor \frac{c_d}{2}\right\rfloor + 1 \end{equation} for each \(d\). Summing over \(d = 1, \dots, 9\), \begin{equation} k = \sum_{i=1}^9 c_d \leq \sum_{i=1}^9  \left(2\left\lfloor \frac{c_d}{2}\right\rfloor + 1 \right) = 2P(D) + 9 \leq 2\cdot 3 + 9 = 15. \end{equation} Thus, if \(k \geq 16\), it is impossible to have \(P(D) \leq 3\); hence \(P(D) \geq 4\).</p></div>
+</div>
+<p>Now we may prove the original claim.</p>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k18">Claim 1</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>By the above lemma, for \(k \geq 16\) we may choose four disjoint pairs \((a,a), (b,b), (c,c), (d,d)\) (not necessarily unique digits) and form \begin{equation} \frac{a}{a} = \frac bb = \frac cc = \frac dd = 1, \end{equation} thus we can reach 10. To guarantee we can use <em>all</em> remaining digits without affecting the value 10, it suffices to have an additional equal pair \((e,e)\) disjoint from the 8 digits already used, because then we can form \(e-e=0\) and multiply the entire leftover expression by 0.</p>
+<p>So we want \(P(D) \geq 5\). From the same inequality as used in the lemma, \begin{equation} k \leq 2 P(D)+9. \end{equation} Plugging in our desired \(P(D)-1\) (same logic as lemma), we have that \(k \leq 2 \cdot 4 + 9 = 17\), so to ensure \(P(D) \geq 5\), we require \(k \geq 18\), as claimed.</p></div>
+</div>
 <h2>\(k \geq 5\) (Feb 05)</h2>
-<p>We show this explicitly by counterexample. (The proof is pretty cool imo and it's flavored in the theme of p-adic numbers).</p>
+<p>We show this explicitly by counterexample.</p>
 <div class="claim-box env-box" id="env-k4-counter">
-  <p><strong>Claim 1 (Counterexample for \(k=4\)).</strong> Given the operations in \(M\) and the multiset \(\{7,7,7,7\}\), we can never construct 10.</p>
+  <p><strong>Claim 3 (Counterexample for \(k=4\)).</strong> Given the operations in \(M\) and the multiset \(\{7,7,7,7\}\), we can never construct 10.</p>
 </div>
 <div class="proof-box proof-box env-box">
-  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k4-counter">Claim 1</a>.</em><div class="qed-box"></div></div>
-  <div class="proof-box-content env-box-content"><p><em>Intuition.</em> Basically what we want to show is that since 7 is prime and coprime to 10, multiplication/division/squaring keep you "dependent on 7s"; only addition/subtraction can create cancellations that eliminate factors of 7. We'll enumerate what those cancellations can produce and show why it doesn't work.</p>
-<p>First let us show that we don't care about squaring or square rooting. Because \(\sqrt{\cdot}\) is defined only on integer perfect squares, every \(\sqrt{\cdot}\) application returns an integer (since \(\sqrt{n^2} = \abs{n} \mid n \in \mathbb{Z}\)). The only way to create non-integers is through division. Since squaring is definable via multiplication, allowing \((\cdot)^2\) doesn't expand the class beyond what \(\times\) already gives. Thus, we restrict our attention to \(\{+,-,\times,\cdot / \cdot\}\).</p>
-<p>Now, with only two 7s, we can get only the values \(S_2 = \{0,1,14,49\}\). Now we note that any 3-leaf binary tree must contain a 2-leaf binary subtree, so we enumerate the possible evaluations of a 3-leaf binary tree: \begin{equation} S_3 = \{-42,-7,-6,0,\frac{1}{7}, \frac{1}{2},2,6,7,8,21,42,56,98,343\}. \end{equation}</p>
-<p>Every evaluation of a 4-leaf binary subtree has a root which uses either 2 + 2 subtrees or 1 + 3 leaves. So let us define two types, which we shall treat independently: \begin{equation} A \circ B, \quad A, B \in S_2, \end{equation} \begin{equation} 7 \circ T \text{ or } T \circ 7, \quad T \in S_3. \end{equation}</p>
-<p>Now we go through and show each type cannot construct 10. First the (2,2) case: \begin{equation} \text{Possible Sums:} \{0, 1, 14, 15, 49, 50, 63, 98\}, \end{equation} \begin{equation} \text{Possible Differences:} \{0, \pm1, \pm13, \pm14, \pm35, \pm48, \pm49\}, \end{equation} \begin{equation} \text{Possible Products:} \{0, 1, 14, 49, 196, 686, 2401\}, \end{equation} \begin{equation} \text{Possible Quotients:} \{1, 14, 49, \frac{1}{14}, \frac{1}{49}, \frac27, \frac72\}. \end{equation}</p>
-<p>None contain 10. Now the (1,3) type. To get to 10, we need \(T\) to take some certain values, which we will show do not exist in \(S_3\).</p>
-<p>For \(7+T = 10\), we require \(T=3\); for \(7-T = 10, T-7=10\), we require -3, 17 respectively; for \(7\times T = 10\), we require \(T = \frac{10}{7}\); and for \(7/T=10, T/7=10\) we require \(7/10, 70\) respectively. Since none of these exist in \(S_3\), the (1,3) case is impossible.</p>
-<p>Since neither the (2,2) or (1,3) case work (and we know these are completely exhaustive), we are done.</p></div>
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k4-counter">Claim 3</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p><em>Intuition.</em> The only way to use exactly 4 leaves is via a full binary tree with 4 leaves. There are only 2 root shapes: \((2,2)\) and \((1,3)\). The delicate point is that unary operations \(\sqrt{\cdot}\) and \((\cdot)^2\) may be applied at internal nodes without consuming digits, so we must account for them completely. We reduce the problem to a finite target-exclusion check.</p>
+<h3>Unary closure</h3>
+<p>Define the unary-closure operator on a set \(S\) by \begin{equation} cl(S) \doteq S \cup \{x^2 : x \in S\} \cup \{\sqrt{x} : x \in S \text{ and } x \text{ is a perfect square integer}\}. \end{equation} Since unary operations act only on the <em>value</em> already produced at a node, the set of values attainable by any fixed subtree is closed under \(cl(\cdot)\).</p>
+<h3>Classify all 2-leaf values from \(\{7,7\}\)</h3>
+<p>Let \(S_2\) denote the set of all values obtainable from exactly two leaves \(\{7,7\}\) using operations in \(M\). We claim \begin{equation} S_2 \supseteq \{0,\ 1,\ 14,\ 49,\ 98,\ 196,\ 2401,\ 1/7,\ 1/49\}. \end{equation}</p>
+<p>Justification: <ul><li>Using only the binary operations on raw leaves gives \(7-7=0\), \(7/7=1\), \(7+7=14\), \(7\times 7=49\).</li><li>Applying \((\cdot)^2\) to \(14\) and \(49\) yields \(196\) and \(2401\). Applying \(\sqrt{\cdot}\) to \(196\) and \(2401\) returns \(14\) and \(49\); no other square roots are defined from two 7s.</li><li>By allowing a unary operation on a single leaf before the binary root, we may use \(49\) as a leaf value and form \(7/49 = 1/7\). Squaring yields \((1/7)^2 = 1/49\).</li></ul></p>
+<p>(We will only need the displayed subset of small values in the later finite checks.)</p>
+<h3>Reduce the 4-leaf problem to two root shapes</h3>
+<p>Every full 4-leaf binary tree has root of type \((2,2)\) or \((1,3)\). Concretely, any 4-leaf expression is of one of the following forms (up to swapping left/right): \begin{equation} E = U(A \circ B) \quad \text{with } A,B \text{ 2-leaf subexpressions}, \end{equation} or \begin{equation} E = U(7 \circ T) \ \text{or}\ U(T \circ 7) \quad \text{with } T \text{ a 3-leaf subexpression}, \end{equation} where \(\circ \in \{+,-,\times,\cdot/\cdot\}\) and \(U(\cdot)\) denotes an (optional) finite composition of unary operations applied at the root (each application must be defined).</p>
+<h3>Unary operations at the root force a finite set of binary targets</h3>
+<p>The only unary operations are \(x \mapsto x^2\) and \(x \mapsto \sqrt{x}\) (when defined). Since \(10\) is neither a perfect square nor the square root of a perfect square integer other than 100, the only way a root unary chain can produce 10 is if the <em>binary</em> root value lies in \begin{equation} \{10,\ -10,\ 100\}. \end{equation} (\(x^2=10\) has no rational solution; \(\sqrt{x}=10\) forces \(x=100\); and \(\sqrt{x^2}\) can introduce an absolute value, hence \(-10\).)</p>
+<p>Thus, to show impossibility, it suffices to show that in either root shape, the binary root can never evaluate to any of \(10,-10,100\).</p>
+<h3>Exclude root shape \((2,2)\)</h3>
+<p>In this shape, \(A,B \in S_2\). Therefore the binary root lies in the finite set \begin{equation} \{a\circ b : a,b \in S_2,\ \circ \in \{+,-,\times,\cdot/\cdot\}\}. \end{equation} A direct check shows this set does not contain \(10\), \(-10\), or \(100\). Hence the \((2,2)\) shape cannot yield 10.</p>
+<h3>Exclude root shape \((1,3)\)</h3>
+<p>In this shape, the binary root is \(7 \circ T\) or \(T \circ 7\). To have the binary root in \(\{10,-10,100\}\), \(T\) must satisfy one of finitely many equations, giving the forced target set \begin{equation} \mathcal{T} \doteq \{3,\ -3,\ 17,\ -17,\ 93,\ -93,\ 107,\ 10/7,\ -10/7,\ 100/7,\ -100/7,\ 7/10,\ -7/10,\ 7/100,\ -7/100,\ 70,\ -70,\ 700,\ -700\}. \end{equation} (These come from solving \(7 \circ T = y\) and \(T \circ 7 = y\) for \(y \in \{10,-10,100\}\) and \(\circ \in \{+,-,\times,\cdot/\cdot\}\).)</p>
+<p>Now, any 3-leaf expression necessarily contains a 2-leaf subtree; evaluating that subtree first yields some \(x \in S_2\), and then \(T\) is obtained by combining \(x\) with the remaining leaf \(7\) using one binary operation, followed by unary closure: \begin{equation} T \in cl(\{x \circ 7,\ 7 \circ x : x \in S_2,\ \circ \in \{+,-,\times,\cdot/\cdot\}\}). \end{equation} Therefore, it suffices to check the finite set on the right-hand side and verify it is disjoint from \(\mathcal{T}\). This direct check succeeds: no element of \(\mathcal{T}\) appears.</p>
+<p>Hence the \((1,3)\) shape cannot yield a binary root in \(\{10,-10,100\}\), and therefore cannot yield 10 after any root-level unary operations.</p>
+<p>Neither root shape \((2,2)\) nor \((1,3)\) can yield a binary root value in \(\{10,-10,100\}\), hence no valid expression using exactly four 7s can evaluate to 10. This proves the claim.</p></div>
+</div>
+<h2>\(k \leq 16\) (Feb 10)</h2>
+<div class="claim-box env-box" id="env-k16">
+  <p><strong>Claim 4 (Achievability for \(k \geq 16\)).</strong> For every \(k \geq 16\), we can construct 10 according to the rules of the game.</p>
+</div>
+<p>The \(k \leq 18\) proof earlier "wastes" 2 digits to manufacture a spare equal pair \((e,e)\) so we can build \(e-e=0\) and discard all remaining digits. At \(k=16\) we cannot always guarantee a 5th equal pair, so we instead manufacture a <em>duplicate-free</em> zero using the unary operations.</p>
+<p>We retain the pair-count notation from before. Let our multiset of digits be \(D \subset [9]^k\), let \(c_d\) denote the multiplicity of each digit \(d \in [9]\), and define \begin{equation} P(D) \doteq \sum_{d=1}^9 \left\lfloor \frac{c_d}{2} \right\rfloor. \end{equation}</p>
+<p>By <a href="#env-pair-count-lb">Lemma 2</a>, if \(k \geq 16\) then \(P(D) \geq 4\). Thus, for \(k=16\) we may always select 4 disjoint equal pairs and form 4 1s: \begin{equation} \frac{a}{a} = \frac{b}{b} = \frac{c}{c} = \frac{d}{d} = 1, \end{equation} and hence we can build \begin{equation} T \doteq \left(\frac{a}{a}+\frac{b}{b}+\frac{c}{c}\right)^2+\frac{d}{d} = 10. \end{equation} This uses exactly 8 digits (4 pairs). The remaining issue is: how do we force the remaining 8 digits to be used exactly once without changing the value?</p>
+<p>We can resolve this via the following observation: when \(k=16\) and \(P(D)=4\), the multiset must contain <em>all but at most one</em> digit from \([1,9]\). In particular, it must contain either \(\{2,4\}\) or \(\{3,9\}\), which gives a zero <em>without requiring duplicates</em>.</p>
+<div class="lemma-box env-box" id="env-k16-zero">
+  <p><strong>Lemma 5 (Forced zero gadget at \(k=16\)).</strong> Let \(D \subseteq [9]^{16}\) and suppose \(P(D)=4\). Then at least one of the following holds: (i) digits 2 and 4 both occur in \(D\), or (ii) digits 3 and 9 both occur in \(D\). Hence, \(D\) admits a duplicate-free zero: \begin{equation} Z \in \{4-2^2,\ 9-3^2\}, \end{equation} and hence \(Z=0\).</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k16-zero">Lemma 5</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Write \begin{equation} c_d = 2\left\lfloor \frac{c_d}{2}\right\rfloor + r_d, \quad r_d \in \{0,1\}. \end{equation} Summing over \(d=1,\dots,9\), \begin{equation} 16 = \sum_{d=1}^9 c_d = 2P(D) + \sum_{d=1}^9 r_d = 8 + \sum_{d=1}^9 r_d, \end{equation} so \(\sum_{d=1}^9 r_d = 8\). Since \(r_d=1\) implies \(c_d\) is odd (hence \(\geq 1\)), this means that <em>at least</em> 8 distinct digits appear in \(D\), i.e. <em>at most one digit is missing</em> from \(\{1,\dots,9\}\).</p>
+<p>Now consider the set \(\{2,3,4,9\}\). If 2 is missing then 3,4,9 are present, so in particular \(\{3,9\} \subset D\). If digit 3 is missing then \(\{2,4\} \subset D\). Similarly, if 4 is missing then \(\{3,9\} \subset D\), and if 9 is missing then \(\{2,4\} \subset D\). If none are missing, then both \(\{2,4\}\) and \(\{3,9\}\) are present. Thus at least one of \(\{2,4\}\) or \(\{3,9\}\) occurs, and we can form \(4-2^2=0\) or \(9-3^2=0\) using each digit exactly once.</p></div>
+</div>
+<div class="lemma-box env-box" id="env-k16-reserve">
+  <p><strong>Lemma 6 (Zero gadget can be chosen without destroying the four pairs).</strong> Let \(D \subseteq [9]^{16}\) and suppose \(P(D)=4\). Then there exists a choice of \begin{equation} Z \in \{4-2^2,\ 9-3^2\} \end{equation} such that the digits used to build \(Z\) can be reserved while still leaving at least four disjoint equal pairs among the remaining digits. In particular, after reserving the digits of \(Z\), we still have enough pairs to build \begin{equation} T = \left(\frac{a}{a}+\frac{b}{b}+\frac{c}{c}\right)^2+\frac{d}{d} = 10. \end{equation}</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k16-reserve">Lemma 6</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Since \(P(D)=4\) and \(k=16\), write \begin{equation} c_d = 2\left\lfloor \frac{c_d}{2}\right\rfloor + r_d,\quad r_d\in\{0,1\}. \end{equation} As in <a href="#env-k16-zero">Lemma 5</a>, summing gives \(\sum_{d=1}^9 r_d = 8\). Hence exactly one digit has even multiplicity; call it \(e\). (All other digits have odd multiplicity, hence at least 1.)</p>
+<p>Now note the following fact: if \(c_d\) is odd, then reserving a single copy of \(d\) does not decrease the number of available pairs contributed by \(d\), since \begin{equation} \left\lfloor \frac{c_d-1}{2}\right\rfloor = \left\lfloor \frac{c_d}{2}\right\rfloor \quad \text{when } c_d \text{ is odd}. \end{equation} The only way reserving digits can decrease \(P(D)\) is if we reserve a copy of the unique even-multiplicity digit \(e\).</p>
+<p>By <a href="#env-k16-zero">Lemma 5</a>, at least one of the gadgets is available; choose \(Z \in \{4-2^2, 9-3^2\}\) so that reserving its digits leaves four disjoint equal pairs. Choose the zero gadget \(Z\) so that it does <em>not</em> use the digit \(e\): <ul><li>If \(e \in \{2,4\}\), choose \(Z = 9-3^2\).</li><li>If \(e \in \{3,9\}\), choose \(Z = 4-2^2\).</li><li>If \(e \notin \{2,3,4,9\}\), choose whichever of the two gadgets is available.</li></ul></p>
+<p>Because at most one digit is missing from \(\{1,\dots,9\}\), in the first two bullets the "other" gadget is guaranteed to be available: if (say) \(e=2\) then digit 2 is present (even multiplicity) and so the only possible missing digit is not both 3 and 9, hence \(\{3,9\}\subset D\); similarly for the other cases.</p>
+<p>With this choice, the digits reserved for \(Z\) come only from odd-multiplicity digits, so reserving them does not reduce \(P(D)\). Therefore there remain at least four disjoint equal pairs available to build \(T=10\).</p></div>
+</div>
+<p>We can now finish our original \(k \leq 16\) construction.</p>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k16">Claim 4</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Fix \(k \geq 16\). If \(P(D) \geq 5\), then we revert to the \(k \leq 18\) proof: use 4 pairs to build \(T=10\) and use the 5th pair to build \(e-e=0\), absorbing all remaining digits.</p>
+<p>So assume \(k=16\) and \(P(D)=4\). By <a href="#env-k16-reserve">Lemma 6</a>, we can form a duplicate-free zero gadget \(Z \in \{4-2^2,\ 9-3^2\}\) with \(Z=0\) (choose whichever is available in \(D\)).</p>
+<p>Independently, since \(P(D)=4\), we can select 4 disjoint equal pairs and construct \begin{equation} T = \left(\frac{a}{a}+\frac{b}{b}+\frac{c}{c}\right)^2+\frac{d}{d} = 10. \end{equation} Let \(R\) be any expression using every remaining unused digit exactly once (e.g. their product in any parenthesization). Then \begin{equation} T + Z\cdot R = 10 \end{equation} uses every digit exactly once and evaluates to 10.</p></div>
 </div>
 <div class="footnotes">
 <ol>
-<li id="fn1">We exclude 0 because it's kinda "nothing"; its useless for addition, subtraction, multiplication, squares, square rooting, and undefined for division. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
+<li id="fn1">We exclude 0 by convention, it makes the problem unsolvable; given all 0s we can't ever reach 10. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
 <li id="fn2">Square root is only defined for perfect integer squares, i.e., 1, 4, 9. <a href="#fnref2" class="footnote-backref" aria-label="Back to reference">↩</a></li>
 </ol></div>
     </main>
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Feb 06, 2026 at 03:16 | <a href="../src/digits-to-10.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Feb 11, 2026 at 00:35 | <a href="../src/digits-to-10.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

@@ -89,23 +89,23 @@
 <ol><li><em>Architecture Design:</em> A "good" architecture should have a well-conditioned NTK that allows for efficient learning. (A well-conditioned NTK is one where the singular values are reasonably close to one another, and allows iterative algorithms (like gradient descent) to converge quickly.)</li><li><em>Generalization:</em> If the NTK is well-behaved, the network will generalize well even without explicit regularization.</li><li><em>Training Dynamics:</em> The constant NTK assumption helps explain why wide networks often train stably and predictably, unlike their narrower counterparts and lends some theoretical justification for the empirical observation that making neural networks bigger makes them easier to train.</li></ol>
 <h3>Computing the NTK</h3>
 <p>For a network with parameters \(\theta\), the NTK between two inputs \(x\) and \(x'\) is: \begin{equation} K(x, x'; \theta) = \mathbb{E}_{\theta \sim \mathcal{N}(0, I)} \left[ \nabla_\theta f(x; \theta)^\top \nabla_\theta f(x'; \theta) \right] \end{equation}</p>
-<p>This is approximated by sampling multiple initializations and averaging the Jacobian products. I'm not super familar with this, but I know that <a href="https://github.com/google/neural-tangents">Google's neural-tangents library</a> has some tools for computing NTKs.</p>
+<p>This is approximated by sampling multiple initializations and averaging the Jacobian products. I'm not super familar with this, but I know that <a href="https://github.com/google/neural-tangents" target="_blank" rel="noopener noreferrer">Google's neural-tangents library</a> has some tools for computing NTKs.</p>
 <h3>Visualizing the NTK</h3>
 <div class="example-box">
 <div class="example-box-title">NTK Evolution Visualization</div>
 <div class="example-box-prompt">
 <figure><img src="ntk_evolution.png" alt="NTK Evolution with Network Width" style="width:100%"><figcaption>The training data consists of noisy samples from a sine function. The diagonal of the Neural Tangent Kernel (NTK), K(x, x), is plotted for various network widths. As the width increases, the NTK curves become smoother, larger in magnitude, and more similar to each other, illustrating convergence to a deterministic kernel in the infinite-width limit.</figcaption></figure>
 
-You can download the code used to generate this figure <a href="ntk_visualization.py">here</a>.
+You can download the code used to generate this figure <a href="ntk_visualization.py" target="_blank" rel="noopener noreferrer">here</a>.
 </div>
 </div>
 <h2>References</h2>
-<ol><li><a href="https://lilianweng.github.io/posts/2022-09-08-ntk/">Lilian Weng's Blog Post on NTK</a></li><li><a href="https://arxiv.org/abs/1806.07572">Neural Tangent Kernel: Convergence and Generalization in Neural Networks</a></li><li><a href="https://arxiv.org/abs/1711.00165">Deep Neural Networks as Gaussian Processes</a></li></ol>
+<ol><li><a href="https://lilianweng.github.io/posts/2022-09-08-ntk/" target="_blank" rel="noopener noreferrer">Lilian Weng's Blog Post on NTK</a></li><li><a href="https://arxiv.org/abs/1806.07572" target="_blank" rel="noopener noreferrer">Neural Tangent Kernel: Convergence and Generalization in Neural Networks</a></li><li><a href="https://arxiv.org/abs/1711.00165" target="_blank" rel="noopener noreferrer">Deep Neural Networks as Gaussian Processes</a></li></ol>
     </main>
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Jan 09, 2026 at 00:55 | <a href="../src/ntk.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Feb 10, 2026 at 22:45 | <a href="../src/ntk.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

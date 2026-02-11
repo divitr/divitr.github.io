@@ -306,6 +306,7 @@ class MDTXCompiler:
         body = self.process_code(body)
         body = self.process_image(body)
         body = self.process_example(body)
+        body = self.process_env_refs(body)    # resolve lem@id etc. while outer map is live
         body = self.process_environments(body)  # Recursive
         body = self.process_lists(body)
         body = self.process_headings(body)
@@ -365,6 +366,45 @@ class MDTXCompiler:
             f'  {body}\n'
             '</div>'
         )
+
+    def process_env_refs(self, text: str) -> str:
+        """Replace inline env references like lem@pair-count-lb with hyperlinks."""
+        if not getattr(self, '_env_id_map', None):
+            return text
+
+        abbrev_map = {
+            'thm': 'theorem', 'theorem': 'theorem',
+            'lem': 'lemma', 'lemma': 'lemma',
+            'def': 'definition', 'definition': 'definition',
+            'rem': 'remark', 'remark': 'remark',
+            'cor': 'corollary', 'corollary': 'corollary',
+            'prop': 'proposition', 'proposition': 'proposition',
+            'claim': 'claim',
+        }
+
+        # Sort longest first so e.g. 'theorem' matches before 'thm' doesn't swallow it
+        abbrevs = sorted(abbrev_map.keys(), key=len, reverse=True)
+        pattern = re.compile(
+            r'\b(' + '|'.join(re.escape(a) for a in abbrevs) + r')@([\w-]+)',
+            re.IGNORECASE
+        )
+
+        def repl(m):
+            abbrev = m.group(1).lower()
+            env_id = m.group(2)
+            env_type = abbrev_map.get(abbrev)
+            if env_type and env_id in self._env_id_map:
+                stored_type, number = self._env_id_map[env_id]
+                if stored_type == env_type:
+                    return f'<a href="#env-{env_id}">{env_type.capitalize()} {number}</a>'
+            return m.group(0)
+
+        # Only process outside HTML tags to avoid mangling attributes
+        parts = re.split(r'(<[^>]*>)', text)
+        for i in range(len(parts)):
+            if not parts[i].startswith('<'):
+                parts[i] = pattern.sub(repl, parts[i])
+        return ''.join(parts)
 
     def _resolve_proof_reference(self, ref: str) -> tuple:
         """Resolve a proof reference like 'thm@my-id' to ('Theorem 3', 'env-my-id')"""
@@ -954,6 +994,7 @@ class MDTXCompiler:
         body = self.process_image(body)
         body = self.process_example(body)
         body = self.process_environments(body)
+        body = self.process_env_refs(body)    # resolve lem@id, thm@id, etc.
         body = self.process_lists(body)
         body = self.process_headings(body)
         

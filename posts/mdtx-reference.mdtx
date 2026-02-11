@@ -145,14 +145,31 @@ The proof will display as: ***Proof of [Theorem 1](#env-pythag).*** with "Theore
 
 ### Cross-Reference Abbreviations
 
-When referencing environments in proofs, use these abbreviations with `@`:
-- `thm@id` - theorem
-- `lem@id` - lemma
-- `def@id` - definition
-- `cor@id` - corollary
-- `prop@id` - proposition
+The `abbrev@id` syntax works in two places:
+
+**1. Proof headings** — links the proof title to the environment it proves:
+```mdtx
+proof[thm@my-theorem]:
+...
+end proof;
+```
+
+**2. Inline in body text** — renders as a hyperlinked "Type N" anywhere in prose:
+```mdtx
+By lem@pair-count-lb, we have {P(D) \geq 4}.
+```
+Renders as: By [Lemma 3](#env-pair-count-lb), we have...
+
+Supported abbreviations (short or full name both work):
+- `thm@id` / `theorem@id` - theorem
+- `lem@id` / `lemma@id` - lemma
+- `def@id` / `definition@id` - definition
+- `cor@id` / `corollary@id` - corollary
+- `prop@id` / `proposition@id` - proposition
 - `claim@id` - claim
-- `rem@id` - remark
+- `rem@id` / `remark@id` - remark
+
+If the id doesn't exist or the abbreviation doesn't match the actual environment type, the text is left unchanged.
 
 ### Complete Example
 
@@ -166,14 +183,14 @@ For all positive {x}, we have {x^3 > 0}.
 end theorem;
 
 proof[thm@main-result]:
-By Lemma 1, we know {x^2 > 0}. Multiplying both sides by {x > 0}...
+By lem@helper, we know {x^2 > 0}. Multiplying both sides by {x > 0}...
 end proof;
 ```
 
 This produces:
 - **Lemma 1 (Helper Lemma).** If x > 0...
 - **Theorem 2 (Main Theorem).** For all positive x...
-- ***Proof of Theorem 2.*** By Lemma 1...
+- ***Proof of Theorem 2.*** By [Lemma 1](#env-helper)...
 
 ## Lists
 

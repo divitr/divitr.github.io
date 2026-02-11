@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../posts.css">
     <script src="../posts_header.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Room Auctions</title>
 
@@ -46,10 +49,10 @@
         </section>
 
 <h2>Auctions</h2>
-<p>Over the last couple days, my roommates and I have been deciding how to do rent splits for the 5 rooms in our house (there's 5 of us so everyone gets a room). However, rooms aren't valued the same, e.g. some are bigger, have better lighting, etc. The natural solution is to just bid for rooms and be done, but <a href="https://www.avenga.com/magazine/first-price-second-price-auction/">standard first-price bidding has a few problems</a>. The usual solution is Vickrey or second-price auctions, but both of those feel a bit annoying to run (also I wanted to see if I could design a different auction strategy).</p>
+<p>Over the last couple days, my roommates and I have been deciding how to do rent splits for the 5 rooms in our house (there's 5 of us so everyone gets a room). However, rooms aren't valued the same, e.g. some are bigger, have better lighting, etc. The natural solution is to just bid for rooms and be done, but <a href="https://www.avenga.com/magazine/first-price-second-price-auction/" target="_blank" rel="noopener noreferrer">standard first-price bidding has a few problems</a>. The usual solution is Vickrey or second-price auctions, but both of those feel a bit annoying to run (also I wanted to see if I could design a different auction strategy).</p>
 <p>Before continuing, it is worth noting that this was never actually used we just handled it by discussing it, but I still thought the idea was cool.</p>
 <h3>Problem</h3>
-<p>Rent-splitting (like any auction or voting system) has the usual <a href="https://web.stanford.edu/~mohamwad/Credible.pdf">trilemma</a>; no auction can be more than 2 of the following: static (sealed-bid), strategy-proof (truthful bidding is optimal), and credible (the auctioneer can't cheat). In addition, we have the additional constraint that the price paid must sum to the total rent due (the straightforward solution is to just normalize the sum of rents to reach that but then you get into a whole host of other issues regarding fairness and if room value should be evaluated relatively or absolutely, etc.). In addition, we want a strategy that gives 0 envy; i.e. no one would be happier paying the agreed price for any other room.</p>
+<p>Rent-splitting (like any auction or voting system) has the usual <a href="https://web.stanford.edu/~mohamwad/Credible.pdf" target="_blank" rel="noopener noreferrer">trilemma</a>; no auction can be more than 2 of the following: static (sealed-bid), strategy-proof (truthful bidding is optimal), and credible (the auctioneer can't cheat). In addition, we have the additional constraint that the price paid must sum to the total rent due (the straightforward solution is to just normalize the sum of rents to reach that but then you get into a whole host of other issues regarding fairness and if room value should be evaluated relatively or absolutely, etc.). In addition, we want a strategy that gives 0 envy; i.e. no one would be happier paying the agreed price for any other room.</p>
 <h2>Gradient Descent on Happiness</h2>
 <p>Since we can't have all 3 criteria, we relax the static constraint. Instead of a single sealed bid, we run a dynamic process (a tatonnement mechanism). We treat the auction as a statistical inference problem. We assume the "true" fair prices are hidden parameters \(p\), and our roommates' choices are samples from a probability distribution. Our goal is to find the Maximum Likelihood Estimator (MLE) for the prices that clear the market. This gives us the Nash-gradient auction.</p>
 <p>First, we will present the algorithm, then we will explain why certain choices were made.</p>
@@ -75,8 +78,8 @@
 <h2>Pump and Dump</h2>
 <p>Note that this is a zero-sum game because of the fixed constraint that we must pay rent exactly. This creates an incentive for a "pump and dump" strategy. Consider an individual who actually wants the basement. If they pretend to bid for the master bedroom, they create fake demand, driving its price up and thus the price of the basement down. Then, at the last second, they switch to the basement, securing it for much less than they value it for.</p>
 <h3>Making Pump and Dump Risky</h3>
-<p>The <a href="https://en.wikipedia.org/wiki/Myerson%E2%80%93Satterthwaite_theorem">Myerson-Satterthwaite Theorem</a> tells us that we can't have efficiency, budget balance, and strategy-proofness all at once. Since we require efficiency and budget balance, the solution is to make running a pump and dump incredibly risky for an individual to de-incentivize them from trying it.</p>
-<p>To do this, we can borrow a concept from control theory: <a href="https://control.com/technical-articles/hysteresis-errors-and-compensation-in-control-systems/">hysteresis</a>. In switched dynamical systems (systems that jump between states), we often get chattering: quick, unstable switching. We can introduce a hysteresis loop into the utility function to minimize this.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Myerson%E2%80%93Satterthwaite_theorem" target="_blank" rel="noopener noreferrer">Myerson-Satterthwaite Theorem</a> tells us that we can't have efficiency, budget balance, and strategy-proofness all at once. Since we require efficiency and budget balance, the solution is to make running a pump and dump incredibly risky for an individual to de-incentivize them from trying it.</p>
+<p>To do this, we can borrow a concept from control theory: <a href="https://control.com/technical-articles/hysteresis-errors-and-compensation-in-control-systems/" target="_blank" rel="noopener noreferrer">hysteresis</a>. In switched dynamical systems (systems that jump between states), we often get chattering: quick, unstable switching. We can introduce a hysteresis loop into the utility function to minimize this.</p>
 <p>Instead of a roommate maximizing pure utility \(u_j = v_j - p_j\), we model them as maximizing utility minus switching cost. If a roommate is currently in Room A, they will only switch to Room B if: \begin{equation} u_B > u_A + \delta \end{equation}</p>
 <p>where \(\delta\) is the hysteresis band: pick it as a small fraction of typical surplus (e.g., $10–$50) so casual flips are suppressed but true preference reversals still trigger.</p>
 <p>This prevents the "dump" phase. After bidding up Room A, you see the price of Room B drop. Because of the \(\delta\) term, Room B has to get significantly cheaper than Room A before you're allowed to switch. By the time the price gap is wide enough to overcome \(\delta\), the price of Room A is likely so high that the equilibrium is damaged for everyone and the potential profit from the switch is eaten by the switching cost.</p>
@@ -111,7 +114,7 @@
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Jan 01, 2026 at 20:01 | <a href="../src/room-auctions.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Feb 10, 2026 at 22:45 | <a href="../src/room-auctions.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 
