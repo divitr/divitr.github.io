@@ -10,6 +10,19 @@
     <script src="header.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.profile-img-container');
+            const caption = document.querySelector('.photo-caption');
+            let timer;
+            container.addEventListener('mouseenter', () => {
+                timer = setTimeout(() => { caption.style.opacity = '1'; }, 2000);
+            });
+            container.addEventListener('mouseleave', () => {
+                clearTimeout(timer);
+                caption.style.opacity = '0';
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
             const newsItems = document.querySelectorAll('.news-item');
             const moreBtn = document.getElementById('more-btn');
             const lessBtn = document.getElementById('less-btn');
@@ -50,7 +63,10 @@
 
     <main>
         <section class="intro">
-            <img src="bos.png" alt="Profile photo" class="profile-img">
+            <div class="profile-img-container">
+                <img src="bos.png" alt="Profile photo" class="profile-img">
+                <span class="photo-caption">harvard art museums</span>
+            </div>
             <div class="bio">
                 <h1>Divit Rawal</h1>
                 <p>I'm an undergrad at Berkeley studying statistics, physics, and computer science.</p>

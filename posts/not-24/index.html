@@ -7,11 +7,8 @@
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../posts.css">
     <script src="../posts_header.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digits to 10</title>
+    <title>Not 24</title>
 
     <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
     <script>
@@ -33,7 +30,6 @@
             }
         };
     </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -43,14 +39,14 @@
 
     <main class="blog-post">
         <section class="intro">
-            <h1>Digits to 10</h1>
+            <h1>Not 24</h1>
             <div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="misc">misc</span></div>
             <p class="date">Feb 10, 2026</p>
             <p class="desc">Unnecessary proofs</p>
         </section>
 
 <h2>Background</h2>
-<p>Consider the following game. Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>. Given only the operations \(\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}\)<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup> (and of course parentheses to dictate order), and the constraint that each digit must be used <em>exactly</em> once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.</p>
+<p>Consider the following game, loosely inspired by <a href="https://www.4nums.com" target="_blank" rel="noopener noreferrer">24</a>. Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>. Given only the operations \(\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}\)<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup> (and of course parentheses to dictate order), and the constraint that each digit must be used <em>exactly</em> once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.</p>
 <p>This is simple enough, but what if I want to play with more people? We may also ask is it ever possible to get a set of \(k\) numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be interesting to sorta document how this goes.</p>
 <h2>Statement, Strategy, Sketchpad, and Structure</h2>
 <h3>Statement</h3>
@@ -154,7 +150,7 @@
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Feb 11, 2026 at 00:35 | <a href="../src/digits-to-10.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Feb 14, 2026 at 00:03 | <a href="../src/not-24.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

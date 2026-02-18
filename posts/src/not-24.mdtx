@@ -1,4 +1,4 @@
-title: Digits to 10;
+title: Not 24;
 date: Feb 10, 2026;
 desc: Unnecessary proofs;
 emoji: 🔟;
@@ -7,7 +7,7 @@ req: physics, mathtools;
 
 ## Background
 
-Consider the following game. Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)[^1]. Given only the operations {\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}}[^2] (and of course parentheses to dictate order), and the constraint that each digit must be used *exactly* once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.
+Consider the following game, loosely inspired by [24](https://www.4nums.com). Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)[^1]. Given only the operations {\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}}[^2] (and of course parentheses to dictate order), and the constraint that each digit must be used *exactly* once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.
 
 This is simple enough, but what if I want to play with more people? We may also ask is it ever possible to get a set of {k} numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be interesting to sorta document how this goes.
 

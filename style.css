@@ -54,10 +54,30 @@ nav a:hover {
     align-items: start;
 }
 
+.profile-img-container {
+    position: relative;
+    width: 100%;
+}
+
 .profile-img {
     width: 100%;
     border-radius: 8px;
     display: block;
+}
+
+.photo-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.4rem 0.6rem;
+    color: #fff;
+    font-size: 0.8rem;
+    font-style: italic;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
 }
 
 .bio h1 {
