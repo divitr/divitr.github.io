@@ -108,19 +108,27 @@ a:hover {
     .profile-img {
         max-width: 250px;
     }
+
+    .footer {
+        font-size: 0.95rem;
+        line-height: 2;
+    }
+
+    .footer .separator {
+        display: inline;
+    }
 }
 
 .footer {
-    max-width: 800px;
-    margin: 4rem auto 2rem;
-    padding: 0 0.5rem;
+    margin: 4rem 0 2rem;
+    padding: 1.5rem 0;
     text-align: center;
+    line-height: 1.8;
 }
 
 .footer .separator {
-    font-size: 1.1em; /* Slightly larger than surrounding text */
-    font-weight: bold;
-    color: #888; /* A bit lighter than primary text for subtle distinction */
+    margin: 0 0.5rem;
+    color: #ccc;
 }
 
 .contact-item {
