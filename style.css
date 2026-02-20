@@ -114,6 +114,13 @@ a:hover {
     max-width: 800px;
     margin: 4rem auto 2rem;
     padding: 0 0.5rem;
+    text-align: center;
+}
+
+.footer .separator {
+    font-size: 1.1em; /* Slightly larger than surrounding text */
+    font-weight: bold;
+    color: #888; /* A bit lighter than primary text for subtle distinction */
 }
 
 .contact-item {
