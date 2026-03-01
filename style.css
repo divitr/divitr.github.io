@@ -279,6 +279,63 @@ a:hover {
     color: #4a4a4a;
 }
 
+/* Expandable items */
+.expandable-item {
+    cursor: default;
+}
+
+.expand-trigger {
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+}
+
+.expand-trigger:hover {
+    color: #4a4a4a;
+}
+
+.expand-hint {
+    color: #999;
+    font-size: 0.85rem;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.nested-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+    margin-left: 1.5rem;
+}
+
+.nested-list li {
+    padding: 0.4rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.nested-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #4a4a4a;
+}
+
+.nested-header {
+    font-style: italic;
+    color: #888;
+}
+
+.nested-header::before {
+    content: '' !important;
+}
+
+.nested-list li.nested-header {
+    padding-left: 0;
+}
+
 /* Research page styling */
 .current-work-section {
     margin-bottom: 3rem;

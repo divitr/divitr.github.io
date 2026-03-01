@@ -7,6 +7,43 @@
     <title>Misc.</title>
     <link rel="stylesheet" href="../style.css">
     <script src="../header.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const expandableItems = document.querySelectorAll('.expandable-item');
+
+            expandableItems.forEach(item => {
+                const trigger = item.querySelector('.expand-trigger');
+                const nestedList = item.querySelector('.nested-list');
+
+                // Create hint element inline
+                const hint = document.createElement('span');
+                hint.className = 'expand-hint';
+                hint.textContent = ' (click to expand)';
+                hint.style.opacity = '0';
+                trigger.appendChild(hint);
+
+                // Show hint immediately on hover
+                trigger.addEventListener('mouseenter', function() {
+                    hint.style.opacity = '1';
+                });
+
+                trigger.addEventListener('mouseleave', function() {
+                    hint.style.opacity = '0';
+                });
+
+                // Click to expand/collapse
+                trigger.addEventListener('click', function() {
+                    if (nestedList.style.display === 'none') {
+                        nestedList.style.display = 'block';
+                        hint.textContent = ' (click to collapse)';
+                    } else {
+                        nestedList.style.display = 'none';
+                        hint.textContent = ' (click to expand)';
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 
 <body>
@@ -14,17 +51,28 @@
 
     <main>
         <h1>Misc.</h1>
-        <p>Some other pages:</p>
-
-        <section class="misc-section">
-            <ul class="misc-list">
-                <li><a href="../projects/">Projects</a></li>
-                <li><a href="../notes/">Course Notes and Crib Sheets</a></li>
-                <li><a href="../posts/">Posts</a></li>
-                <li><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">Foresight</a> (a prediction app inspired by Metaculus)</li>
-                <li><a href="focaccia.jpg" target="_blank" rel="noopener noreferrer">Focaccia</a></li>
-            </ul>
-        </section>
+        <ul class="misc-list">
+            <li><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">foresight</a></li>
+            <li><a href="focaccia.jpg" target="_blank" rel="noopener noreferrer">focaccia</a></li>
+            <li class="expandable-item">
+                <span class="expand-trigger">some things I like</span>
+                <ul class="nested-list" style="display: none;">
+                    <li class="nested-header">deeply unserious people (check out <a href="https://www.ethanwng.com" target="_blank" rel="noopener noreferrer">ethanwng.com</a>, <a href="https://dvdkm.cc" target="_blank" rel="noopener noreferrer">dvdkm.cc</a>)</li>
+                    <li class="nested-header">sitcoms (arrested development, parks and recreation)</li>
+                    <li class="nested-header">aimless walks</li>
+                    <li class="nested-header">reading</li>
+                    <li class="nested-header">baking</li>
+                    <li class="nested-header"><a href="../posts/cookie-magic/" target="_blank" rel="noopener noreferrer">cookies</a></li>
+                </ul>
+            </li>
+            <li class="expandable-item">
+                <span class="expand-trigger">some things I don't like</span>
+                <ul class="nested-list" style="display: none;">
+                    <li class="nested-header">overly serious people</li>
+                    <li class="nested-header">dragonfruit</li>
+                </ul>
+            </li>
+        </ul>
     </main>
 </body>
 
