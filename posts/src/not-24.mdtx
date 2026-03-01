@@ -11,7 +11,7 @@ Consider the following game, loosely inspired by [24](https://www.4nums.com). Le
 
 This is simple enough, but what if I want to play with more people? We may also ask is it ever possible to get a set of {k} numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be interesting to sorta document how this goes.
 
-## Statement, Strategy, Sketchpad, and Structure
+## Statement and Strategy
 
 ### Statement
 
@@ -24,16 +24,6 @@ We then seek the minimum {k} such that the above is always true regardless of th
 Our strategy will be to construct increasingly tight upper and lower bounds until they meet (sort of how the Rubik's cube God's number proof was done). I also really want to do this without computer assistance, but we'll see how feasible that is.
 
 My first crack at this (roughly November to January) involved trying to construct some sort of homogeneity lemma (basically that a multiset where every digit is the same is the hardest case to solve). I still think this is right (particularly for 7 since it is the largest prime that is coprime to 10), but I cannot figure out how to prove it so for now we'll just leave it.
-
-### Sketchpad
-
-Right now (Feb 06) I'm particularly partial to a group theory type approach? As far as I see it, the main issue is that we could treat it as a binary tree with leaves being our numbers and internal nodes being operations (note that an order is naturally imposed here so we don't need to worry about parentheses) -- but the problem here is that we have two unary operations {\sqrt{\cdot}} and {(\cdot)^2}. I suspect that quotienting under an equivalence relation {i \equiv i^2 \mid i, i^2 \in [9]} gives us a smaller set which lends itself to a pigeonhole upper bound.
-
-I suspect the answer is {k = 5}, but this is based on the logic that I can't think of a counterexample, not a rigorous proof.
-
-### Structure
-
-The remainder of this post will probably be structured as section headers as dates and the current upper and lower bounds on {k}, I'll go through and try to update this if/when I make any progress.
 
 ## \(k \leq 18\) (sometime in Dec/Jan)
 
@@ -256,7 +246,6 @@ Because at most one digit is missing from {\{1,\dots,9\}}, in the first two bull
 With this choice, the digits reserved for {Z} come only from odd-multiplicity digits, so reserving them does not reduce {P(D)}. Therefore there remain at least four disjoint equal pairs available to build {T=10}.
 end proof;
 
-
 We can now finish our original {k \leq 16} construction.
 
 proof[claim@k16]:
@@ -275,6 +264,364 @@ Let {R} be any expression using every remaining unused digit exactly once (e.g. 
 uses every digit exactly once and evaluates to 10.
 end proof;
 
+## \(k \leq 14\) (Feb 28)
+
+claim[k14][Achievability for {k \ge 14}]:
+For every {k \ge 14} and every multiset {D \subset [9]^k}, there exists a valid expression using each digit exactly once that evaluates to {10}.
+end claim;
+
+The main improvement over the {k \le 16} argument is that we no longer insist on manufacturing 1 exclusively from equal pairs {(d,d)}. We can also obtain 1 from *adjacent* digits:
+{
+\abs{a-b} = 1 \quad \text{whenever } \abs{a-b}=1,
+}
+or, if we wish to avoid ordering,
+{
+(a-b)^2 = 1.
+}
+Thus any disjoint pair {(x,y)} with {\abs{x-y} \le 1} can be converted into a 1.
+
+This reduces the combinatorics of “how many 1s can we force?” to a matching problem on a path.
+
+Let {c_i} denote the multiplicity of digit \(i\). Write
+{
+c_i = 2\left\lfloor \frac{c_i}{2} \right\rfloor + r_i,
+\qquad r_i \in \{0,1\}.
+}
+
+Define:
+list[u]:
+- {P(D) \doteq \sum_{i=1}^9 \left\lfloor \frac{c_i}{2} \right\rfloor},  
+  the number of disjoint equal pairs available.
+- {R(D) \doteq \sum_{i=1}^9 r_i},  
+  the number of leftover “odd” tokens after removing all equal pairs.
+end list;
+
+Interpret the digits as tokens placed on the path
+{
+1 - 2 - 3 - \cdots - 9.
+}
+A **unit-producing pair** is either:
+list[u]:
+- two tokens on the same vertex {i}, or
+- one token on {i} and one on {i+1}.
+end list;
+
+Let {U(D)} denote the maximum number of disjoint unit-producing pairs extractable from {D}.
+
+After removing all equal pairs (giving {P(D)} pairs), the remaining tokens lie on the vertices with {r_i=1}, at most one per vertex. Among these, we may additionally match adjacent vertices along the path.
+
+Let
+{
+A(D) \doteq \nu\big(P_9[\{i \mid r_i=1\}]\big),
+}
+where {\nu(G)} denotes the matching number of a graph {G}; the number of pairwise disjoint edges in {G}. Then
+
+{
+U(D) \geq P(D) + A(D).
+}
+
+lemma[unit-pairs-12][Four unit pairs from 12 digits]:
+If {\abs{D} = 12}, then {U(D) \ge 4}.
+end lemma;
+
+proof[lem@unit-pairs-12]:
+Since
+{
+12 = \sum_{i=1}^9 c_i = 2P(D) + R(D),
+}
+we have
+{
+R(D) = 12 - 2P(D).
+}
+
+We argue by cases.
+
+**Case 1: {P(D) \ge 4}.**  
+Then {U(D) \ge P(D) \ge 4}.
+
+**Case 2: {P(D) = 3}.**  
+Then {R(D) = 6}. So six vertices of the path carry an odd token.
+
+But the path on nine vertices has independence number {5}; hence any subset of six vertices must contain at least one adjacent pair. Therefore {A(D) \ge 1}, and
+{
+U(D) \ge 3 + 1 = 4.
+}
+
+**Case 3: {P(D) \le 2}.**  
+Then {R(D) \ge 8}.  
+
+Now we claim any induced subgraph of the 9-vertex path on at least 7 vertices has matching number at least 2.
+
+Indeed, if a subset {S} of vertices satisfies {\nu(P_9[S]) \le 1}, then the induced subgraph consists of isolated vertices together with at most one component containing an edge. In a path, such a component has size at most 3. The remaining vertices must be isolated and therefore pairwise nonadjacent; there can be at most 4 of these. Hence {\abs{S} \le 3 + 4 = 6}. Contrapositively, {\abs{S} \ge 7} implies {\nu(P_9[S]) \ge 2}.
+
+Applying this with {\abs{S} = R(D) \ge 8}, we obtain {A(D) \ge 2}, and therefore
+{
+U(D) \ge P(D) + A(D) \ge 2 + 2 = 4.
+}
+
+All cases give {U(D) \ge 4}.
+end proof;
+
+The bound is tight at 11 digits: for example,
+{
+D = \{5,5,5,5,5,5,5,1,3,7,9\}
+}
+admits only three disjoint unit pairs. (We may note that we can construct a 4th 1 e.g. via {(9-7)/(3-1)}, but figuring out how to formalize this is too much work; I'll likely revisit it later.)
+
+proof[claim@k14]:
+
+Let {k \ge 14}. Since there are only 9 digit types, some digit {e} appears at least twice. Reserve two copies and form
+{
+Z \doteq e - e = 0.
+}
+
+Remove these two digits; the remaining multiset {D'} has size
+{
+\abs{D'} = k - 2 \ge 12.
+}
+
+By lem@unit-pairs-12, we have {U(D') \ge 4}. Hence we may extract 4 disjoint unit pairs from \(D'\) and convert them into 4 1s.
+
+Using these four 1s, construct
+{
+T \doteq (1+1+1)^2 + 1 = 10.
+}
+
+Let {R} be any expression using all remaining unused digits exactly once (for instance, their product in any parenthesization). Then
+{
+T + Z \cdot R = 10
+}
+uses every digit exactly once and evaluates to {10}.
+
+end proof;
+
+## \(k \le 11\) (Mar 01)
+
+claim[k11][Achievability for {k \ge 11}]:
+For every {k \ge 11} and every multiset {D \subset [9]^k}, there exists a valid expression using each digit exactly once that evaluates to {10}.
+end claim;
+
+We shall keep the same “absorb leftovers with a {0}” architecture as before, but sharpen the internal {10}-kernel: instead of forcing four disjoint unit pairs (to make four {1}s), we show that any multiset of size {9} already contains a small kernel for {10}. This drops the global threshold by 2.
+
+We again view the digits as tokens on the path
+{
+1 - 2 - 3 - \cdots - 9.
+}
+
+A unit-producing pair is defined the same as before.
+
+A **nine-producing gadget** is any of:
+list[u]:
+- a single digit {9}, yielding {9} directly,
+- a single digit {3}, yielding {9 = 3^2},
+- a distance-3 pair {(i,i+3)}, yielding {9 = (i-(i+3))^2}, or
+- a sum-to-9 pair {(1,8),(2,7),(3,6),(4,5)}, yielding {9 = x+y}.
+end list;
+
+The main kernel identity is
+{
+10 = 9 + 1,
+}
+so it suffices to build a nine-gadget and a unit-pair disjointly.
+
+We shall want a crude extremal identity for unit pairs, stated below.
+
+lemma[unitpair-6][Unit pair from six digits]:
+If {\abs{D} \ge 6}, then {D} contains a unit-producing pair.
+end lemma;
+
+proof[lem@unitpair-6]:
+If some digit repeats, we have an equal pair {(i,i)} and hence {1=i/i}. Otherwise all digits are distinct. But the independence number of the 9-vertex path is {5}, so any set of {6} distinct vertices contains an adjacent pair {(i,i+1)}. Then {1=(i-(i+1))^2}. 
+end proof;
+
+We will also need a 2-value reduction.
+
+lemma[two-value-9][Two-value support at size 9 gives 10]:
+Let {D \subset [9]^9}. If {D} is supported on at most two digit-values, then {D} admits a valid expression using some of the digits of {D} that evaluates to {10}.
+end lemma;
+
+proof[lem@two-value-9]:
+If {D} is supported on at most two values, write
+{
+    D = \{x^{c_x}, y^{c_y}\}, \qquad c_x + c_y = 9.
+}
+Then the number of disjoint equal pairs is
+{
+    P(D) = \left\lfloor \frac{c_x}{2} \right\rfloor + \left\lfloor \frac{c_y}{2} \right\rfloor.
+}
+For any integers {c_x,c_y \ge 0} with {c_x+c_y=9}, we have {P(D) \ge 4}; the minimum occurs at {1+8} or {2+7}, giving {0+4=4} or {1+3=4}.
+
+Thus we can always select four disjoint equal pairs and form four {1}s:
+{
+    \frac aa = \frac bb = \frac cc = \frac dd = 1.
+}
+Then
+{
+    (1+1+1)^2 + 1 = 10
+}
+gives a {10}-kernel.
+end proof;
+
+Now we will require a kernel lemma.
+
+lemma[kernel-9][A 10-kernel from 9 digits]:
+For every multiset {D \subset [9]^9}, there exists a valid expression using some of the digits of {D} (each at most once) that evaluates to {10}.
+end lemma;
+
+proof[lem@kernel-9]:
+
+We proceed by successive reductions. Throughout, we shall ignore unused digits.
+
+*Immediate 2-leaf kernels.*
+If {D} contains any of {(1,9),(2,8),(3,7),(4,6)} or contains two {5}s, then we can form {10} by addition and are done. Hence assume:
+list[u]:
+- no complement-to-10 pair occurs in {D}, and
+- {c_5 \le 1}.
+end list;
+
+*Singleton nine gadgets.*
+If {9 \in D}, we have {9}. If {3 \in D}, we have {9=3^2}. In either case, removing that one digit leaves 8 digits. By lem@unitpair-6, the remaining digits contain a disjoint unit pair producing {1}. Hence {10=9+1}. So assume:
+{
+3 \notin D \quad \text{and} \quad 9 \notin D.
+}
+
+*2-leaf nine gadgets.*
+If {D} contains any sum-to-9 pair among {(1,8),(2,7),(4,5)}, then {9=x+y} uses two digits, leaving 7 digits; by lem@unitpair-6, these yield a disjoint {1}, hence {10=9+1}. Similarly, if {D} contains a distance-3 pair {(i,i+3)}, then {9=(i-(i+3))^2} and again the remaining 7 digits yield a disjoint {1}. Hence we may assume:
+list[u]:
+- none of {(1,8),(2,7),(4,5)} occurs in {D}, and
+- no distance-3 pair {(i,i+3)} occurs in {D}.
+end list;
+
+*mod-3 chain collapse.*
+The distance-3 edges partition the digits into chains:
+{
+1-4-7, \qquad 2-5-8, \qquad 3-6-9.
+}
+The absence of any distance-3 pair implies that the support of {D} restricts on each chain to an *independent set* of that 3-vertex path. Thus:
+list[u]:
+- on {1-4-7}, the allowed occupied subsets are {\emptyset, \{1\}, \{4\}, \{7\}, \{1,7\}},
+- on {2-5-8}, the allowed occupied subsets are {\emptyset, \{2\}, \{5\}, \{8\}, \{2,8\}},
+- on {3-6-9}, since {3,9 \notin D}, the only possibilities are {\emptyset} and {\{6\}}.
+end list;
+
+Now use the earlier exclusions:
+list[u]:
+- {\{2,8\}} is forbidden because it is a complement-to-10 pair,
+- {\{1,8\}} and {\{7,2\}} are forbidden because they are complement-to-10 pairs,
+- {\{4,5\}} is forbidden because it is a sum-to-9 pair.
+end list;
+
+Therefore the support of {D} must be one of the following:
+list[u]:
+- one-value supports:
+{
+\{1\},\ \{2\},\ \{4\},\ \{5\},\ \{6\},\ \{7\},\ \{8\},
+}
+- two-value supports:
+{
+\{1,2\},\ \{1,5\},\ \{1,6\},\ \{1,7\},\ \{2,4\},\ \{2,6\},\ \{4,8\},\ \{5,6\},\ \{5,7\},\ \{6,7\},\ \{6,8\},\ \{7,8\},
+}
+- multi-value supports:
+{
+\{1,2,6\},\ \{1,5,6\},\ \{1,5,7\},\ \{1,6,7\},\ \{5,6,7\},\ \{6,7,8\},\ \{1,5,6,7\}.
+}
+end list;
+
+If {D} is supported on at most two values, then lem@two-value-9 applies and we are done. So it remains only to handle the seven explicit multi-value supports.
+
+**Support {\{1,2,6\}}**
+{
+10 = 6 + 2^2.
+}
+
+**Support {\{1,5,6\}}**
+list[u]:
+- If {c_5 \ge 2}, then {10=5+5}.
+- Otherwise {c_5=1}, so {c_1+c_6=8}.
+- If {c_1 \ge 4}, use {10=(1+1+1)^2+1}.
+- If {c_1 \le 3}, then {c_6 \ge 5}; form {3=(6+6+6)/6} and then
+{
+10 = 1 + 3^2.
+}
+end list;
+
+**Support {\{1,5,7\}}**
+list[u]:
+- If {c_5 \ge 2}, then {10=5+5}.
+- Otherwise {c_5=1}, so {c_1+c_7=8}.
+- If {c_1 \ge 4}, use {10=(1+1+1)^2+1}.
+- If {c_1 \le 3}, then {c_7 \ge 5}; use
+{
+10 = \left(\frac{7+7+7}{7}\right)^2 + 1.
+}
+end list;
+
+**Support {\{1,6,7\}}**
+list[u]:
+- If {c_1 \ge 4}, use {10=(1+1+1)^2+1}.
+- If {c_6 \ge 3}, use
+{
+10 = 7 + \frac{6+6+6}{6}.
+}
+- Otherwise {c_6 \le 2}, so {c_7 \ge 4}; use
+{
+10 = \left(\frac{7+7+7}{7}\right)^2 + 1.
+}
+end list;
+
+**Support {\{5,6,7\}}**
+list[u]:
+- If {c_5 \ge 2}, then {10=5+5}.
+- Otherwise {c_5=1}, and since the support is exactly {\{5,6,7\}} we may use
+{
+10 = 6 + (7-5)^2.
+}
+end list;
+
+**Support {\{6,7,8\}}**
+list[u]:
+- If {c_7 \ge 2}, use
+{
+10 = 8 + \frac{7+7}{7}.
+}
+- Otherwise {c_7=1}.
+- If {c_6 \ge 3}, use
+{
+10 = 7 + \frac{6+6+6}{6}.
+}
+- If {c_6 \le 2}, then {c_8 \ge 6}; use
+{
+10 = \left(\frac{8+8+8}{8}\right)^2 + \frac 88.
+}
+end list;
+
+**Support {\{1,5,6,7\}}**
+list[u]:
+- If {c_5 \ge 2}, then {10=5+5}.
+- Otherwise {c_5=1}, and since 6 and 7 are present we may use
+{
+10 = 6 + (7-5)^2.
+}
+end list;
+
+Thus in all cases, {D} admits a {10}-kernel.
+end proof;
+
+Now the proof of our original claim is straightforward.
+
+proof[claim@k11]:
+Let {k \ge 11} and {D \subset [9]^k}. By pigeonhole, some digit {e} appears at least twice. Reserve two copies and form
+{
+Z \doteq e - e = 0.
+}
+Remove these two digits; the remaining multiset {D'} has size {\abs{D'} = k-2 \ge 9}. By lem@kernel-9, {D'} contains a {10}-kernel {T}.
+
+Let {R} be any expression using all remaining unused digits of {D} exactly once (for example, their product in any parenthesization). Then
+{
+T + Z \cdot R = 10
+}
+uses every digit exactly once and evaluates to {10}.
+end proof;
 
 [^1]: We exclude 0 by convention, it makes the problem unsolvable; given all 0s we can't ever reach 10.
 [^2]: Square root is only defined for perfect integer squares, i.e., 1, 4, 9.

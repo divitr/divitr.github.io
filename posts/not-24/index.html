@@ -48,18 +48,13 @@
 <h2>Background</h2>
 <p>Consider the following game, loosely inspired by <a href="https://www.4nums.com" target="_blank" rel="noopener noreferrer">24</a>. Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)<sup><a href="#fn1" id="fnref1" aria-label="Footnote 1">1</a></sup>. Given only the operations \(\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}\)<sup><a href="#fn2" id="fnref2" aria-label="Footnote 2">2</a></sup> (and of course parentheses to dictate order), and the constraint that each digit must be used <em>exactly</em> once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.</p>
 <p>This is simple enough, but what if I want to play with more people? We may also ask is it ever possible to get a set of \(k\) numbers such that it is not possible to get to 10? I've been thinking about this problem since November and I've made some progress, but I thought it'd be interesting to sorta document how this goes.</p>
-<h2>Statement, Strategy, Sketchpad, and Structure</h2>
+<h2>Statement and Strategy</h2>
 <h3>Statement</h3>
 <p>It will likely be helpful to formally state out exactly what we're looking for. Given a multiset of digits \(D \in [9]^k\), and the operations list \(M \doteq \{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2\}\) (where we note that \(\sqrt{\cdot}\) is defined only for integer perfect squares), is there some valid expression in which we use all the \(k\) digits exactly once (and use operations as many times as we wish) that will evaluate to 10?</p>
 <p>We then seek the minimum \(k\) such that the above is always true regardless of the multiset.</p>
 <h3>Strategy</h3>
 <p>Our strategy will be to construct increasingly tight upper and lower bounds until they meet (sort of how the Rubik's cube God's number proof was done). I also really want to do this without computer assistance, but we'll see how feasible that is.</p>
 <p>My first crack at this (roughly November to January) involved trying to construct some sort of homogeneity lemma (basically that a multiset where every digit is the same is the hardest case to solve). I still think this is right (particularly for 7 since it is the largest prime that is coprime to 10), but I cannot figure out how to prove it so for now we'll just leave it.</p>
-<h3>Sketchpad</h3>
-<p>Right now (Feb 06) I'm particularly partial to a group theory type approach? As far as I see it, the main issue is that we could treat it as a binary tree with leaves being our numbers and internal nodes being operations (note that an order is naturally imposed here so we don't need to worry about parentheses) -- but the problem here is that we have two unary operations \(\sqrt{\cdot}\) and \((\cdot)^2\). I suspect that quotienting under an equivalence relation \(i \equiv i^2 \mid i, i^2 \in [9]\) gives us a smaller set which lends itself to a pigeonhole upper bound.</p>
-<p>I suspect the answer is \(k = 5\), but this is based on the logic that I can't think of a counterexample, not a rigorous proof.</p>
-<h3>Structure</h3>
-<p>The remainder of this post will probably be structured as section headers as dates and the current upper and lower bounds on \(k\), I'll go through and try to update this if/when I make any progress.</p>
 <h2>\(k \leq 18\) (sometime in Dec/Jan)</h2>
 <div class="claim-box env-box" id="env-k18">
   <p><strong>Claim 1 (Achievability for \(k \geq 18\)).</strong> For every \(k \geq 18\), we can construct 10 according to the rules of the game.</p>
@@ -141,6 +136,98 @@
 <p>So assume \(k=16\) and \(P(D)=4\). By <a href="#env-k16-reserve">Lemma 6</a>, we can form a duplicate-free zero gadget \(Z \in \{4-2^2,\ 9-3^2\}\) with \(Z=0\) (choose whichever is available in \(D\)).</p>
 <p>Independently, since \(P(D)=4\), we can select 4 disjoint equal pairs and construct \begin{equation} T = \left(\frac{a}{a}+\frac{b}{b}+\frac{c}{c}\right)^2+\frac{d}{d} = 10. \end{equation} Let \(R\) be any expression using every remaining unused digit exactly once (e.g. their product in any parenthesization). Then \begin{equation} T + Z\cdot R = 10 \end{equation} uses every digit exactly once and evaluates to 10.</p></div>
 </div>
+<h2>\(k \leq 14\) (Feb 28)</h2>
+<div class="claim-box env-box" id="env-k14">
+  <p><strong>Claim 7 (Achievability for \(k \ge 14\)).</strong> For every \(k \ge 14\) and every multiset \(D \subset [9]^k\), there exists a valid expression using each digit exactly once that evaluates to \(10\).</p>
+</div>
+<p>The main improvement over the \(k \le 16\) argument is that we no longer insist on manufacturing 1 exclusively from equal pairs \((d,d)\). We can also obtain 1 from <em>adjacent</em> digits: \begin{equation} \abs{a-b} = 1 \quad \text{whenever } \abs{a-b}=1, \end{equation} or, if we wish to avoid ordering, \begin{equation} (a-b)^2 = 1. \end{equation} Thus any disjoint pair \((x,y)\) with \(\abs{x-y} \le 1\) can be converted into a 1.</p>
+<p>This reduces the combinatorics of “how many 1s can we force?” to a matching problem on a path.</p>
+<p>Let \(c_i\) denote the multiplicity of digit \(i\). Write \begin{equation} c_i = 2\left\lfloor \frac{c_i}{2} \right\rfloor + r_i, \qquad r_i \in \{0,1\}. \end{equation}</p>
+<p>Define: <ul><li>\(P(D) \doteq \sum_{i=1}^9 \left\lfloor \frac{c_i}{2} \right\rfloor\), the number of disjoint equal pairs available.</li><li>\(R(D) \doteq \sum_{i=1}^9 r_i\), the number of leftover “odd” tokens after removing all equal pairs.</li></ul></p>
+<p>Interpret the digits as tokens placed on the path \begin{equation} 1 - 2 - 3 - \cdots - 9. \end{equation} A <strong>unit-producing pair</strong> is either: <ul><li>two tokens on the same vertex \(i\), or</li><li>one token on \(i\) and one on \(i+1\).</li></ul></p>
+<p>Let \(U(D)\) denote the maximum number of disjoint unit-producing pairs extractable from \(D\).</p>
+<p>After removing all equal pairs (giving \(P(D)\) pairs), the remaining tokens lie on the vertices with \(r_i=1\), at most one per vertex. Among these, we may additionally match adjacent vertices along the path.</p>
+<p>Let \begin{equation} A(D) \doteq \nu\big(P_9[\{i \mid r_i=1\}]\big), \end{equation} where \(\nu(G)\) denotes the matching number of a graph \(G\); the number of pairwise disjoint edges in \(G\). Then \begin{equation} U(D) \geq P(D) + A(D). \end{equation}</p>
+<div class="lemma-box env-box" id="env-unit-pairs-12">
+  <p><strong>Lemma 8 (Four unit pairs from 12 digits).</strong> If \(\abs{D} = 12\), then \(U(D) \ge 4\).</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-unit-pairs-12">Lemma 8</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Since \begin{equation} 12 = \sum_{i=1}^9 c_i = 2P(D) + R(D), \end{equation} we have \begin{equation} R(D) = 12 - 2P(D). \end{equation}</p>
+<p>We argue by cases.</p>
+<p><strong>Case 1: \(P(D) \ge 4\).</strong> Then \(U(D) \ge P(D) \ge 4\).</p>
+<p><strong>Case 2: \(P(D) = 3\).</strong> Then \(R(D) = 6\). So six vertices of the path carry an odd token.</p>
+<p>But the path on nine vertices has independence number \(5\); hence any subset of six vertices must contain at least one adjacent pair. Therefore \(A(D) \ge 1\), and \begin{equation} U(D) \ge 3 + 1 = 4. \end{equation}</p>
+<p><strong>Case 3: \(P(D) \le 2\).</strong> Then \(R(D) \ge 8\).</p>
+<p>Now we claim any induced subgraph of the 9-vertex path on at least 7 vertices has matching number at least 2.</p>
+<p>Indeed, if a subset \(S\) of vertices satisfies \(\nu(P_9[S]) \le 1\), then the induced subgraph consists of isolated vertices together with at most one component containing an edge. In a path, such a component has size at most 3. The remaining vertices must be isolated and therefore pairwise nonadjacent; there can be at most 4 of these. Hence \(\abs{S} \le 3 + 4 = 6\). Contrapositively, \(\abs{S} \ge 7\) implies \(\nu(P_9[S]) \ge 2\).</p>
+<p>Applying this with \(\abs{S} = R(D) \ge 8\), we obtain \(A(D) \ge 2\), and therefore \begin{equation} U(D) \ge P(D) + A(D) \ge 2 + 2 = 4. \end{equation}</p>
+<p>All cases give \(U(D) \ge 4\).</p></div>
+</div>
+<p>The bound is tight at 11 digits: for example, \begin{equation} D = \{5,5,5,5,5,5,5,1,3,7,9\} \end{equation} admits only three disjoint unit pairs. (We may note that we can construct a 4th 1 e.g. via \((9-7)/(3-1)\), but figuring out how to formalize this is too much work; I'll likely revisit it later.)</p>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k14">Claim 7</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \(k \ge 14\). Since there are only 9 digit types, some digit \(e\) appears at least twice. Reserve two copies and form \begin{equation} Z \doteq e - e = 0. \end{equation}</p>
+<p>Remove these two digits; the remaining multiset \(D'\) has size \begin{equation} \abs{D'} = k - 2 \ge 12. \end{equation}</p>
+<p>By <a href="#env-unit-pairs-12">Lemma 8</a>, we have \(U(D') \ge 4\). Hence we may extract 4 disjoint unit pairs from \(D'\) and convert them into 4 1s.</p>
+<p>Using these four 1s, construct \begin{equation} T \doteq (1+1+1)^2 + 1 = 10. \end{equation}</p>
+<p>Let \(R\) be any expression using all remaining unused digits exactly once (for instance, their product in any parenthesization). Then \begin{equation} T + Z \cdot R = 10 \end{equation} uses every digit exactly once and evaluates to \(10\).</p></div>
+</div>
+<h2>\(k \le 11\) (Mar 02)</h2>
+<div class="claim-box env-box" id="env-k11">
+  <p><strong>Claim 9 (Achievability for \(k \ge 11\)).</strong> For every \(k \ge 11\) and every multiset \(D \subset [9]^k\), there exists a valid expression using each digit exactly once that evaluates to \(10\).</p>
+</div>
+<p>We shall keep the same “absorb leftovers with a \(0\)” architecture as before, but sharpen the internal \(10\)-kernel: instead of forcing four disjoint unit pairs (to make four \(1\)s), we show that any multiset of size \(9\) already contains a small kernel for \(10\). This drops the global threshold by 2.</p>
+<p>We again view the digits as tokens on the path \begin{equation} 1 - 2 - 3 - \cdots - 9. \end{equation}</p>
+<p>A unit-producing pair is defined the same as before.</p>
+<p>A <strong>nine-producing gadget</strong> is any of: <ul><li>a single digit \(9\), yielding \(9\) directly,</li><li>a single digit \(3\), yielding \(9 = 3^2\),</li><li>a distance-3 pair \((i,i+3)\), yielding \(9 = (i-(i+3))^2\), or</li><li>a sum-to-9 pair \((1,8),(2,7),(3,6),(4,5)\), yielding \(9 = x+y\).</li></ul></p>
+<p>The main kernel identity is \begin{equation} 10 = 9 + 1, \end{equation} so it suffices to build a nine-gadget and a unit-pair disjointly.</p>
+<p>We shall want a crude extremal identity for unit pairs, stated below.</p>
+<div class="lemma-box env-box" id="env-unitpair-6">
+  <p><strong>Lemma 10 (Unit pair from six digits).</strong> If \(\abs{D} \ge 6\), then \(D\) contains a unit-producing pair.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-unitpair-6">Lemma 10</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>If some digit repeats, we have an equal pair \((i,i)\) and hence \(1=i/i\). Otherwise all digits are distinct. But the independence number of the 9-vertex path is \(5\), so any set of \(6\) distinct vertices contains an adjacent pair \((i,i+1)\). Then \(1=(i-(i+1))^2\).</p></div>
+</div>
+<p>We will also need a 2-value reduction.</p>
+<div class="lemma-box env-box" id="env-two-value-9">
+  <p><strong>Lemma 11 (Two-value support at size 9 gives 10).</strong> Let \(D \subset [9]^9\). If \(D\) is supported on at most two digit-values, then \(D\) admits a valid expression using some of the digits of \(D\) that evaluates to \(10\).</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-two-value-9">Lemma 11</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>If \(D\) is supported on at most two values, write \begin{equation} D = \{x^{c_x}, y^{c_y}\}, \qquad c_x + c_y = 9. \end{equation} Then the number of disjoint equal pairs is \begin{equation} P(D) = \left\lfloor \frac{c_x}{2} \right\rfloor + \left\lfloor \frac{c_y}{2} \right\rfloor. \end{equation} For any integers \(c_x,c_y \ge 0\) with \(c_x+c_y=9\), we have \(P(D) \ge 4\); the minimum occurs at \(1+8\) or \(2+7\), giving \(0+4=4\) or \(1+3=4\).</p>
+<p>Thus we can always select four disjoint equal pairs and form four \(1\)s: \begin{equation} \frac aa = \frac bb = \frac cc = \frac dd = 1. \end{equation} Then \begin{equation} (1+1+1)^2 + 1 = 10 \end{equation} gives a \(10\)-kernel.</p></div>
+</div>
+<p>Now we will require a kernel lemma.</p>
+<div class="lemma-box env-box" id="env-kernel-9">
+  <p><strong>Lemma 12 (A 10-kernel from 9 digits).</strong> For every multiset \(D \subset [9]^9\), there exists a valid expression using some of the digits of \(D\) (each at most once) that evaluates to \(10\).</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-kernel-9">Lemma 12</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>We proceed by successive reductions. Throughout, we shall ignore unused digits.</p>
+<p><em>Immediate 2-leaf kernels.</em> If \(D\) contains any of \((1,9),(2,8),(3,7),(4,6)\) or contains two \(5\)s, then we can form \(10\) by addition and are done. Hence assume: <ul><li>no complement-to-10 pair occurs in \(D\), and</li><li>\(c_5 \le 1\).</li></ul></p>
+<p><em>Singleton nine gadgets.</em> If \(9 \in D\), we have \(9\). If \(3 \in D\), we have \(9=3^2\). In either case, removing that one digit leaves 8 digits. By <a href="#env-unitpair-6">Lemma 10</a>, the remaining digits contain a disjoint unit pair producing \(1\). Hence \(10=9+1\). So assume: \begin{equation} 3 \notin D \quad \text{and} \quad 9 \notin D. \end{equation}</p>
+<p><em>2-leaf nine gadgets.</em> If \(D\) contains any sum-to-9 pair among \((1,8),(2,7),(4,5)\), then \(9=x+y\) uses two digits, leaving 7 digits; by <a href="#env-unitpair-6">Lemma 10</a>, these yield a disjoint \(1\), hence \(10=9+1\). Similarly, if \(D\) contains a distance-3 pair \((i,i+3)\), then \(9=(i-(i+3))^2\) and again the remaining 7 digits yield a disjoint \(1\). Hence we may assume: <ul><li>none of \((1,8),(2,7),(4,5)\) occurs in \(D\), and</li><li>no distance-3 pair \((i,i+3)\) occurs in \(D\).</li></ul></p>
+<p><em>mod-3 chain collapse.</em> The distance-3 edges partition the digits into chains: \begin{equation} 1-4-7, \qquad 2-5-8, \qquad 3-6-9. \end{equation} The absence of any distance-3 pair implies that the support of \(D\) restricts on each chain to an <em>independent set</em> of that 3-vertex path. Thus: <ul><li>on \(1-4-7\), the allowed occupied subsets are \(\emptyset, \{1\}, \{4\}, \{7\}, \{1,7\}\),</li><li>on \(2-5-8\), the allowed occupied subsets are \(\emptyset, \{2\}, \{5\}, \{8\}, \{2,8\}\),</li><li>on \(3-6-9\), since \(3,9 \notin D\), the only possibilities are \(\emptyset\) and \(\{6\}\).</li></ul></p>
+<p>Now use the earlier exclusions: <ul><li>\(\{2,8\}\) is forbidden because it is a complement-to-10 pair,</li><li>\(\{1,8\}\) and \(\{7,2\}\) are forbidden because they are complement-to-10 pairs,</li><li>\(\{4,5\}\) is forbidden because it is a sum-to-9 pair.</li></ul></p>
+<p>Therefore the support of \(D\) must be one of the following: <ul><li>one-value supports: \begin{equation} \{1\},\ \{2\},\ \{4\},\ \{5\},\ \{6\},\ \{7\},\ \{8\}, \end{equation}</li><li>two-value supports: \begin{equation} \{1,2\},\ \{1,5\},\ \{1,6\},\ \{1,7\},\ \{2,4\},\ \{2,6\},\ \{4,8\},\ \{5,6\},\ \{5,7\},\ \{6,7\},\ \{6,8\},\ \{7,8\}, \end{equation}</li><li>multi-value supports: \begin{equation} \{1,2,6\},\ \{1,5,6\},\ \{1,5,7\},\ \{1,6,7\},\ \{5,6,7\},\ \{6,7,8\},\ \{1,5,6,7\}. \end{equation}</li></ul></p>
+<p>If \(D\) is supported on at most two values, then <a href="#env-two-value-9">Lemma 11</a> applies and we are done. So it remains only to handle the seven explicit multi-value supports.</p>
+<p><strong>Support \(\{1,2,6\}\)</strong> \begin{equation} 10 = 6 + 2^2. \end{equation}</p>
+<p><strong>Support \(\{1,5,6\}\)</strong> <ul><li>If \(c_5 \ge 2\), then \(10=5+5\).</li><li>Otherwise \(c_5=1\), so \(c_1+c_6=8\).</li><li>If \(c_1 \ge 4\), use \(10=(1+1+1)^2+1\).</li><li>If \(c_1 \le 3\), then \(c_6 \ge 5\); form \(3=(6+6+6)/6\) and then \begin{equation} 10 = 1 + 3^2. \end{equation}</li></ul></p>
+<p><strong>Support \(\{1,5,7\}\)</strong> <ul><li>If \(c_5 \ge 2\), then \(10=5+5\).</li><li>Otherwise \(c_5=1\), so \(c_1+c_7=8\).</li><li>If \(c_1 \ge 4\), use \(10=(1+1+1)^2+1\).</li><li>If \(c_1 \le 3\), then \(c_7 \ge 5\); use \begin{equation} 10 = \left(\frac{7+7+7}{7}\right)^2 + 1. \end{equation}</li></ul></p>
+<p><strong>Support \(\{1,6,7\}\)</strong> <ul><li>If \(c_1 \ge 4\), use \(10=(1+1+1)^2+1\).</li><li>If \(c_6 \ge 3\), use \begin{equation} 10 = 7 + \frac{6+6+6}{6}. \end{equation}</li><li>Otherwise \(c_6 \le 2\), so \(c_7 \ge 4\); use \begin{equation} 10 = \left(\frac{7+7+7}{7}\right)^2 + 1. \end{equation}</li></ul></p>
+<p><strong>Support \(\{5,6,7\}\)</strong> <ul><li>If \(c_5 \ge 2\), then \(10=5+5\).</li><li>Otherwise \(c_5=1\), and since the support is exactly \(\{5,6,7\}\) we may use \begin{equation} 10 = 6 + (7-5)^2. \end{equation}</li></ul></p>
+<p><strong>Support \(\{6,7,8\}\)</strong> <ul><li>If \(c_7 \ge 2\), use \begin{equation} 10 = 8 + \frac{7+7}{7}. \end{equation}</li><li>Otherwise \(c_7=1\).</li><li>If \(c_6 \ge 3\), use \begin{equation} 10 = 7 + \frac{6+6+6}{6}. \end{equation}</li><li>If \(c_6 \le 2\), then \(c_8 \ge 6\); use \begin{equation} 10 = \left(\frac{8+8+8}{8}\right)^2 + \frac 88. \end{equation}</li></ul></p>
+<p><strong>Support \(\{1,5,6,7\}\)</strong> <ul><li>If \(c_5 \ge 2\), then \(10=5+5\).</li><li>Otherwise \(c_5=1\), and since 6 and 7 are present we may use \begin{equation} 10 = 6 + (7-5)^2. \end{equation}</li></ul></p>
+<p>Thus in all cases, \(D\) admits a \(10\)-kernel.</p></div>
+</div>
+<p>Now the proof of our original claim is straightforward.</p>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k11">Claim 9</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \(k \ge 11\) and \(D \subset [9]^k\). By pigeonhole, some digit \(e\) appears at least twice. Reserve two copies and form \begin{equation} Z \doteq e - e = 0. \end{equation} Remove these two digits; the remaining multiset \(D'\) has size \(\abs{D'} = k-2 \ge 9\). By <a href="#env-kernel-9">Lemma 12</a>, \(D'\) contains a \(10\)-kernel \(T\).</p>
+<p>Let \(R\) be any expression using all remaining unused digits of \(D\) exactly once (for example, their product in any parenthesization). Then \begin{equation} T + Z \cdot R = 10 \end{equation} uses every digit exactly once and evaluates to \(10\).</p></div>
+</div>
 <div class="footnotes">
 <ol>
 <li id="fn1">We exclude 0 by convention, it makes the problem unsolvable; given all 0s we can't ever reach 10. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
@@ -150,7 +237,7 @@
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Feb 14, 2026 at 00:03 | <a href="../src/not-24.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Feb 28, 2026 at 16:20 | <a href="../src/not-24.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 
