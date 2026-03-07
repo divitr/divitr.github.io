@@ -23,8 +23,8 @@
 }
 
 .tag-filter.active {
-    color: var(--primary-color);
-    text-decoration: underline;
+    color: #555;
+    font-weight: 525;
 }
 
 /* Post tags */
@@ -395,6 +395,36 @@ footer a:hover {
     font-size: 0.8em;
 }
 
+.blog-post figure.mdtx-figure {
+    margin: 1.4rem auto;
+    display: flex;
+    justify-content: center;
+}
+
+.blog-post .mdtx-figure-inner {
+    max-width: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.blog-post figure.mdtx-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
+.blog-post figure.mdtx-figure figcaption {
+    margin-top: 0.55rem;
+    max-width: 100%;
+    text-align: center;
+    color: #777;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    font-style: italic;
+}
+
 .image-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -468,6 +498,42 @@ sup a {
 
 sup a:hover {
     text-decoration: underline;
+}
+
+/* Sidenote (RHS footnotes for wide viewports) */
+.footnote-sidenote {
+    position: absolute;
+    width: 220px;
+    font-size: 0.8rem;
+    color: #999;
+    line-height: 1.45;
+    transition: color 0.2s ease, transform 0.3s ease, opacity 0.3s ease;
+}
+
+.footnote-sidenote .sidenote-number {
+    font-size: 0.75rem;
+    color: #bbb;
+    margin-right: 0.15rem;
+}
+
+.footnote-sidenote a {
+    color: #999;
+    text-decoration: underline;
+}
+
+.footnote-sidenote a:hover {
+    color: var(--primary-color);
+}
+
+.footnote-sidenote.highlighted {
+    color: #666;
+    transform: scale(1.03);
+    transform-origin: top left;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footnote-sidenote.highlighted .sidenote-number {
+    color: #999;
 }
 
 /* Footnote tooltip on hover */

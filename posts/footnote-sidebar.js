@@ -1,93 +1,218 @@
-// footnote-hover.js - Show footnotes in hover tooltips
-
-console.log('[Footnote Hover] Script loaded!');
-
 (function() {
     'use strict';
 
-    function initFootnoteHovers() {
-        console.log('[Footnote Hover] Initializing...');
+    const SIDEBAR_BREAKPOINT = 1400;
+    const SIDENOTE_WIDTH = 220;
+    const SIDENOTE_MARGIN = 24;
+    const MIN_GAP = 8;
 
+    let sidenotes = [];
+    let sidenoteItems = [];
+    let sidenoteScrollListener = null;
+    let hoverTooltip = null;
+    let currentMode = null;
+    let footnoteData = [];
+    let backToTopBtn = null;
+    let scrollListener = null;
+
+    // Back-to-top button — only for tall pages (>2.5 viewports) in sidebar mode.
+    const SCROLL_SHOW_PX = () => window.innerHeight;   // show after 1 full viewport scrolled
+    const MIN_PAGE_HEIGHT = () => window.innerHeight * 2.5;
+
+    (function injectBackToTopStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            #back-to-top {
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: none;
+                border: none;
+                color: #999;
+                font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+                font-size: 0.85rem;
+                cursor: pointer;
+                padding: 0;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease, color 0.2s ease;
+                z-index: 999;
+            }
+            #back-to-top.visible {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            #back-to-top:hover {
+                color: #555;
+            }
+            .footnote-sidenote.tucked {
+                opacity: 0.25;
+            }
+        `;
+        document.head.appendChild(style);
+    })();
+
+    function createBackToTopButton() {
+        if (backToTopBtn) return;
+        if (document.documentElement.scrollHeight < MIN_PAGE_HEIGHT()) return;
+
+        backToTopBtn = document.createElement('button');
+        backToTopBtn.id = 'back-to-top';
+        backToTopBtn.textContent = 'back to top';
+        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        document.body.appendChild(backToTopBtn);
+
+        scrollListener = () => {
+            if (!backToTopBtn) return;
+            backToTopBtn.classList.toggle('visible', window.scrollY > SCROLL_SHOW_PX());
+        };
+        window.addEventListener('scroll', scrollListener, { passive: true });
+        scrollListener();
+    }
+
+    function removeBackToTopButton() {
+        if (scrollListener) {
+            window.removeEventListener('scroll', scrollListener);
+            scrollListener = null;
+        }
+        if (backToTopBtn) {
+            backToTopBtn.remove();
+            backToTopBtn = null;
+        }
+    }
+
+    function isSidebarMode() {
+        return window.innerWidth > SIDEBAR_BREAKPOINT;
+    }
+
+    function getFootnoteData() {
         const footnotesSection = document.querySelector('.footnotes');
-        if (!footnotesSection) {
-            console.log('[Footnote Hover] No .footnotes section found');
-            return;
+        if (!footnotesSection) return [];
+
+        const footnoteItems = footnotesSection.querySelectorAll('li');
+        const data = [];
+
+        footnoteItems.forEach((item) => {
+            const match = item.id.match(/^fn(\d+)$/);
+            if (!match) return;
+            const footnoteNumber = parseInt(match[1], 10);
+            const ref = document.getElementById(`fnref${footnoteNumber}`);
+            if (!ref) return;
+
+            const content = item.cloneNode(true);
+            const backref = content.querySelector('.footnote-backref');
+            if (backref) backref.remove();
+
+            data.push({ footnoteNumber, ref, content });
+        });
+
+        return data;
+    }
+
+    function createSidenotes(data) {
+        clearSidenotes();
+
+        const blogPost = document.querySelector('.blog-post');
+        if (!blogPost) return;
+
+        const blogPostRect = blogPost.getBoundingClientRect();
+        const leftPos = blogPostRect.right + window.scrollX + SIDENOTE_MARGIN;
+
+        const items = data.map(({ footnoteNumber, ref, content }) => {
+            const el = document.createElement('aside');
+            el.className = 'footnote-sidenote';
+            el.innerHTML = `<span class="sidenote-number">${footnoteNumber}.</span> ${content.innerHTML}`;
+            document.body.appendChild(el);
+
+            const refRect = ref.getBoundingClientRect();
+            const naturalTop = refRect.top + window.scrollY;
+
+            return { el, naturalTop, ref };
+        });
+
+        // Greedy downward-push to resolve overlaps
+        if (items.length > 0) {
+            items[0].placedTop = items[0].naturalTop;
+            for (let i = 1; i < items.length; i++) {
+                const prev = items[i - 1];
+                const prevBottom = prev.placedTop + prev.el.offsetHeight + MIN_GAP;
+                items[i].placedTop = Math.max(items[i].naturalTop, prevBottom);
+            }
         }
 
-        const footnotesList = footnotesSection.querySelector('ol');
-        if (!footnotesList) {
-            console.log('[Footnote Hover] No ol in footnotes section');
-            return;
+        items.forEach(({ el, placedTop, ref }) => {
+            el.style.top = `${placedTop}px`;
+            el.style.left = `${leftPos}px`;
+
+            // Highlight sidenote on ref hover
+            ref.addEventListener('mouseenter', () => el.classList.add('highlighted'));
+            ref.addEventListener('mouseleave', () => el.classList.remove('highlighted'));
+        });
+
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise(items.map(i => i.el)).catch(err => console.log('MathJax sidenote error:', err));
         }
 
-        const footnoteItems = footnotesList.querySelectorAll('li');
-        if (footnoteItems.length === 0) {
-            console.log('[Footnote Hover] No footnote items');
-            return;
+        sidenotes = items.map(i => i.el);
+        sidenoteItems = items.map(i => ({ el: i.el, ref: i.ref }));
+
+        // Tuck sidenotes that overlap the back-to-top button
+        if (sidenoteScrollListener) window.removeEventListener('scroll', sidenoteScrollListener);
+        sidenoteScrollListener = () => {
+            const btnVisible = backToTopBtn && window.scrollY > SCROLL_SHOW_PX();
+            const btnRect = btnVisible ? backToTopBtn.getBoundingClientRect() : null;
+            sidenoteItems.forEach(({ el }) => {
+                if (!btnRect) { el.classList.remove('tucked'); return; }
+                const r = el.getBoundingClientRect();
+                const overlaps = r.bottom > btnRect.top && r.top < btnRect.bottom &&
+                                 r.right > btnRect.left && r.left < btnRect.right;
+                el.classList.toggle('tucked', overlaps);
+            });
+        };
+        window.addEventListener('scroll', sidenoteScrollListener, { passive: true });
+        sidenoteScrollListener();
+    }
+
+    function clearSidenotes() {
+        if (sidenoteScrollListener) {
+            window.removeEventListener('scroll', sidenoteScrollListener);
+            sidenoteScrollListener = null;
         }
+        sidenotes.forEach(el => el.remove());
+        sidenotes = [];
+        sidenoteItems = [];
+    }
 
-        console.log('[Footnote Hover] Found', footnoteItems.length, 'footnotes');
+    function setupHoverTooltips(data) {
+        removeHoverTooltips();
 
-        // Create a tooltip element
         const tooltip = document.createElement('div');
         tooltip.className = 'footnote-tooltip';
+        tooltip.id = 'footnote-hover-tooltip';
         document.body.appendChild(tooltip);
+        hoverTooltip = tooltip;
 
-        // Process each footnote
-        footnoteItems.forEach((footnoteItem) => {
-            const footnoteId = footnoteItem.id; // e.g., "fn1"
-            const footnoteNumber = parseInt(footnoteId.replace('fn', ''), 10);
-            const refId = `fnref${footnoteNumber}`;
-
-            // Find the reference in the text
-            const ref = document.getElementById(refId);
-            if (!ref) {
-                return;
-            }
-
-            // Get the footnote content (remove the backref link)
-            const footnoteContent = footnoteItem.cloneNode(true);
-            const backref = footnoteContent.querySelector('.footnote-backref');
-            if (backref) {
-                backref.remove();
-            }
-
-            // Add hover listeners to show tooltip
-            ref.addEventListener('mouseenter', (e) => {
-                tooltip.innerHTML = footnoteContent.innerHTML.trim();
+        data.forEach(({ ref, content }) => {
+            ref.addEventListener('mouseenter', () => {
+                tooltip.innerHTML = content.innerHTML.trim();
                 tooltip.classList.add('visible');
 
-                // Trigger MathJax to render the tooltip content
-                if (window.MathJax && window.MathJax.typesetPromise) {
-                    MathJax.typesetPromise([tooltip]).then(() => {
-                        // Re-position after MathJax renders (content size may change)
-                        positionTooltip();
-                    }).catch((err) => console.log('MathJax error:', err));
-                } else {
-                    positionTooltip();
-                }
-
-                function positionTooltip() {
-                    // Position tooltip near the reference
+                const position = () => {
                     const refRect = ref.getBoundingClientRect();
-                    const tooltipRect = tooltip.getBoundingClientRect();
-
-                    // Position above the reference, centered
-                    let left = refRect.left + (refRect.width / 2) - (tooltipRect.width / 2);
-                    let top = refRect.top - tooltipRect.height - 10;
-
-                    // Keep tooltip within viewport
+                    const tipRect = tooltip.getBoundingClientRect();
+                    let left = refRect.left + refRect.width / 2 - tipRect.width / 2;
+                    let top = refRect.top - tipRect.height - 10;
                     if (left < 10) left = 10;
-                    if (left + tooltipRect.width > window.innerWidth - 10) {
-                        left = window.innerWidth - tooltipRect.width - 10;
-                    }
-                    if (top < 10) {
-                        // If no room above, show below
-                        top = refRect.bottom + 10;
-                    }
-
+                    if (left + tipRect.width > window.innerWidth - 10) left = window.innerWidth - tipRect.width - 10;
+                    if (top < 10) top = refRect.bottom + 10;
                     tooltip.style.left = `${left}px`;
                     tooltip.style.top = `${top}px`;
+                };
+
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    MathJax.typesetPromise([tooltip]).then(position).catch(err => console.log('MathJax error:', err));
+                } else {
+                    position();
                 }
             });
 
@@ -97,13 +222,75 @@ console.log('[Footnote Hover] Script loaded!');
         });
     }
 
-    // Run on load
-    console.log('[Footnote Hover] Setting up event listeners...');
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initFootnoteHovers);
-    } else {
-        initFootnoteHovers();
+    function removeHoverTooltips() {
+        if (hoverTooltip) {
+            hoverTooltip.remove();
+            hoverTooltip = null;
+        }
     }
 
+    function applyMode(force) {
+        const mode = isSidebarMode() ? 'sidebar' : 'bottom';
+        if (mode === currentMode && !force) return;
+        currentMode = mode;
+
+        const footnotesSection = document.querySelector('.footnotes');
+
+        if (mode === 'sidebar') {
+            if (footnotesSection) footnotesSection.style.display = 'none';
+            removeHoverTooltips();
+            createSidenotes(footnoteData);
+            createBackToTopButton();
+        } else {
+            if (footnotesSection) footnotesSection.style.display = '';
+            clearSidenotes();
+            setupHoverTooltips(footnoteData);
+            removeBackToTopButton();
+        }
+    }
+
+    // Poll for MathJax.startup.promise (MathJax loads async, so it may not be set yet)
+    function afterMathJax(callback) {
+        let attempts = 0;
+        function tryHook() {
+            if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+                window.MathJax.startup.promise.then(callback);
+            } else if (attempts < 30) {
+                attempts++;
+                setTimeout(tryHook, 100);
+            }
+            // If MathJax never loads, the initial positioning stands
+        }
+        tryHook();
+    }
+
+    function init() {
+        footnoteData = getFootnoteData();
+        if (footnoteData.length === 0) return;
+
+        // First pass: position with current layout (header may not be loaded yet)
+        applyMode(false);
+
+        // Correct pass: reposition after MathJax finishes (header will be loaded by then too)
+        afterMathJax(() => {
+            if (currentMode === 'sidebar') {
+                createSidenotes(footnoteData);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            const newMode = isSidebarMode() ? 'sidebar' : 'bottom';
+            if (newMode !== currentMode) {
+                applyMode(false);
+            } else if (currentMode === 'sidebar') {
+                createSidenotes(footnoteData);
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();

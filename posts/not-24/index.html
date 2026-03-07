@@ -41,7 +41,7 @@
         <section class="intro">
             <h1>Not 24</h1>
             <div class="post-tags"><span class="tag" data-tag="math">math</span><span class="tag" data-tag="misc">misc</span></div>
-            <p class="date">Mar 01, 2026</p>
+            <p class="date">Mar 07, 2026</p>
             <p class="desc">Unnecessary proofs</p>
         </section>
 
@@ -97,7 +97,7 @@
 <h3>Exclude root shape \((2,2)\)</h3>
 <p>In this shape, \(A,B \in S_2\). Therefore the binary root lies in the finite set \begin{equation} \{a\circ b : a,b \in S_2,\ \circ \in \{+,-,\times,\cdot/\cdot\}\}. \end{equation} A direct check shows this set does not contain \(10\), \(-10\), or \(100\). Hence the \((2,2)\) shape cannot yield 10.</p>
 <h3>Exclude root shape \((1,3)\)</h3>
-<p>In this shape, the binary root is \(7 \circ T\) or \(T \circ 7\). To have the binary root in \(\{10,-10,100\}\), \(T\) must satisfy one of finitely many equations, giving the forced target set \begin{equation} \mathcal{T} \doteq \{3,\ -3,\ 17,\ -17,\ 93,\ -93,\ 107,\ 10/7,\ -10/7,\ 100/7,\ -100/7,\ 7/10,\ -7/10,\ 7/100,\ -7/100,\ 70,\ -70,\ 700,\ -700\}. \end{equation} (These come from solving \(7 \circ T = y\) and \(T \circ 7 = y\) for \(y \in \{10,-10,100\}\) and \(\circ \in \{+,-,\times,\cdot/\cdot\}\).)</p>
+<p>In this shape, the binary root is \(7 \circ T\) or \(T \circ 7\). To have the binary root in \(\{10,-10,100\}\), \(T\) must satisfy one of finitely many equations, giving the forced target set \begin{equation} \begin{aligned} \mathcal{T} \doteq \{&3,\ -3,\ 17,\ -17,\ 93,\ -93,\ 107,\ 10/7,\ -10/7,\ 100/7,\\ &-100/7,\ 7/10,\ -7/10,\ 7/100,\ -7/100,\ 70,\ -70,\ 700,\ -700\}. \end{aligned} \end{equation} (These come from solving \(7 \circ T = y\) and \(T \circ 7 = y\) for \(y \in \{10,-10,100\}\) and \(\circ \in \{+,-,\times,\cdot/\cdot\}\).)</p>
 <p>Now, any 3-leaf expression necessarily contains a 2-leaf subtree; evaluating that subtree first yields some \(x \in S_2\), and then \(T\) is obtained by combining \(x\) with the remaining leaf \(7\) using one binary operation, followed by unary closure: \begin{equation} T \in cl(\{x \circ 7,\ 7 \circ x : x \in S_2,\ \circ \in \{+,-,\times,\cdot/\cdot\}\}). \end{equation} Therefore, it suffices to check the finite set on the right-hand side and verify it is disjoint from \(\mathcal{T}\). This direct check succeeds: no element of \(\mathcal{T}\) appears.</p>
 <p>Hence the \((1,3)\) shape cannot yield a binary root in \(\{10,-10,100\}\), and therefore cannot yield 10 after any root-level unary operations.</p>
 <p>Neither root shape \((2,2)\) nor \((1,3)\) can yield a binary root value in \(\{10,-10,100\}\), hence no valid expression using exactly four 7s can evaluate to 10. This proves the claim.</p></div>
@@ -147,7 +147,8 @@
 <p>Interpret the digits as tokens placed on the path \begin{equation} 1 - 2 - 3 - \cdots - 9. \end{equation} A <strong>unit-producing pair</strong> is either: <ul><li>two tokens on the same vertex \(i\), or</li><li>one token on \(i\) and one on \(i+1\).</li></ul></p>
 <p>Let \(U(D)\) denote the maximum number of disjoint unit-producing pairs extractable from \(D\).</p>
 <p>After removing all equal pairs (giving \(P(D)\) pairs), the remaining tokens lie on the vertices with \(r_i=1\), at most one per vertex. Among these, we may additionally match adjacent vertices along the path.</p>
-<p>Let \begin{equation} A(D) \doteq \nu\big(P_9[\{i \mid r_i=1\}]\big), \end{equation} where \(\nu(G)\) denotes the matching number of a graph \(G\); the number of pairwise disjoint edges in \(G\). Then \begin{equation} U(D) \geq P(D) + A(D). \end{equation}</p>
+<p>Let \begin{equation} A(D) \doteq \nu\big(P_9[\{i \mid r_i=1\}]\big), \end{equation} where \(\nu(G)\) denotes the matching number of a graph \(G\); the number of pairwise disjoint edges in \(G\). Then</p>
+<p>\begin{equation} U(D) \geq P(D) + A(D). \end{equation}</p>
 <div class="lemma-box env-box" id="env-unit-pairs-12">
   <p><strong>Lemma 8 (Four unit pairs from 12 digits).</strong> If \(\abs{D} = 12\), then \(U(D) \ge 4\).</p>
 </div>
@@ -213,7 +214,7 @@
 <p>Now use the earlier exclusions: <ul><li>\(\{2,8\}\) is forbidden because it is a complement-to-10 pair,</li><li>\(\{1,8\}\) and \(\{7,2\}\) are forbidden because they are complement-to-10 pairs,</li><li>\(\{4,5\}\) is forbidden because it is a sum-to-9 pair.</li></ul></p>
 <p>Therefore the support of \(D\) must be one of the following: <ul><li>one-value supports: \begin{equation} \{1\},\ \{2\},\ \{4\},\ \{5\},\ \{6\},\ \{7\},\ \{8\}, \end{equation}</li><li>two-value supports: \begin{equation} \{1,2\},\ \{1,5\},\ \{1,6\},\ \{1,7\},\ \{2,4\},\ \{2,6\},\ \{4,8\},\ \{5,6\},\ \{5,7\},\ \{6,7\},\ \{6,8\},\ \{7,8\}, \end{equation}</li><li>multi-value supports: \begin{equation} \{1,2,6\},\ \{1,5,6\},\ \{1,5,7\},\ \{1,6,7\},\ \{5,6,7\},\ \{6,7,8\},\ \{1,5,6,7\}. \end{equation}</li></ul></p>
 <p>If \(D\) is supported on at most two values, then <a href="#env-two-value-9">Lemma 11</a> applies and we are done. So it remains only to handle the seven explicit multi-value supports.</p>
-<p><strong>Support \(\{1,2,6\}\)</strong> \begin{equation} 10 = 6 + 2^2. \end{equation}</p>
+<p><strong>Support \(\{1,2,6\}\)</strong> Let \((a,b,c)\) denote multiplicities of \((1,2,6)\), so \(a+b+c=9\). <ul><li>If \(a \ge 4\), use \begin{equation} 10 = (1+1+1)^2 + 1. \end{equation}</li><li>Else if \(b \ge 4\), use \begin{equation} 10 = 2\cdot2\cdot2+2. \end{equation}</li><li>Else if \(b \ge 2\) and \(c \ge 1\), use \begin{equation} 10 = 6+2^2. \end{equation}</li><li>Else if \(b=1\) and \(a \ge 2\), use \begin{equation} 10 = (2+1)^2+1. \end{equation}</li><li>Else if \(a \ge 1\) and \(c \ge 4\), use \begin{equation} 10 = 1+\left(\frac{6+6+6}{6}\right)^2. \end{equation}</li><li>Otherwise \(c \ge 6\), so use \begin{equation} 10 = \left(\frac{6+6}{6}\right)^2+6. \end{equation}</li></ul></p>
 <p><strong>Support \(\{1,5,6\}\)</strong> <ul><li>If \(c_5 \ge 2\), then \(10=5+5\).</li><li>Otherwise \(c_5=1\), so \(c_1+c_6=8\).</li><li>If \(c_1 \ge 4\), use \(10=(1+1+1)^2+1\).</li><li>If \(c_1 \le 3\), then \(c_6 \ge 5\); form \(3=(6+6+6)/6\) and then \begin{equation} 10 = 1 + 3^2. \end{equation}</li></ul></p>
 <p><strong>Support \(\{1,5,7\}\)</strong> <ul><li>If \(c_5 \ge 2\), then \(10=5+5\).</li><li>Otherwise \(c_5=1\), so \(c_1+c_7=8\).</li><li>If \(c_1 \ge 4\), use \(10=(1+1+1)^2+1\).</li><li>If \(c_1 \le 3\), then \(c_7 \ge 5\); use \begin{equation} 10 = \left(\frac{7+7+7}{7}\right)^2 + 1. \end{equation}</li></ul></p>
 <p><strong>Support \(\{1,6,7\}\)</strong> <ul><li>If \(c_1 \ge 4\), use \(10=(1+1+1)^2+1\).</li><li>If \(c_6 \ge 3\), use \begin{equation} 10 = 7 + \frac{6+6+6}{6}. \end{equation}</li><li>Otherwise \(c_6 \le 2\), so \(c_7 \ge 4\); use \begin{equation} 10 = \left(\frac{7+7+7}{7}\right)^2 + 1. \end{equation}</li></ul></p>
@@ -228,6 +229,79 @@
   <div class="proof-box-content env-box-content"><p>Let \(k \ge 11\) and \(D \subset [9]^k\). By pigeonhole, some digit \(e\) appears at least twice. Reserve two copies and form \begin{equation} Z \doteq e - e = 0. \end{equation} Remove these two digits; the remaining multiset \(D'\) has size \(\abs{D'} = k-2 \ge 9\). By <a href="#env-kernel-9">Lemma 12</a>, \(D'\) contains a \(10\)-kernel \(T\).</p>
 <p>Let \(R\) be any expression using all remaining unused digits of \(D\) exactly once (for example, their product in any parenthesization). Then \begin{equation} T + Z \cdot R = 10 \end{equation} uses every digit exactly once and evaluates to \(10\).</p></div>
 </div>
+<h2>\(k \le 9\) (Mar 07)</h2>
+<div class="claim-box env-box" id="env-k9">
+  <p><strong>Claim 13 (Achievability for \(k \ge 9\)).</strong> For every \(k \ge 9\) and every multiset \(D \subset [9]^k\), there exists a valid expression using each digit exactly once that evaluates to \(10\).</p>
+</div>
+<p>The \(k \le 11\) argument leaves two digits to manufacture \(Z=e-e=0\) and then searches for a 9-digit \(10\)-kernel. We can push that architecture one step further by proving a 7-digit kernel.</p>
+<div class="lemma-box env-box" id="env-unitpair-5-no39">
+  <p><strong>Lemma 14 (Unit pair from 5 digits when \(3,9\) are absent).</strong> If \(E \subset [9]^5\) and \(3,9 \notin E\), then \(E\) contains a unit-producing pair.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-unitpair-5-no39">Lemma 14</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>If some digit repeats, we have an equal pair \((i,i)\) and therefore a unit pair.</p>
+<p>So assume all five digits are distinct. If two are adjacent, we are done. Hence assume no two are adjacent. Then the support is an independent 5-set in the path \begin{equation} 1-2-\cdots-9. \end{equation} But the unique independent 5-set in this path is \begin{equation} \{1,3,5,7,9\}. \end{equation} Since \(3,9 \notin E\), this is impossible. Therefore \(E\) must contain a unit pair.</p></div>
+</div>
+<div class="lemma-box env-box" id="env-kernel-7">
+  <p><strong>Lemma 15 (A 10-kernel from 7 digits).</strong> For every multiset \(D \subset [9]^7\), there exists a valid expression using some of the digits of \(D\) (each at most once) that evaluates to \(10\).</p>
+</div>
+<p>For the case analysis below, it is convenient to fix a small kernel catalog: \begin{equation} \begin{aligned} K_1&=(1+1+1)^2+1,\\ K_2&=2\cdot2\cdot2+2,\\ K_4&=4+4+\frac{4+4}{4},\\ K_6&=\left(\frac{6+6}{6}\right)^2+6,\\ K_7&=\left(\frac{7+7+7}{7}\right)^2+\frac77,\\ K_8&=8+\frac{8+8}{8}. \end{aligned} \end{equation} and the mixed kernels: \begin{equation} \begin{aligned} 4+4+2&=10,\qquad 8+\frac84=10,\qquad 6+2^2=10,\qquad (2+1)^2+1=10,\\ 6+(5-1)&=10,\qquad 6+(7-5)^2=10,\qquad 7+1+1+1=10,\qquad 7+5-(1+1)=10,\\ 1+\left(\frac{6+6+6}{6}\right)^2&=10,\qquad 1+\left(\frac{7+7+7}{7}\right)^2=10,\qquad 7+\frac{6+6+6}{6}=10,\\ 8+\frac{7+7}{7}&=10,\qquad (8-6)^2+6=10,\qquad 6+6-\frac{7+7}{7}=10,\qquad 7+(7-6)^2+(1+1)=10. \end{aligned} \end{equation} We will explicitly track multiplicity thresholds against the number of digit occurrences each displayed kernel consumes.</p>
+<div class="lemma-box env-box" id="env-star1-support24">
+  <p><strong>Lemma 16 (Family kernel lemma \(\star_1\): support inside \(\{2,4\}\)).</strong> If \(D \subset [9]^7\) and \(\operatorname{supp}(D)\subseteq \{2,4\}\), then \(D\) contains a \(10\)-kernel.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-star1-support24">Lemma 16</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \((c_2,c_4)\) be multiplicities with \(c_2+c_4=7\). <ul><li>If \(c_2\ge 4\), use \(K_2\).</li><li>Else \(c_2\le 3\), so \(c_4\ge 4\).</li><li>If \(c_2=0\), then \(c_4=7\); use \(K_4\).</li><li>If \(c_2\ge 1\), then \(c_4\ge 2\); use \(4+4+2=10\).</li></ul></p></div>
+</div>
+<div class="lemma-box env-box" id="env-star2-support48">
+  <p><strong>Lemma 17 (Family kernel lemma \(\star_2\): support inside \(\{4,8\}\)).</strong> If \(D \subset [9]^7\) and \(\operatorname{supp}(D)\subseteq \{4,8\}\), then \(D\) contains a \(10\)-kernel.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-star2-support48">Lemma 17</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \((c_4,c_8)\) be multiplicities with \(c_4+c_8=7\). <ul><li>If \(c_8\ge 2\) and \(c_4\ge 1\), use \(8+\frac84=10\).</li><li>Else if \(c_8\le 1\), then \(c_4\ge 6\); use \(K_4\).</li><li>Else \(c_8\ge 2\) and \(c_4=0\), hence \(c_8=7\); use \(K_8\).</li></ul></p></div>
+</div>
+<div class="lemma-box env-box" id="env-star3-support126">
+  <p><strong>Lemma 18 (Family kernel lemma \(\star_3\): support inside \(\{1,2,6\}\)).</strong> If \(D \subset [9]^7\) and \(\operatorname{supp}(D)\subseteq \{1,2,6\}\), then \(D\) contains a \(10\)-kernel.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-star3-support126">Lemma 18</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \((a,b,c)\) be multiplicities of \((1,2,6)\) with \(a+b+c=7\). <ul><li>If \(a\ge 4\), use \(K_1\).</li><li>Else if \(b\ge 4\), use \(K_2\).</li><li>Else if \(b\ge 2\) and \(c\ge 1\), use \(6+2^2=10\).</li><li>Else if \(b=1\) and \(a\ge 2\), use \((2+1)^2+1=10\).</li><li>Else if \(a\ge 1\) and \(c\ge 4\), use \(1+\left(\frac{6+6+6}{6}\right)^2=10\).</li><li>Otherwise \(c\ge 6\), so use \(K_6\).</li></ul></p></div>
+</div>
+<div class="lemma-box env-box" id="env-star4-support678">
+  <p><strong>Lemma 19 (Family kernel lemma \(\star_4\): support inside \(\{6,7,8\}\)).</strong> If \(D \subset [9]^7\) and \(\operatorname{supp}(D)\subseteq \{6,7,8\}\), then \(D\) contains a \(10\)-kernel.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-star4-support678">Lemma 19</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \((c_6,c_7,c_8)\) be multiplicities with \(c_6+c_7+c_8=7\).</p>
+<p>If \(c_8\ge 1\): <ul><li>If \(c_8\ge 4\), use \(K_8\).</li><li>Else if \(c_7\ge 3\), use \(8+\frac{7+7}{7}=10\).</li><li>Else \(c_7\le 2\), so \(c_6\ge 2\); use \((8-6)^2+6=10\).</li></ul></p>
+<p>If \(c_8=0\), then \(c_6+c_7=7\): <ul><li>If \(c_7\ge 6\), use \(K_7\).</li><li>Else if \(c_7\ge 3\), then \(c_6\ge 2\); use \(6+6-\frac{7+7}{7}=10\).</li><li>Else if \(c_7\ge 1\), then \(c_6\ge 4\); use \(7+\frac{6+6+6}{6}=10\).</li><li>Else \(c_6=7\); use \(K_6\).</li></ul></p></div>
+</div>
+<div class="lemma-box env-box" id="env-star5-support1567">
+  <p><strong>Lemma 20 (Family kernel lemma \(\star_5\): support inside \(\{1,5,6,7\}\)).</strong> If \(D \subset [9]^7\) and \(\operatorname{supp}(D)\subseteq \{1,5,6,7\}\), then \(D\) contains a \(10\)-kernel.</p>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-star5-support1567">Lemma 20</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \((a,b,c,d)\) be multiplicities of \((1,5,6,7)\) with \begin{equation} a+b+c+d=7. \end{equation}</p>
+<p>If \(b\ge 2\), use \(5+5=10\). So assume \(b\le 1\).</p>
+<p><strong>Case 1: \(b=1\).</strong> <ul><li>If \(d\ge 5\), use \(K_7\).</li><li>Else if \(a\ge 1\) and \(c\ge 1\), use \(6+(5-1)=10\).</li><li>Else if \(c\ge 1\) and \(d\ge 1\), use \(6+(7-5)^2=10\).</li><li>Else if \(a\ge 2\) and \(d\ge 1\), use \(7+5-(1+1)=10\).</li><li>The only remaining possibilities are pure supports \(\{1,5\}\) or \(\{5,6\}\), so use \(K_1\) or \(K_6\).</li></ul></p>
+<p><strong>Case 2: \(b=0\).</strong> Then \(a+c+d=7\). <ul><li>If \(a\ge 4\), use \(K_1\).</li><li>Else if \(d\ge 6\), use \(K_7\).</li><li>Else if \(a\ge 3\) and \(d\ge 1\), use \(7+1+1+1=10\).</li><li>Else if \(a\ge 1\) and \(c\ge 4\), use \(1+\left(\frac{6+6+6}{6}\right)^2=10\).</li><li>Else if \(a\ge 1\) and \(d\ge 4\), use \(1+\left(\frac{7+7+7}{7}\right)^2=10\).</li><li>Else if \(c\ge 4\) and \(d\ge 1\), use \(7+\frac{6+6+6}{6}=10\).</li><li>Else if \(c\ge 2\) and \(d\ge 3\), use \(6+6-\frac{7+7}{7}=10\).</li><li>Else if \(a\ge 2\), \(c\ge 1\), and \(d\ge 2\), use \(7+(7-6)^2+(1+1)=10\).</li><li>Otherwise \(c=7\), so use \(K_6\).</li></ul></p></div>
+</div>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-kernel-7">Lemma 15</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>As in the \(k \le 11\) section, we use the identity \(10=9+1\) and seek a disjoint nine-gadget and unit pair.</p>
+<p>First remove immediate 2-leaf kernels: <ul><li>no complement-to-10 pair in \((1,9),(2,8),(3,7),(4,6)\) occurs,</li><li>and \(c_5 \le 1\) (so no \(5+5=10\) kernel).</li></ul></p>
+<p>If \(3 \in D\) or \(9 \in D\), we get a 1-leaf nine-gadget. Removing that one digit leaves 6 digits, and <a href="#env-unitpair-6">Lemma 10</a> yields a disjoint unit pair. So in the reduced case: \begin{equation} 3 \notin D \quad \text{and} \quad 9 \notin D. \end{equation}</p>
+<p>Now consider 2-leaf nine-gadgets. If \(D\) contains any of \begin{equation} (1,8),(2,7),(4,5),(1,4),(4,7),(2,5),(5,8), \end{equation} then removing that gadget leaves 5 digits. By \(3,9 \notin D\) and <a href="#env-unitpair-5-no39">Lemma 14</a>, those 5 digits contain a disjoint unit pair. Hence \(10=9+1\).</p>
+<p>Therefore, in the hard case we may assume all those pairs are absent. Equivalently, the support is an independent set in the forbidden graph \(H\) on vertices \begin{equation} \{1,2,4,5,6,7,8\} \end{equation} with forbidden edges \begin{equation} 14,47,25,58,18,27,45,28,46. \end{equation} The maximal independent sets of \(H\) are: \begin{equation} \{2,4\},\ \{4,8\},\ \{1,2,6\},\ \{6,7,8\},\ \{1,5,6,7\}. \end{equation} Define \begin{equation} M_1=\{2,4\},\quad M_2=\{4,8\},\quad M_3=\{1,2,6\},\quad M_4=\{6,7,8\},\quad M_5=\{1,5,6,7\}. \end{equation} Every reduced support \(S\) is an independent set of \(H\), hence \(S\subseteq M_i\) for some \(i\in\{1,\dots,5\}\). Therefore it is enough to prove, for each \(i\), the stronger family statement: \begin{equation} (\star_i):\quad \text{every 7-digit multiset } D \text{ with } \operatorname{supp}(D)\subseteq M_i \text{ contains a 10-kernel.} \end{equation} These are exactly lemmas <a href="#env-star1-support24">Lemma 16</a> through <a href="#env-star5-support1567">Lemma 20</a>. Hence the hard case is solved, and every 7-digit multiset admits a \(10\)-kernel.</p></div>
+</div>
+<p>We may now prove our original claim.</p>
+<div class="proof-box proof-box env-box">
+  <div class="proof-box-title env-box-title"><em>Proof of <a href="#env-k9">Claim 13</a>.</em><div class="qed-box"></div></div>
+  <div class="proof-box-content env-box-content"><p>Let \(k \ge 9\) and \(D \subset [9]^k\).</p>
+<p>If some digit repeats, reserve two copies \((e,e)\) and set \begin{equation} Z \doteq e-e=0. \end{equation} Removing those two digits leaves \(k-2 \ge 7\) digits; pick any 7 of them and apply <a href="#env-kernel-7">Lemma 15</a> to obtain a \(10\)-kernel \(T\). Let \(R\) be any expression using all remaining unused digits exactly once. Then \begin{equation} T + Z\cdot R = 10 \end{equation} uses every digit exactly once.</p>
+<p>If no digit repeats and \(\abs{D}=9\), then necessarily \begin{equation} D=\{1,2,3,4,5,6,7,8,9\}, \end{equation} and we have an explicit full-use expression: \begin{equation} 1+2+3+4+5\bigl(9-8-(7-6)^2\bigr)=10. \end{equation}</p>
+<p>Hence every 9-digit multiset is solvable, so \(k \le 9\).</p></div>
+</div>
 <div class="footnotes">
 <ol>
 <li id="fn1">We exclude 0 by convention, it makes the problem unsolvable; given all 0s we can't ever reach 10. <a href="#fnref1" class="footnote-backref" aria-label="Back to reference">↩</a></li>
@@ -237,7 +311,7 @@
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Mar 01, 2026 at 02:19 | <a href="../src/not-24.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Mar 07, 2026 at 01:55 | <a href="../src/not-24.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

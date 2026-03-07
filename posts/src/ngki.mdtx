@@ -1,0 +1,226 @@
+req: physics;
+
+title: Normal Gradients of Kernel Interpolants;
+date: Mar 06, 2026;
+desc: Why models can overfit on noisy data and still generalize optimally;
+tags: stats, ml, math;
+emoji: 🧍‍♂️;
+
+## Motivation
+
+A few months ago I was reading [this paper](https://arxiv.org/abs/2207.06569), which distinguishes between benign, tempered, and catastrophic overfitting in kernel interpolants[^1]. The classical picture of benign overfitting[^2] is a bit mysterious; the model memorizes noise in the training labels, but somehow achieves Bayes optimal error on the test set. A natural question is that if the model has memorized noise, why does that not affect its generalization performance -- in some sense, where is that noise "stored"?
+
+The answer turns out to be geometric: the noise is pushed into the *normal directions* of the data manifold. A kernel interpolant trained on noisy labels looks smooth along the manifold (thus it generalizes), but oscillates wildly in directions perpendicular to it. This gives us a clean separation between two often conflated ideas:
+
+list[u]:
+- *Generalization* depends on the tangential gradient: how the function varies along the manifold.
+- *Robustness* depends on the normal gradient: how the function varies off the manifold.
+end list;
+
+## Setup
+
+Assume data {x_1, \dots, x_n \sim \mu} are drawn from a probability measure supported on a compact {d}-dimensional submanifold {\mathcal{M} \subset \mathbb{R}^D}, with {D \gg d}. This is the manifold hypothesis: data lives near a low-dimensional structure embedded in high-dimensional space.
+
+We observe noisy labels
+{
+    y \doteq f^*(x) + \epsilon, \qquad \epsilon \sim \mathcal{N}(0, \sigma^2 I),
+}
+and fit a positive-definite kernel {k} via the minimum-norm interpolant[^3] (ridgeless KRR):
+{
+    \hat{f}(x) = k(x)^\top K^{-1} y,
+}
+where {k(x) = (k(x, x_1), \dots, k(x, x_n))^\top} and {K_{ij} = k(x_i, x_j)}. This fits every training point exactly -- noise and all.
+
+At any {x \in \mathcal{M}}, the ambient space splits orthogonally[^4]:
+{
+    \mathbb{R}^D = T_x\mathcal{M} \oplus N_x\mathcal{M}.
+}
+Let {P_T(x)} and {P_\perp(x)} denote the projectors onto the tangent and normal bundles respectively. The gradient of {\hat{f}} splits accordingly:
+{
+    \nabla \hat{f}(x) = \underbrace{P_T(x)\,\nabla \hat{f}(x)}_{\nabla_T \hat{f}(x)} + \underbrace{P_\perp(x)\,\nabla \hat{f}(x)}_{\nabla_\perp \hat{f}(x)}.
+}
+
+## Normal Gradient Energy
+
+Our central object is the **Normal Gradient Energy**:
+{
+    \Gamma_N \doteq \mathbb{E}_{x \sim \mu}\left[\|\nabla_\perp \hat{f}(x)\|^2\right].
+}
+This measures how much the interpolant varies in the normal directions, averaged over the data distribution.
+
+To compute it, introduce the normal gradient feature matrix at each {x}:
+{
+    J(x) \in \mathbb{R}^{(D-d) \times n}, \qquad J(x)_{\colon, i} \doteq P_\perp(x)\,\nabla_x k(x, x_i),
+}
+and the **Gradient Kernel Matrix**:
+{
+    G \doteq \mathbb{E}_{x \sim \mu}\!\left[J(x)^\top J(x)\right], \qquad G_{ij} = \mathbb{E}_{x \sim \mu}\!\left[\nabla_\perp k(x, x_i) \cdot \nabla_\perp k(x, x_j)\right].
+}
+{G} is SPSD and depends only on the kernel and manifold geometry not the labels.
+
+Since {\hat{f}(x) = k(x)^\top \alpha} with {\alpha = K^{-1} y}, we can write {\nabla_\perp \hat{f}(x) = J(x)\alpha}, so that
+{
+    \Gamma_N = \mathbb{E}_{x \sim \mu}\!\left[\|J(x)\alpha\|^2\right] = \alpha^\top G \alpha.
+}
+
+Taking expectation over the label noise with {f^* \equiv 0} (pure noise labels, the worst case for overfitting):
+
+example:
+title: Trace Formula for Expected Normal Gradient Energy;
+content: {
+For the ridgeless minimum-norm interpolant with pure noise labels {y = \epsilon \sim \mathcal{N}(0, \sigma^2 I)},
+{
+    \mathbb{E}_\epsilon[\Gamma_N] = \sigma^2\,\operatorname{Tr}\!\left[K^{-1} G K^{-1}\right].
+}
+};
+end example;
+
+The proof is immediate: substituting {\alpha = K^{-1}\epsilon} into {\Gamma_N = \alpha^\top G \alpha} gives {\epsilon^\top K^{-1} G K^{-1} \epsilon}, and the Gaussian quadratic form identity {\mathbb{E}[\epsilon^\top A \epsilon] = \sigma^2 \operatorname{Tr}(A)} yields the result.
+
+## Phase Transition
+
+If {G} and {K} are simultaneously diagonalizable[^5] with eigenvalues {\{\gamma_j\}} and {\{\lambda_j\}} in a shared basis, the trace formula reduces to:
+{
+    \mathbb{E}_\epsilon[\Gamma_N] = \sigma^2 \sum_{j=1}^n \frac{\gamma_j}{\lambda_j^2}.
+}
+
+For translation-invariant kernels on homogeneous manifolds, we pass to a continuum approximation indexed by spatial frequencies {q \in \mathbb{R}^d}:
+{
+    \lambda(q) \approx \widehat{k}(q), \qquad \gamma(q) \approx \|P_\perp q\|^2\,\widehat{k}(q).
+}
+
+The normal gradient contributes an extra factor of {q^2} (from differentiation) relative to the kernel eigenvalues. For the Laplace kernel[^6] {k(x, x') = \exp(-\|x - x'\|/\ell)}, whose spectrum satisfies {\widehat{k}(q) \asymp (1 + \ell^2 q^2)^{-(d+1)/2}}, the normal gradient energy becomes:
+{
+    \Gamma_N \asymp \int_{q_{\min}}^{q_{\max}} q^{d+1}\,(1 + \ell^2 q^2)^{-2}\,dq,
+}
+where {q_{\min} \sim n^{-1/d}} and {q_{\max} \sim n^{1/d}} are the data-supported frequency extremes.[^7]
+
+At high frequencies, the integrand behaves as {q^{d-3}}, and the integral diverges if and only if {d - 3 > -1}, i.e., **{d > 2}**. Evaluating:
+
+example:
+title: Normal Gradient Energy Scaling (Laplace Kernel);
+content: {
+{
+    \Gamma_N \asymp \begin{cases} O(1), & d \lt 2, \\ O(\log n), & d = 2, \\ O(n^{(d-2)/d}), & d > 2. \end{cases}
+}
+The critical dimension is {d = 2}. Below it, normal gradient energy stays bounded as {n \to \infty}. Above it, it grows polynomially in sample size.
+
+image:
+src: scaling_law.png;
+alt: Empirical scaling-law verification for normal gradient energy across manifold dimensions;
+width: 90%;
+caption: Empirical scaling of {\Gamma_N} vs. {n}: bounded for {d \lt 2}, logarithmic at {d = 2}, and polynomial for {d \gt 2}.;
+end image;
+};
+end example;
+
+Intuitively, as {n} increases, the accessible frequency range grows (more data resolves finer structure). The normal gradient operator amplifies high frequencies by {q^2}. When {d > 2}, the Laplace kernel's spectral decay is not fast enough to counteract this, and normal gradient energy diverges.
+
+## Where the Noise Goes
+
+This gives a precise answer to the original question. When the interpolant fits noisy labels:
+
+list[u]:
+- Along the manifold, it is smooth -- the kernel suppresses high-frequency tangential oscillations, so test MSE (a tangential quantity) stays controlled.
+- Off the manifold, it oscillates wildly -- all the noise energy is encoded in the normal gradient, which grows without bound when {d > 2}.
+end list;
+
+Concretely: the function values {\hat{f}(x)} remain {O(1)}, the RKHS norm stays finite, and the interpolant fits the data exactly -- yet the normal gradient blows up. The noise is not "gone"; it is pushed into the geometry perpendicular to the data manifold.
+
+A useful way to see this involves the inter-point spacing {\delta_n \sim n^{-1/d}} and the *screening length*[^8] {\xi_n \sim n^{-1/(d+1)}} of the equivalent kernel. Since
+{
+    \frac{\xi_n}{\delta_n} \asymp n^{1/(d(d+1))} \longrightarrow \infty,
+}
+the equivalent kernel actually gets *wider* relative to inter-point spacing as {n \to \infty}. The interpolant is not building sharper spikes around each training point -- it is becoming more spread out. The divergence in {\Gamma_N} is therefore driven by *amplitude growth* in the normal direction, not spike sharpening in the tangential one.
+
+## Adversarial Robustness
+
+The divergence of {\Gamma_N} has a direct consequence for adversarial robustness. For a point {x \in \mathcal{M}} and an off-manifold perturbation {\delta \in N_x\mathcal{M}}, a first-order Taylor expansion gives:
+{
+    \hat{f}(x + \delta) \approx \hat{f}(x) + \nabla_\perp \hat{f}(x) \cdot \delta.
+}
+The minimal-norm perturbation that flips the prediction is:
+{
+    \delta^*(x) = -\frac{\hat{f}(x)}{\|\nabla_\perp \hat{f}(x)\|^2}\,\nabla_\perp \hat{f}(x),
+}
+with magnitude (the adversarial margin):
+{
+    R_\perp(x) \approx \frac{|\hat{f}(x)|}{\|\nabla_\perp \hat{f}(x)\|}.
+}
+
+Since {\hat{f}(x) = O(1)} while {\|\nabla_\perp \hat{f}(x)\| \asymp \Gamma_N^{1/2}}, the margin scales as {\Gamma_N^{-1/2}}:
+
+example:
+title: Adversarial Margin Scaling;
+content: {
+For the minimum-norm Laplace kernel interpolant on a {d}-dimensional manifold,
+{
+    \mathbb{E}[R_\perp(x)] \;\asymp\; \begin{cases} O(1), & d \lt 2, \\ O((\log n)^{-1/2}), & d = 2, \\ O\!\left(n^{-(d-2)/(2d)}\right), & d > 2. \end{cases}
+}
+For {d > 2}, the adversarial margin vanishes polynomially in sample size.
+};
+end example;
+
+Interestingly, **more data makes the model less robust** (for {d > 2}) -- adding more data increases the spectral bandwidth of the interpolant, amplifies the normal gradients, and shrinks the adversarial margin.
+
+## Back to Benign Overfitting
+
+This is complementary to the classical benign overfitting theory. For the Laplace kernel:
+
+list[u]:
+- Test MSE remains stable even for pure noise labels.
+- Bias and variance stay controlled.
+- The function is smooth along the manifold.
+end list;
+
+Yet robustness collapses as {n} increases for {d > 2}. This is not a contradiction -- it reflects the fact that generalization and robustness are fundamentally different geometric properties:
+{
+    \text{Generalization} \equiv \text{tangential gradient}, \qquad \text{Robustness} \equiv \text{normal gradient}.
+}
+
+## Phase Diagram
+
+Define the geometric instability ratio
+{
+    \rho^2 \doteq \frac{\Gamma_N}{\Gamma_T},
+}
+where {\Gamma_T = \mathbb{E}_{x \sim \mu}[\|\nabla_T \hat{f}(x)\|^2]} is the tangential gradient energy. As {n \to \infty}:
+
+list[u]:
+- {d \lt 2}: {\rho^2 \to 0} -- geometrically benign.
+- {d = 2}: {\rho^2 \sim \log n} -- tempered, slow logarithmic growth.
+- {d \gt 2}: {\rho^2 \sim n^{(d-2)/d}} -- geometric catastrophe, normal gradients dominate.
+end list;
+
+(Here we have borrowed Mallinar et al.'s terminology.)
+
+image:
+src: phase_diagram.png;
+alt: Phase diagram for geometric instability across intrinsic dimension regimes;
+width: 90%;
+caption: Geometric phase diagram across intrinsic dimension: benign for {d \lt 2}, tempered at {d = 2}, and catastrophic for {d \gt 2}.;
+end image;
+
+The same critical dimension {d = 2} governs the divergence of {\Gamma_N}, the spectral accumulation of high-frequency modes, and the vanishing of the adversarial margin {R_\perp}. This is not a coincidence -- all three are manifestations of the same spectral phase transition.
+
+## TL;DR
+
+The noise goes off-manifold. When a minimum-norm interpolant fits noisy labels, it preserves smoothness along the data manifold (enabling generalization) at the cost of encoding all the noise energy in the normal gradient (destroying robustness). In high intrinsic dimensions, this tradeoff is unavoidable: the geometry of kernel spaces forces noise into normal directions, and those directions grow increasingly unstable with more data.
+
+Overfitting is geometrically benign only when {d \lt 2}, which is quite restrictive in practice. For data on manifolds of moderate intrinsic dimension, interpolation will generalize but degrade adversarially with sample size -- regardless of how much data you add.
+
+[^1]: Mallinar et al. distinguish three overfitting regimes for kernel interpolants: benign (memorizes noise but generalizes well), tempered (some degradation, but test error is bounded away from the trivial predictor), and catastrophic (test error is as bad as a trivial predictor). Their taxonomy is based on the scaling of bias and variance with sample size.
+
+[^2]: This is also treated in a [final project I did for Ben Recht's statistical learning theory course](/projects/281A_Project.pdf), which was largely motivated by this paper.
+
+[^3]: The minimum-norm interpolant is the limit of kernel ridge regression as the regularization parameter \(\lambda \to 0\). It is the unique function in the RKHS \(\mathcal{H}_k\) with minimum RKHS norm that interpolates the training data.
+
+[^4]: This is a defining property of manifolds in differential geometry.
+
+[^5]: Simultaneous diagonalizability of \(G\) and \(K\) is guaranteed for translation-invariant kernels on homogeneous manifolds, where both matrices commute in the Fourier basis. The spectral decomposition then cleanly separates across frequency modes.
+
+[^6]: In fact, the logic we use makes no special use of the Laplace kernel, we only use the general structure, so this same logic should extend to any Matérn kernel (the Laplace is an instance of this with \(\nu = 1/2\)).
+
+[^7]: The limits of the integral are actaully borrowed from the ultraviolet and infrared cutoffs in physics; Itzykson and Drouffe's *Statistical Field Theory* covers this in far more detail -- just something I thought was worth noting.
+
+[^8]: The screening length {\xi_n \sim n^{-1/(d+1)}} comes from the self-consistency equation for the Laplace RKHS equivalent kernel: {(-\Delta + \mu^2)^{(d+1)/2} h(x, x_i) = \delta(x - x_i)}, where the screening parameter satisfies {\mu^{d+1} \asymp \rho = n/V}, with {V} the volume of the manifold.

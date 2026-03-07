@@ -77,7 +77,7 @@
 <h3>Setup</h3>
 <p>Let's assume we wish to solve a problem of the form \begin{equation} \min_{f \in \mathcal{H}} \sum_{i=1}^n L(y_i, f(x_i)) + \lambda \norm{f}^2_\mathcal{H}. \end{equation} Here, \(\mathcal{H}\) is a reproducing kernel Hilbert space with kernel \(K\), \(\{(x_i, y_i)\}_{i=1}^n\) are our training data, \(L: \mathbb{R} \times \mathbb{R} \to \mathbb{R}\) is a loss function, and \(\lambda > 0\) is a regularization parameter penalizing the complexity of the function \(f\).</p>
 <h3>Statement</h3>
-<p>Let \(\mathcal{H}\) be a reproducing kernel hilbert space with kernel \(K\) and suppose the objective depends on \(f\) only via its evaluations at the training points and its RKHS norm. Then, any minimizer \(f^<em> \in \mathcal\(H\)\) can be represented in the form \begin\(equation\) f^</em> = \sum_\(i=1\)^n \alpha_i K(x_i, x) \end\(equation\) for coefficients \(\alpha_1, \dots, \alpha_n \in \mathbb{R}\). Even though \(\mathcal{H}\) may be an infinite dimensional space of functions, the optimal solution lies in the finite-dimensional subspace spanned by the kernel functions centered at the training data: \(\{K(x_i, \cdot)\}_{i=1}^n\). Thus, instead of searching over all function space, we need only search over the \(n\) coefficients \(\alpha_1, \dots, \alpha_n\), and we have reduced an infinite dimensional problem into a finite dimensional one.</p>
+<p>Let \(\mathcal{H}\) be a reproducing kernel hilbert space with kernel \(K\) and suppose the objective depends on \(f\) only via its evaluations at the training points and its RKHS norm. Then, any minimizer \(f^<em> \in \mathcal{H}\) can be represented in the form \begin{equation} f^</em> = \sum_{i=1}^n \alpha_i K(x_i, x) \end{equation} for coefficients \(\alpha_1, \dots, \alpha_n \in \mathbb{R}\). Even though \(\mathcal{H}\) may be an infinite dimensional space of functions, the optimal solution lies in the finite-dimensional subspace spanned by the kernel functions centered at the training data: \(\{K(x_i, \cdot)\}_{i=1}^n\). Thus, instead of searching over all function space, we need only search over the \(n\) coefficients \(\alpha_1, \dots, \alpha_n\), and we have reduced an infinite dimensional problem into a finite dimensional one.</p>
 <h3>Proof</h3>
 <p>Let \(\mathcal{H}_0 \doteq \operatorname{span}\{K(x_1, \cdot), \dots, K(x_n, \cdot)\} \subseteq \mathcal{H}\) a finite dimensional subspace of \(\mathcal{H}\). Since \(\mathcal{H}\) is a Hilbert space, we can uniquely decompose any function \(f \in \mathcal{H}\) as \begin{equation} f = f_0 + f_\perp, \end{equation} where \(f_0 \in \mathcal{H}_0\) and \(f_\perp \in \mathcal{H}_0^\perp\).</p>
 <p>Recall the reproducing property: \begin{equation} f(x_i) = \langle f, K(x_i, \cdot)\rangle_\mathcal{H} = \langle f_0, K(x_i, \cdot)\rangle + \langle f_\perp, K(x_i, \cdot)\rangle \end{equation} where the second equality follows from the decomposition of \(f\) above. Since \(f_\perp \in \mathcal{H}_0^\perp\) and \(K(x_i, \cdot) \in \mathcal{H}_0\), we have \(\langle f_\perp, K(x_i, \cdot)\rangle = 0\), so \begin{equation} f(x_i) = \langle f_0, K(x_i, \cdot)\rangle, \end{equation} i.e. the evaluation of \(f\) at the data points depend only on \(f_0\).</p>
@@ -130,7 +130,7 @@ as desired.
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled Feb 13, 2026 at 23:37 | <a href="../src/rkhs.mdtx" target="_blank">Source</a></p>
+            <p>Compiled Mar 07, 2026 at 00:31 | <a href="../src/rkhs.mdtx" target="_blank">Source</a></p>
         </div>
     </footer>
 

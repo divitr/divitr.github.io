@@ -1,17 +1,27 @@
 function initTOC() {
-    function truncateText(text, maxLength = 20) {
-        return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
-    }
-
     function createIdFromText(text) {
         return text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     }
 
-    function getHeadingHTML(element) {
-        // Clone the element to avoid modifying the original
-        const clone = element.cloneNode(true);
-        // Return innerHTML to preserve LaTeX markup
-        return clone.innerHTML;
+    // Set link content: use full innerHTML (with math) when it fits;
+    // otherwise cut the raw text at a safe point — never mid-expression.
+    function setLinkContent(link, element, maxLength) {
+        const raw = element.textContent;
+        if (raw.length <= maxLength) {
+            link.innerHTML = element.cloneNode(true).innerHTML;
+            return;
+        }
+        // Find a cut point that doesn't land inside a \(...\) expression.
+        let cutAt = maxLength;
+        const mathStart = raw.lastIndexOf('\\(', cutAt - 1);
+        if (mathStart !== -1) {
+            const mathEnd = raw.indexOf('\\)', mathStart);
+            if (mathEnd === -1 || mathEnd >= cutAt) {
+                // Cut would fall mid-expression — back up to just before \(
+                cutAt = mathStart;
+            }
+        }
+        link.textContent = raw.slice(0, cutAt).trimEnd() + '…';
     }
 
     const tocContainer = document.createElement('div');
@@ -161,6 +171,15 @@ function initTOC() {
         tocMenu.classList.toggle('collapsed');
         tocContainer.classList.toggle('collapsed');
     });
+
+    // Smooth-scroll all TOC anchor clicks
+    tocMenu.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if (!a) return;
+        e.preventDefault();
+        const target = document.getElementById(a.getAttribute('href').slice(1));
+        if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: 'smooth' });
+    });
     
     const h2Elements = document.querySelectorAll('h2');
     const h3Elements = document.querySelectorAll('h3');
@@ -190,7 +209,7 @@ function initTOC() {
         const sectionLink = document.createElement('a');
         sectionLink.href = `#${h2.id}`;
         sectionLink.className = 'toc-section-title';
-        sectionLink.innerHTML = truncateText(getHeadingHTML(h2), 25);
+        setLinkContent(sectionLink, h2, 25);
 
         const subsectionsContainer = document.createElement('div');
         subsectionsContainer.className = 'toc-subsections';
@@ -208,7 +227,7 @@ function initTOC() {
             const subsectionLink = document.createElement('a');
             subsectionLink.href = `#${h3.id}`;
             subsectionLink.className = 'toc-subsection-title';
-            subsectionLink.innerHTML = truncateText(getHeadingHTML(h3), 25);
+            setLinkContent(subsectionLink, h3, 25);
 
             const subsectionElement = document.createElement('div');
             subsectionElement.className = 'toc-subsection';
@@ -287,10 +306,20 @@ function initTOC() {
     window.addEventListener('scroll', highlightCurrentSection);
     window.addEventListener('resize', highlightCurrentSection);
 
-    // Trigger MathJax to render TOC content if available
-    if (window.MathJax && window.MathJax.typesetPromise) {
-        MathJax.typesetPromise([tocContainer]).catch((err) => console.log('MathJax TOC error:', err));
+    // Typeset TOC math after MathJax finishes its initial page render.
+    // MathJax is loaded async so we poll for startup.promise.
+    let _attempts = 0;
+    function _tryTypesetTOC() {
+        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+            window.MathJax.startup.promise.then(() => {
+                MathJax.typesetPromise([tocContainer]).catch(err => console.log('MathJax TOC error:', err));
+            });
+        } else if (_attempts < 30) {
+            _attempts++;
+            setTimeout(_tryTypesetTOC, 100);
+        }
     }
+    _tryTypesetTOC();
 }
 
 // Initialize TOC after DOM loads (before MathJax renders)

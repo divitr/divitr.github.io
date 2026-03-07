@@ -1,5 +1,5 @@
 title: Not 24;
-date: Mar 01, 2026;
+date: Mar 07, 2026;
 desc: Unnecessary proofs;
 emoji: 🔟;
 tags: misc, math;
@@ -146,7 +146,10 @@ A direct check shows this set does not contain {10}, {-10}, or {100}. Hence the 
 
 In this shape, the binary root is {7 \circ T} or {T \circ 7}. To have the binary root in {\{10,-10,100\}}, {T} must satisfy one of finitely many equations, giving the forced target set
 {
-\mathcal{T} \doteq \{3,\ -3,\ 17,\ -17,\ 93,\ -93,\ 107,\ 10/7,\ -10/7,\ 100/7,\ -100/7,\ 7/10,\ -7/10,\ 7/100,\ -7/100,\ 70,\ -70,\ 700,\ -700\}.
+\begin{aligned}
+\mathcal{T} \doteq \{&3,\ -3,\ 17,\ -17,\ 93,\ -93,\ 107,\ 10/7,\ -10/7,\ 100/7,\\
+&-100/7,\ 7/10,\ -7/10,\ 7/100,\ -7/100,\ 70,\ -70,\ 700,\ -700\}.
+\end{aligned}
 }
 (These come from solving {7 \circ T = y} and {T \circ 7 = y} for {y \in \{10,-10,100\}} and {\circ \in \{+,-,\times,\cdot/\cdot\}}.)
 
@@ -530,9 +533,33 @@ end list;
 If {D} is supported on at most two values, then lem@two-value-9 applies and we are done. So it remains only to handle the seven explicit multi-value supports.
 
 **Support {\{1,2,6\}}**
+Let {(a,b,c)} denote multiplicities of {(1,2,6)}, so {a+b+c=9}.
+list[u]:
+- If {a \ge 4}, use
 {
-10 = 6 + 2^2.
+10 = (1+1+1)^2 + 1.
 }
+- Else if {b \ge 4}, use
+{
+10 = 2\cdot2\cdot2+2.
+}
+- Else if {b \ge 2} and {c \ge 1}, use
+{
+10 = 6+2^2.
+}
+- Else if {b=1} and {a \ge 2}, use
+{
+10 = (2+1)^2+1.
+}
+- Else if {a \ge 1} and {c \ge 4}, use
+{
+10 = 1+\left(\frac{6+6+6}{6}\right)^2.
+}
+- Otherwise {c \ge 6}, so use
+{
+10 = \left(\frac{6+6}{6}\right)^2+6.
+}
+end list;
 
 **Support {\{1,5,6\}}**
 list[u]:
@@ -621,6 +648,241 @@ Let {R} be any expression using all remaining unused digits of {D} exactly once 
 T + Z \cdot R = 10
 }
 uses every digit exactly once and evaluates to {10}.
+end proof;
+
+## \(k \le 9\) (Mar 07)
+
+claim[k9][Achievability for {k \ge 9}]:
+For every {k \ge 9} and every multiset {D \subset [9]^k}, there exists a valid expression using each digit exactly once that evaluates to {10}.
+end claim;
+
+The {k \le 11} argument leaves two digits to manufacture {Z=e-e=0} and then searches for a 9-digit {10}-kernel. We can push that architecture one step further by proving a 7-digit kernel.
+
+lemma[unitpair-5-no39][Unit pair from 5 digits when {3,9} are absent]:
+If {E \subset [9]^5} and {3,9 \notin E}, then {E} contains a unit-producing pair.
+end lemma;
+
+proof[lem@unitpair-5-no39]:
+If some digit repeats, we have an equal pair {(i,i)} and therefore a unit pair.
+
+So assume all five digits are distinct. If two are adjacent, we are done. Hence assume no two are adjacent. Then the support is an independent 5-set in the path
+{
+1-2-\cdots-9.
+}
+But the unique independent 5-set in this path is
+{
+\{1,3,5,7,9\}.
+}
+Since {3,9 \notin E}, this is impossible. Therefore {E} must contain a unit pair.
+end proof;
+
+lemma[kernel-7][A 10-kernel from 7 digits]:
+For every multiset {D \subset [9]^7}, there exists a valid expression using some of the digits of {D} (each at most once) that evaluates to {10}.
+end lemma;
+
+For the case analysis below, it is convenient to fix a small kernel catalog:
+{
+\begin{aligned}
+K_1&=(1+1+1)^2+1,\\
+K_2&=2\cdot2\cdot2+2,\\
+K_4&=4+4+\frac{4+4}{4},\\
+K_6&=\left(\frac{6+6}{6}\right)^2+6,\\
+K_7&=\left(\frac{7+7+7}{7}\right)^2+\frac77,\\
+K_8&=8+\frac{8+8}{8}.
+\end{aligned}
+}
+and the mixed kernels:
+{
+\begin{aligned}
+4+4+2&=10,\qquad
+8+\frac84=10,\qquad
+6+2^2=10,\qquad
+(2+1)^2+1=10,\\
+6+(5-1)&=10,\qquad
+6+(7-5)^2=10,\qquad
+7+1+1+1=10,\qquad
+7+5-(1+1)=10,\\
+1+\left(\frac{6+6+6}{6}\right)^2&=10,\qquad
+1+\left(\frac{7+7+7}{7}\right)^2=10,\qquad
+7+\frac{6+6+6}{6}=10,\\
+8+\frac{7+7}{7}&=10,\qquad
+(8-6)^2+6=10,\qquad
+6+6-\frac{7+7}{7}=10,\qquad
+7+(7-6)^2+(1+1)=10.
+\end{aligned}
+}
+We will explicitly track multiplicity thresholds against the number of digit occurrences each displayed kernel consumes.
+
+lemma[star1-support24][Family kernel lemma {\star_1}: support inside {\{2,4\}}]:
+If {D \subset [9]^7} and {\operatorname{supp}(D)\subseteq \{2,4\}}, then {D} contains a {10}-kernel.
+end lemma;
+
+proof[lem@star1-support24]:
+Let {(c_2,c_4)} be multiplicities with {c_2+c_4=7}.
+list[u]:
+- If {c_2\ge 4}, use {K_2}.
+- Else {c_2\le 3}, so {c_4\ge 4}.
+- If {c_2=0}, then {c_4=7}; use {K_4}.
+- If {c_2\ge 1}, then {c_4\ge 2}; use {4+4+2=10}.
+end list;
+end proof;
+
+lemma[star2-support48][Family kernel lemma {\star_2}: support inside {\{4,8\}}]:
+If {D \subset [9]^7} and {\operatorname{supp}(D)\subseteq \{4,8\}}, then {D} contains a {10}-kernel.
+end lemma;
+
+proof[lem@star2-support48]:
+Let {(c_4,c_8)} be multiplicities with {c_4+c_8=7}.
+list[u]:
+- If {c_8\ge 2} and {c_4\ge 1}, use {8+\frac84=10}.
+- Else if {c_8\le 1}, then {c_4\ge 6}; use {K_4}.
+- Else {c_8\ge 2} and {c_4=0}, hence {c_8=7}; use {K_8}.
+end list;
+end proof;
+
+lemma[star3-support126][Family kernel lemma {\star_3}: support inside {\{1,2,6\}}]:
+If {D \subset [9]^7} and {\operatorname{supp}(D)\subseteq \{1,2,6\}}, then {D} contains a {10}-kernel.
+end lemma;
+
+proof[lem@star3-support126]:
+Let {(a,b,c)} be multiplicities of {(1,2,6)} with {a+b+c=7}.
+list[u]:
+- If {a\ge 4}, use {K_1}.
+- Else if {b\ge 4}, use {K_2}.
+- Else if {b\ge 2} and {c\ge 1}, use {6+2^2=10}.
+- Else if {b=1} and {a\ge 2}, use {(2+1)^2+1=10}.
+- Else if {a\ge 1} and {c\ge 4}, use {1+\left(\frac{6+6+6}{6}\right)^2=10}.
+- Otherwise {c\ge 6}, so use {K_6}.
+end list;
+end proof;
+
+lemma[star4-support678][Family kernel lemma {\star_4}: support inside {\{6,7,8\}}]:
+If {D \subset [9]^7} and {\operatorname{supp}(D)\subseteq \{6,7,8\}}, then {D} contains a {10}-kernel.
+end lemma;
+
+proof[lem@star4-support678]:
+Let {(c_6,c_7,c_8)} be multiplicities with {c_6+c_7+c_8=7}.
+
+If {c_8\ge 1}:
+list[u]:
+- If {c_8\ge 4}, use {K_8}.
+- Else if {c_7\ge 3}, use {8+\frac{7+7}{7}=10}.
+- Else {c_7\le 2}, so {c_6\ge 2}; use {(8-6)^2+6=10}.
+end list;
+
+If {c_8=0}, then {c_6+c_7=7}:
+list[u]:
+- If {c_7\ge 6}, use {K_7}.
+- Else if {c_7\ge 3}, then {c_6\ge 2}; use {6+6-\frac{7+7}{7}=10}.
+- Else if {c_7\ge 1}, then {c_6\ge 4}; use {7+\frac{6+6+6}{6}=10}.
+- Else {c_6=7}; use {K_6}.
+end list;
+end proof;
+
+lemma[star5-support1567][Family kernel lemma {\star_5}: support inside {\{1,5,6,7\}}]:
+If {D \subset [9]^7} and {\operatorname{supp}(D)\subseteq \{1,5,6,7\}}, then {D} contains a {10}-kernel.
+end lemma;
+
+proof[lem@star5-support1567]:
+Let {(a,b,c,d)} be multiplicities of {(1,5,6,7)} with
+{
+a+b+c+d=7.
+}
+
+If {b\ge 2}, use {5+5=10}. So assume {b\le 1}.
+
+**Case 1: {b=1}.**
+list[u]:
+- If {d\ge 5}, use {K_7}.
+- Else if {a\ge 1} and {c\ge 1}, use {6+(5-1)=10}.
+- Else if {c\ge 1} and {d\ge 1}, use {6+(7-5)^2=10}.
+- Else if {a\ge 2} and {d\ge 1}, use {7+5-(1+1)=10}.
+- The only remaining possibilities are pure supports {\{1,5\}} or {\{5,6\}}, so use {K_1} or {K_6}.
+end list;
+
+**Case 2: {b=0}.**
+Then {a+c+d=7}.
+list[u]:
+- If {a\ge 4}, use {K_1}.
+- Else if {d\ge 6}, use {K_7}.
+- Else if {a\ge 3} and {d\ge 1}, use {7+1+1+1=10}.
+- Else if {a\ge 1} and {c\ge 4}, use {1+\left(\frac{6+6+6}{6}\right)^2=10}.
+- Else if {a\ge 1} and {d\ge 4}, use {1+\left(\frac{7+7+7}{7}\right)^2=10}.
+- Else if {c\ge 4} and {d\ge 1}, use {7+\frac{6+6+6}{6}=10}.
+- Else if {c\ge 2} and {d\ge 3}, use {6+6-\frac{7+7}{7}=10}.
+- Else if {a\ge 2}, {c\ge 1}, and {d\ge 2}, use {7+(7-6)^2+(1+1)=10}.
+- Otherwise {c=7}, so use {K_6}.
+end list;
+end proof;
+
+proof[lem@kernel-7]:
+As in the {k \le 11} section, we use the identity {10=9+1} and seek a disjoint nine-gadget and unit pair.
+
+First remove immediate 2-leaf kernels:
+list[u]:
+- no complement-to-10 pair in {(1,9),(2,8),(3,7),(4,6)} occurs,
+- and {c_5 \le 1} (so no {5+5=10} kernel).
+end list;
+
+If {3 \in D} or {9 \in D}, we get a 1-leaf nine-gadget. Removing that one digit leaves 6 digits, and lem@unitpair-6 yields a disjoint unit pair. So in the reduced case:
+{
+3 \notin D \quad \text{and} \quad 9 \notin D.
+}
+
+Now consider 2-leaf nine-gadgets. If {D} contains any of
+{
+(1,8),(2,7),(4,5),(1,4),(4,7),(2,5),(5,8),
+}
+then removing that gadget leaves 5 digits. By {3,9 \notin D} and lem@unitpair-5-no39, those 5 digits contain a disjoint unit pair. Hence {10=9+1}.
+
+Therefore, in the hard case we may assume all those pairs are absent. Equivalently, the support is an independent set in the forbidden graph {H} on vertices
+{
+\{1,2,4,5,6,7,8\}
+}
+with forbidden edges
+{
+14,47,25,58,18,27,45,28,46.
+}
+The maximal independent sets of {H} are:
+{
+\{2,4\},\ \{4,8\},\ \{1,2,6\},\ \{6,7,8\},\ \{1,5,6,7\}.
+}
+Define
+{
+M_1=\{2,4\},\quad M_2=\{4,8\},\quad M_3=\{1,2,6\},\quad M_4=\{6,7,8\},\quad M_5=\{1,5,6,7\}.
+}
+Every reduced support {S} is an independent set of {H}, hence {S\subseteq M_i} for some {i\in\{1,\dots,5\}}. Therefore it is enough to prove, for each {i}, the stronger family statement:
+{
+(\star_i):\quad \text{every 7-digit multiset } D \text{ with } \operatorname{supp}(D)\subseteq M_i \text{ contains a 10-kernel.}
+}
+These are exactly lemmas lem@star1-support24 through lem@star5-support1567. Hence the hard case is solved, and every 7-digit multiset admits a {10}-kernel.
+end proof;
+
+We may now prove our original claim.
+
+proof[claim@k9]:
+Let {k \ge 9} and {D \subset [9]^k}.
+
+If some digit repeats, reserve two copies {(e,e)} and set
+{
+Z \doteq e-e=0.
+}
+Removing those two digits leaves {k-2 \ge 7} digits; pick any 7 of them and apply lem@kernel-7 to obtain a {10}-kernel {T}. Let {R} be any expression using all remaining unused digits exactly once. Then
+{
+T + Z\cdot R = 10
+}
+uses every digit exactly once.
+
+If no digit repeats and {\abs{D}=9}, then necessarily
+{
+D=\{1,2,3,4,5,6,7,8,9\},
+}
+and we have an explicit full-use expression:
+{
+1+2+3+4+5\bigl(9-8-(7-6)^2\bigr)=10.
+}
+
+Hence every 9-digit multiset is solvable, so {k \le 9}.
 end proof;
 
 [^1]: We exclude 0 by convention, it makes the problem unsolvable; given all 0s we can't ever reach 10.

@@ -132,8 +132,9 @@ class MDTXCompiler:
             return ""
         parts = ['<div class="footnotes">','<ol>']
         for i, t in fns.items():
-            # Process the footnote text for emphasis and other formatting
-            processed_text = self.apply_emphasis(t.strip())
+            processed_text = t.strip()
+            processed_text = self.replace_inline_math(processed_text)
+            processed_text = self.apply_emphasis(processed_text)
             parts.append(f'<li id="fn{i}">{processed_text} <a href="#fnref{i}" class="footnote-backref" aria-label="Back to reference">↩</a></li>')
         parts.append('</ol></div>')
         return "\n".join(parts)
@@ -170,10 +171,17 @@ class MDTXCompiler:
             # Strip any "imgs/" prefix since images are directly in the output directory
             if src.startswith('imgs/'):
                 src = src[5:]  # Remove "imgs/" prefix
-            
-            style = f' style="width:{width}"' if width else ''
-            img_html = f'<img src="{src}" alt="{alt}"{style}>'
-            return f'<figure>{img_html}<figcaption>{caption}</figcaption></figure>' if caption else img_html
+
+            inner_style = f' style="width:{width}"' if width else ''
+            img_html = f'<img src="{src}" alt="{alt}">'
+            caption_html = f'<figcaption>{caption}</figcaption>' if caption else ''
+            return (
+                f'<figure class="mdtx-figure">'
+                f'<div class="mdtx-figure-inner"{inner_style}>'
+                f'{img_html}{caption_html}'
+                f'</div>'
+                f'</figure>'
+            )
         return re.sub(r'image:\s*\n(.*?)\nend image;?', repl, text, flags=re.DOTALL)  # Make semicolon optional
 
     def process_example(self, text: str) -> str:
@@ -637,70 +645,77 @@ class MDTXCompiler:
         return pattern.sub(repl, text)
 
     def replace_display_math(self, text: str) -> str:
-        # Find { ... } blocks that span multiple lines and convert them to \begin{equation} ... \end{equation}
-        # Handle both standalone { ... } blocks and indented ones
+        # Find { ... } blocks that span multiple lines and convert them to \begin{equation} ... \end{equation}.
+        # Prepend \n so the pattern works even when { appears at the very start of the text.
+        text = '\n' + text
         pat = re.compile(
-            r'(.*?)\n\s*\{\s*\n'   # Any content ending with newline, then { on new line with optional whitespace and newline
-            r'([\s\S]*?)'          # Content (non-greedy)
-            r'\n\s*\}',            # Closing } on its own line with optional whitespace
-            re.MULTILINE | re.DOTALL
+            r'(.*?)\n[ \t]*\{[ \t]*\n'   # content up to newline, then { on its own line
+            r'([\s\S]*?)'                  # math content (non-greedy)
+            r'\n[ \t]*\}',                 # closing } on its own line
+            re.DOTALL
         )
         def sub(m):
-            # Keep the preceding content and wrap the math content in equation environment
             preceding = m.group(1)
             math_content = m.group(2)
             return f"{preceding}\n\\begin{{equation}}\n{math_content}\n\\end{{equation}}"
-        return pat.sub(sub, text)
+        result = pat.sub(sub, text)
+        # Strip the leading \n we added
+        if result.startswith('\n'):
+            result = result[1:]
+        return result
 
 
 
     def replace_inline_math(self, text: str) -> str:
-        # Preserve existing \( \) patterns as-is (they're already LaTeX verbatim)
-        # Only convert standalone {} patterns to inline math
-        
+        # Protect existing math blocks with placeholders before any splitting,
+        # so HTML-tag-like content inside equations (e.g. < and > in \cases)
+        # doesn't get treated as HTML tags and split the block.
+        protected = {}
+        _ctr = [0]
+
+        def _protect(m):
+            _ctr[0] += 1
+            key = f'__MATHBLOCK_{_ctr[0]}__'
+            protected[key] = m.group(0)
+            return key
+
+        # Protect display math blocks first
+        text = re.sub(r'\\begin\{equation\}[\s\S]*?\\end\{equation\}', _protect, text)
+        # Protect existing inline math \( ... \)
+        text = re.sub(r'\\\([\s\S]*?\\\)', _protect, text)
+
         def process_math_in_content(content: str) -> str:
-            # Process {} patterns in text content (not inside HTML tags or existing math)
             out, i, n = [], 0, len(content)
             while i < n:
-                # Skip existing math blocks
-                if content[i:i+2] == '\\(':
-                    # Find end of inline math
-                    end = content.find('\\)', i+2)
-                    if end != -1:
-                        out.append(content[i:end+2])
-                        i = end + 2
-                        continue
-                elif content[i:i+16] == '\\begin{equation}':
-                    # Find end of display math
-                    end = content.find('\\end{equation}', i+16)
-                    if end != -1:
-                        out.append(content[i:end+14])
-                        i = end + 14
-                        continue
-                elif content[i] == '{':
+                if content[i] == '{':
                     # Find matching closing brace, handling nested braces
-                    depth, j = 1, i+1
+                    depth, j = 1, i + 1
                     while j < n and depth > 0:
-                        if   content[j]=='{': depth += 1
-                        elif content[j]=='}': depth -= 1
+                        if   content[j] == '{': depth += 1
+                        elif content[j] == '}': depth -= 1
                         j += 1
                     if depth == 0:
                         inner = content[i+1:j-1]
-                        # Wrap in \( \) for inline math
                         out.append(f'\\({inner}\\)')
                         i = j
                         continue
                 out.append(content[i])
                 i += 1
-            return "".join(out)
-        
-        # Split text into HTML tags and content, only process content parts
+            return ''.join(out)
+
+        # Split by HTML tags and process only non-tag parts
         parts = re.split(r'(<[^>]*>)', text)
         for i in range(len(parts)):
-            if not parts[i].startswith('<'):  # Not an HTML tag
+            if not parts[i].startswith('<'):
                 parts[i] = process_math_in_content(parts[i])
-        
-        return "".join(parts)
+
+        text = ''.join(parts)
+
+        # Restore protected math blocks
+        for key, val in protected.items():
+            text = text.replace(key, val)
+
+        return text
 
     def process_headings(self, text: str) -> str:
         out = []
@@ -1011,9 +1026,10 @@ class MDTXCompiler:
         # Process inline math last (after display math and paragraphs)
         body = self.replace_inline_math(body)
 
-        # append footnotes
+        # append footnotes (restore URLs and math here since fn_html is built after body processing)
         fn_html = self.footnotes_html(fns)
         if fn_html:
+            fn_html = self.restore_urls_as_html(fn_html, url_map)
             body += "\n" + fn_html
 
         if reqs:
