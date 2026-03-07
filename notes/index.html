@@ -11,13 +11,43 @@
 
 <body>
     <div id="header-placeholder"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('notes-filter');
+            const noResults = document.getElementById('notes-no-results');
+            const sections = document.querySelectorAll('.notes-section');
+
+            input.addEventListener('input', function () {
+                const query = this.value.toLowerCase().trim();
+                let totalVisible = 0;
+
+                sections.forEach(section => {
+                    const items = section.querySelectorAll('.notes-item');
+                    let sectionVisible = 0;
+
+                    items.forEach(item => {
+                        const matches = item.textContent.toLowerCase().includes(query);
+                        item.style.display = matches ? '' : 'none';
+                        if (matches) sectionVisible++;
+                    });
+
+                    section.style.display = sectionVisible === 0 ? 'none' : '';
+                    totalVisible += sectionVisible;
+                });
+
+                noResults.style.display = totalVisible === 0 && query ? 'block' : 'none';
+            });
+        });
+    </script>
 
     <main>
         <h1>Notes</h1>
         <p>A collection of crib sheets and course notes.</p>
+        <input type="text" id="notes-filter" class="notes-filter" placeholder="search" autocomplete="off" spellcheck="false">
+
+        <p class="notes-no-results" id="notes-no-results">no results.</p>
 
         <section class="notes-section">
-            <h2>Berkeley</h2>
             <div class="notes-item">
                 <a href="/notes/210a.pdf" target="_blank" rel="noopener noreferrer">STAT 210A — Theoretical Statistics</a>
             </div>

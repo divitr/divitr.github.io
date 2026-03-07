@@ -230,6 +230,39 @@ a:hover {
 }
 
 /* Notes page styling */
+.notes-filter {
+    background: none;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    outline: none;
+    font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    padding: 0.2rem 0;
+    width: 120px;
+    transition: border-color 0.2s, width 0.3s ease;
+    display: block;
+    margin-top: 0.75rem;
+}
+
+.notes-filter::placeholder {
+    color: #bbb;
+    font-style: italic;
+}
+
+.notes-filter:focus {
+    border-color: #aaa;
+    width: 200px;
+}
+
+.notes-no-results {
+    color: #aaa;
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-top: 2rem;
+    display: none;
+}
+
 .notes-section {
     margin-top: 2rem;
 }
