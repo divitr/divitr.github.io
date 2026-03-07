@@ -507,7 +507,7 @@ sup a:hover {
     font-size: 0.8rem;
     color: #999;
     line-height: 1.45;
-    transition: color 0.2s ease, transform 0.3s ease, opacity 0.3s ease;
+    transition: color 0.2s ease, transform 0.3s ease, opacity 0.3s ease, top 0.25s ease;
 }
 
 .footnote-sidenote .sidenote-number {
@@ -529,7 +529,6 @@ sup a:hover {
     color: #666;
     transform: scale(1.03);
     transform-origin: top left;
-    transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .footnote-sidenote.highlighted .sidenote-number {
@@ -589,6 +588,51 @@ sup a:hover {
     .footnotes {
         font-size: 0.8rem;
     }
+}
+
+/* Tables */
+.mdtx-table-wrapper {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+.mdtx-table {
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--primary-color);
+    width: auto;
+    min-width: 50%;
+}
+
+.mdtx-table caption {
+    caption-side: bottom;
+    text-align: center;
+    color: #777;
+    font-size: 0.84rem;
+    font-style: italic;
+    margin-top: 0.55rem;
+    line-height: 1.4;
+}
+
+.mdtx-table th,
+.mdtx-table td {
+    padding: 0.45rem 1rem;
+    border-bottom: 1px solid #e8e8e8;
+    vertical-align: top;
+}
+
+.mdtx-table thead th {
+    font-weight: 600;
+    border-bottom: 1.5px solid #c0c0c0;
+}
+
+.mdtx-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.mdtx-table tr.mdtx-row-sep td {
+    border-top: 1px solid #d0d0d0;
 }
 
 /* For theorem, lemma, etc. */

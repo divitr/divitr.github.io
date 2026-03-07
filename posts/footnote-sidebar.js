@@ -8,6 +8,7 @@
 
     let sidenotes = [];
     let sidenoteItems = [];
+    let sidenoteItemsData = [];
     let sidenoteScrollListener = null;
     let hoverTooltip = null;
     let currentMode = null;
@@ -140,20 +141,27 @@
             }
         }
 
-        items.forEach(({ el, placedTop, ref }) => {
+        sidenoteItemsData = items.map(({ el, ref, naturalTop, placedTop }) => ({ el, ref, naturalTop, placedTop }));
+
+        items.forEach(({ el, placedTop, ref }, idx) => {
             el.style.top = `${placedTop}px`;
             el.style.left = `${leftPos}px`;
 
-            // Highlight sidenote on ref hover
-            ref.addEventListener('mouseenter', () => el.classList.add('highlighted'));
-            ref.addEventListener('mouseleave', () => el.classList.remove('highlighted'));
+            ref.addEventListener('mouseenter', () => {
+                el.classList.add('highlighted');
+                applyHoverPositions(idx);
+            });
+            ref.addEventListener('mouseleave', () => {
+                el.classList.remove('highlighted');
+                restorePlacedPositions();
+            });
         });
 
         if (window.MathJax && window.MathJax.typesetPromise) {
             MathJax.typesetPromise(items.map(i => i.el)).catch(err => console.log('MathJax sidenote error:', err));
         }
 
-        sidenotes = items.map(i => i.el);
+        sidenotes     = items.map(i => i.el);
         sidenoteItems = items.map(i => ({ el: i.el, ref: i.ref }));
 
         // Tuck sidenotes that overlap the back-to-top button
@@ -173,6 +181,36 @@
         sidenoteScrollListener();
     }
 
+    function applyHoverPositions(hoveredIdx) {
+        const items = sidenoteItemsData;
+        if (!items.length) return;
+
+        // Start from placed positions, then pin the hovered note at its natural position
+        const tops = items.map(it => it.placedTop);
+        tops[hoveredIdx] = items[hoveredIdx].naturalTop;
+
+        // Push notes below downward as needed
+        for (let i = hoveredIdx + 1; i < items.length; i++) {
+            const prevBottom = tops[i - 1] + items[i - 1].el.offsetHeight + MIN_GAP;
+            tops[i] = Math.max(items[i].naturalTop, prevBottom);
+        }
+
+        // Push notes above upward if they'd now overlap the hovered note
+        for (let i = hoveredIdx - 1; i >= 0; i--) {
+            const nextTop = tops[i + 1];
+            const myHeight = items[i].el.offsetHeight;
+            if (tops[i] + myHeight + MIN_GAP > nextTop) {
+                tops[i] = nextTop - myHeight - MIN_GAP;
+            }
+        }
+
+        items.forEach((item, i) => { item.el.style.top = `${tops[i]}px`; });
+    }
+
+    function restorePlacedPositions() {
+        sidenoteItemsData.forEach(item => { item.el.style.top = `${item.placedTop}px`; });
+    }
+
     function clearSidenotes() {
         if (sidenoteScrollListener) {
             window.removeEventListener('scroll', sidenoteScrollListener);
@@ -181,6 +219,7 @@
         sidenotes.forEach(el => el.remove());
         sidenotes = [];
         sidenoteItems = [];
+        sidenoteItemsData = [];
     }
 
     function setupHoverTooltips(data) {

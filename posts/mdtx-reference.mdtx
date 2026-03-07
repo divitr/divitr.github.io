@@ -225,6 +225,65 @@ c. Third item (gamma)
 
 **Note:** Lists must end with `end list;` for best results, though in example boxes the end marker can be omitted and the list will end at the next unindented content. Nested lists are supported using indentation.
 
+## Tables
+
+Tables use a LaTeX-inspired column spec and pipe-separated cells.
+
+### Syntax
+
+```
+table[col-spec][Optional Caption]:
+Header 1 | Header 2 | Header 3
+---
+Row A    | Row B     | Row C
+end table;
+```
+
+**Column spec** `[col-spec]`: a string of `l`, `c`, `r` (alignment) and `|` (column borders):
+list[u]:
+- `l` — left-align
+- `c` — center-align
+- `r` — right-align
+- `|` between columns — draw a vertical line between them
+- Leading `|` — left outer border; trailing `|` — right outer border
+end list;
+
+**Caption** `[Optional Caption]`: shown below the table in italics. Omit the bracket entirely to skip it.
+
+**Header separator** `---`: the first `---` marks the end of the header row(s). Rows above it become `<thead>` cells. If no `---` appears, the table has no header.
+
+**Row separators** `---`: any additional `---` after the header separator draws a horizontal line above the next row.
+
+### Examples
+
+No-border table with header:
+
+```
+table[l c r][Root-finding methods]:
+Method | Update Rule | Use case
+---
+Newton | {x - f(x)/f'(x)} | Fast near roots
+Bisection | {(a+b)/2} | Guaranteed convergence
+end table;
+```
+
+Full outer border and column dividers:
+
+```
+table[|l|c|r|]:
+Name | Score | Grade
+---
+Alice | 95 | A
+Bob   | 82 | B
+---
+Carol | 74 | C
+end table;
+```
+
+The second `---` above draws a line between Bob and Carol's rows. Any number of `---` separators can appear in the body.
+
+Cells fully support inline math `{...}`, **bold**, *italic*, `code`, and links. Display math blocks inside cells are not supported.
+
 ## Example Boxes
 
 Example boxes create highlighted content sections with titles:

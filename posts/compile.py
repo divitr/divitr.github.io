@@ -317,6 +317,7 @@ class MDTXCompiler:
         body = self.process_env_refs(body)    # resolve lem@id etc. while outer map is live
         body = self.process_environments(body)  # Recursive
         body = self.process_lists(body)
+        body = self.process_table(body)
         body = self.process_headings(body)
         body = self.replace_inline_math(body)
 
@@ -642,6 +643,110 @@ class MDTXCompiler:
                 att   = f' type="{parts[1]}"' if len(parts)==2 else ''
                 return f'<ol{att}>{lis}</ol>'
             return f'<ul>{lis}</ul>'
+        return pattern.sub(repl, text)
+
+    def _parse_col_spec(self, spec: str) -> list:
+        """Parse LaTeX-style column spec like 'l|c|r' or '|l|c|r|'.
+        Returns list of dicts with 'align', 'left_border', 'right_border'.
+        """
+        align_map = {'l': 'left', 'c': 'center', 'r': 'right'}
+        tokens = [c for c in spec.strip() if c in 'lcr|']
+        cols = []
+        for i, tok in enumerate(tokens):
+            if tok in 'lcr':
+                left_border = (i > 0 and tokens[i-1] == '|')
+                # right_border only for trailing | (not followed by another col)
+                right_border = (
+                    i + 1 < len(tokens) and tokens[i+1] == '|' and
+                    (i + 2 >= len(tokens) or tokens[i+2] not in 'lcr')
+                )
+                cols.append({
+                    'align': align_map[tok],
+                    'left_border': left_border,
+                    'right_border': right_border,
+                })
+        return cols
+
+    def process_table(self, text: str) -> str:
+        pattern = re.compile(
+            r'table\[([^\]]+)\](?:\[([^\]]*)\])?:\s*\n'
+            r'([\s\S]*?)'
+            r'\nend table;?',
+            re.DOTALL
+        )
+
+        def repl(m):
+            col_spec_str = m.group(1).strip()
+            caption      = (m.group(2) or '').strip()
+            content      = m.group(3)
+
+            cols = self._parse_col_spec(col_spec_str)
+
+            # Parse lines into ('row', [cells]) or ('sep',)
+            elements = []
+            for line in content.split('\n'):
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                if re.match(r'^-{3,}$', stripped):
+                    elements.append(('sep',))
+                else:
+                    cells = [c.strip() for c in stripped.split('|')]
+                    elements.append(('row', cells))
+
+            # Rows before first '---' are header; rest are body
+            header_rows, body_elements = [], []
+            found_sep = False
+            for el in elements:
+                if not found_sep:
+                    if el[0] == 'sep':
+                        found_sep = True
+                    else:
+                        header_rows.append(el[1])
+                else:
+                    body_elements.append(el)
+            if not found_sep:
+                body_elements = elements
+
+            def cell_style(col_idx):
+                if col_idx >= len(cols):
+                    return ''
+                col = cols[col_idx]
+                styles = [f'text-align: {col["align"]}']
+                if col['left_border']:
+                    styles.append('border-left: 1px solid #d0d0d0')
+                if col['right_border']:
+                    styles.append('border-right: 1px solid #d0d0d0')
+                return f' style="{"; ".join(styles)}"'
+
+            def render_cell(content, tag, col_idx):
+                return f'<{tag}{cell_style(col_idx)}>{content}</{tag}>'
+
+            html = ['<div class="mdtx-table-wrapper"><table class="mdtx-table">']
+
+            if caption:
+                html.append(f'<caption>{caption}</caption>')
+
+            if header_rows:
+                html.append('<thead>')
+                for row in header_rows:
+                    html.append('<tr>' + ''.join(render_cell(c, 'th', i) for i, c in enumerate(row)) + '</tr>')
+                html.append('</thead>')
+
+            html.append('<tbody>')
+            prev_sep = False
+            for el in body_elements:
+                if el[0] == 'sep':
+                    prev_sep = True
+                else:
+                    row = el[1]
+                    row_class = ' class="mdtx-row-sep"' if prev_sep else ''
+                    html.append(f'<tr{row_class}>' + ''.join(render_cell(c, 'td', i) for i, c in enumerate(row)) + '</tr>')
+                    prev_sep = False
+            html.append('</tbody>')
+            html.append('</table></div>')
+            return '\n'.join(html)
+
         return pattern.sub(repl, text)
 
     def replace_display_math(self, text: str) -> str:
@@ -1011,8 +1116,9 @@ class MDTXCompiler:
         body = self.process_environments(body)
         body = self.process_env_refs(body)    # resolve lem@id, thm@id, etc.
         body = self.process_lists(body)
+        body = self.process_table(body)
         body = self.process_headings(body)
-        
+
 
         # Process footnotes
         body = self.replace_footrefs(body, fns)
