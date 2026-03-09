@@ -238,6 +238,7 @@ class MDTXCompiler:
             body = self.replace_display_math(body)  # Process display math first
             body = self.replace_inline_math(body)  # Process inline math
             body = self.process_image(body)
+            body = self.process_table(body)
             body = self.process_lists_in_example(body)  # Special list processing for example boxes
             body = self.apply_emphasis(body)  # Process emphasis last
             

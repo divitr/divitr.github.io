@@ -10,6 +10,7 @@
     <script src="../header.js"></script>
     <script id="MathJax-script" async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="constellation.js" defer></script>
 </head>
 
 <body>
@@ -17,7 +18,7 @@
 
     <main>
         <h1>Posts</h1>
-        <p>A collection of thoughts, notes, and small projects, updated infrequently. This page is mostly kept updated for my own reference (mostly to keep track of my interests, which change pretty frequently), but hopefully some of the posts are interesting to others.</p>
+        <p>A collection of thoughts, notes, and small projects, updated infrequently. This page is mostly kept updated for my own reference, but hopefully some of the posts are interesting to others.</p>
 
         <section class="blog-posts">
             <div class="tag-filters">
@@ -27,6 +28,14 @@
                 <button class="tag-filter" data-filter="math">math</button>
                 <button class="tag-filter" data-filter="ml">ml</button>
                 <button class="tag-filter" data-filter="misc">misc</button>
+                <button class="viz-btn" id="viz-toggle">🐧</button>
+            </div>
+
+            <div id="constellation-container" style="display:none;position:relative;margin:1.2rem 0 0;padding-bottom:1.5rem;border-bottom:1px solid #eee">
+                <div id="constellation-status"
+                     style="color:#aaa;font-size:0.83rem;padding:2rem 0;text-align:center"></div>
+                <div id="constellation-tooltip" class="constellation-tooltip"></div>
+                <div id="constellation-svg"></div>
             </div>
             <div class="blog-post-item" data-tags="misc, math" data-emoji="🔟">
                 <span class="post-date">Mar 07, 2026</span>

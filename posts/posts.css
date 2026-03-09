@@ -1,3 +1,82 @@
+/* Visualize toggle button — matches tag-filter look but excluded from filter logic */
+.viz-btn {
+    padding: 0.3rem 0.5rem;
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    color: #999;
+    margin-left: auto;
+    white-space: nowrap;
+}
+.viz-btn:hover  { color: var(--primary-color); }
+.viz-btn.active { color: #555; font-weight: 525; }
+
+/* Constellation image caption — matches post figcaption style */
+.constellation-caption {
+    text-align: center;
+    color: #777;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    font-style: italic;
+    margin-top: 0.55rem;
+    margin-bottom: 0;
+}
+
+/* Constellation tooltip */
+.constellation-tooltip {
+    position: absolute;
+    z-index: 20;
+    max-width: 240px;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
+    box-shadow: none;
+    outline: none;
+    border-radius: 4px;
+    isolation: isolate;
+    padding: 0.75rem 1rem;
+    font-family: Charter, 'Bitstream Charter', Cambria, Georgia, serif;
+    font-size: 0.85rem;
+    color: #4a4a4a;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    line-height: 1.4;
+}
+
+.constellation-tooltip::before {
+    content: "";
+    position: absolute;
+    inset: -16px;
+    border-radius: 10px;
+    background: rgba(250, 250, 250, 0.14);
+    backdrop-filter: blur(8px) saturate(1.02);
+    -webkit-backdrop-filter: blur(8px) saturate(1.02);
+    -webkit-mask-image: radial-gradient(ellipse 125% 112% at 50% 50%,
+        rgba(0, 0, 0, 0.82) 36%,
+        rgba(0, 0, 0, 0.48) 62%,
+        rgba(0, 0, 0, 0.2) 80%,
+        rgba(0, 0, 0, 0.06) 90%,
+        transparent 98%);
+    mask-image: radial-gradient(ellipse 125% 112% at 50% 50%,
+        rgba(0, 0, 0, 0.82) 36%,
+        rgba(0, 0, 0, 0.48) 62%,
+        rgba(0, 0, 0, 0.2) 80%,
+        rgba(0, 0, 0, 0.06) 90%,
+        transparent 98%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.constellation-tooltip > * {
+    position: relative;
+    z-index: 1;
+}
+
 /* Tag filter buttons */
 .tag-filters {
     display: flex;
