@@ -157,12 +157,24 @@
             });
         });
 
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            MathJax.typesetPromise(items.map(i => i.el)).catch(err => console.log('MathJax sidenote error:', err));
-        }
-
         sidenotes     = items.map(i => i.el);
         sidenoteItems = items.map(i => ({ el: i.el, ref: i.ref }));
+
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise(items.map(i => i.el)).then(() => {
+                // Re-resolve overlaps now that sidenote heights reflect rendered math
+                if (items.length > 0) {
+                    items[0].placedTop = items[0].naturalTop;
+                    for (let i = 1; i < items.length; i++) {
+                        const prev = items[i - 1];
+                        const prevBottom = prev.placedTop + prev.el.offsetHeight + MIN_GAP;
+                        items[i].placedTop = Math.max(items[i].naturalTop, prevBottom);
+                    }
+                }
+                sidenoteItemsData = items.map(({ el, ref, naturalTop, placedTop }) => ({ el, ref, naturalTop, placedTop }));
+                items.forEach(({ el, placedTop }) => { el.style.top = `${placedTop}px`; });
+            }).catch(err => console.log('MathJax sidenote error:', err));
+        }
 
         // Tuck sidenotes that overlap the back-to-top button
         if (sidenoteScrollListener) window.removeEventListener('scroll', sidenoteScrollListener);

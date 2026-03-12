@@ -5,6 +5,8 @@ emoji: 🔟;
 tags: misc, math;
 req: physics, mathtools;
 
+**[NOTE]** This post is especially long with a lot of proofs, to make reading easier proofs can be collapsed by clicking on the QED square at the bottom of the environment.
+
 ## Background
 
 Consider the following game, loosely inspired by [24](https://www.4nums.com). Let's say we have 4 people. Each person names a digit between 1 and 9 (inclusive)[^1]. Given only the operations {\{+, -, \times, \cdot / \cdot, \sqrt{\cdot}, (\cdot)^2 \}}[^2] (and of course parentheses to dictate order), and the constraint that each digit must be used *exactly* once, construct a valid equation that evaluates to 10. If a digit is named more than once, it must be used exactly as many times as it was named.

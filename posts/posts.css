@@ -5,6 +5,10 @@
     border: none;
     font-size: 0.9rem;
     font-family: inherit;
+    line-height: 1;
+    min-height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
     cursor: pointer;
     transition: color 0.15s ease;
     color: #999;
@@ -12,7 +16,7 @@
     white-space: nowrap;
 }
 .viz-btn:hover  { color: var(--primary-color); }
-.viz-btn.active { color: #555; font-weight: 525; }
+.viz-btn.active { color: var(--primary-color); font-weight: 600; }
 
 /* Constellation image caption — matches post figcaption style */
 .constellation-caption {
@@ -507,6 +511,7 @@ footer a:hover {
 .image-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    justify-items: center;
     gap: 1rem;
     margin: 1rem 0;
 }
@@ -514,13 +519,29 @@ footer a:hover {
 .image-grid figure {
     margin: 0;
     text-align: center;
+    display: flex;
+    justify-content: center;
 }
 
+/* Reset mdtx-figure flex layout so images center correctly in grid cells */
+.image-grid figure.mdtx-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+}
+
+.image-grid .mdtx-figure-inner {
+    display: block;
+    width: 100%;
+}
+
+.image-grid figure.mdtx-figure img,
 .image-grid img {
-    max-height: 400px;
-    height: auto;
+    width: auto;
+    height: 320px;
     border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
 }
 
 .image-grid figcaption {

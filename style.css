@@ -155,46 +155,34 @@ a:hover {
 
 .news {
     margin-bottom: 2rem;
-}
-
-.news h2 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-    color: var(--primary-color);
+    border-top: 1px solid #eee;
+    padding-top: 1.2rem;
 }
 
 .news-items {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
 }
 
 .news-item {
     display: flex;
     align-items: baseline;
-    padding: 0.4rem 0;
-    position: relative;
+    gap: 1rem;
+    padding: 0.2rem 0;
 }
 
 .news-date {
-    font-size: 0.85rem;
-    color: #888;
+    font-size: 0.82rem;
+    color: #aaa;
     flex-shrink: 0;
-    position: relative;
-    background-color: var(--background-color);
-    padding-right: 8px;
+    font-style: italic;
+    min-width: 4.5rem;
 }
 
 .news-content {
     font-size: 0.95rem;
     color: var(--primary-color);
-    margin-left: auto;
-    text-align: left;
-    position: relative;
-    background-color: var(--background-color);
-    padding-left: 8px;
-    flex-grow: 1;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .last-updated {
@@ -208,25 +196,23 @@ a:hover {
 }
 
 .news-controls {
-    margin-top: 1rem;
-    text-align: center;
+    margin-top: 0.5rem;
 }
 
 .news-btn {
     background: none;
     border: none;
-    color: #888;
+    color: #bbb;
     padding: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-style: italic;
     cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease;
     font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+    transition: color 0.2s;
 }
 
 .news-btn:hover {
-    color: #4a4a4a;
-    text-decoration: underline;
+    color: #888;
 }
 
 /* Notes page styling */
