@@ -41,14 +41,21 @@
 
   // ── Post extraction ───────────────────────────────────────────────────────────
 
+  function strippedText(el) {
+    if (!el) return '';
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.katex-mathml').forEach(e => e.remove());
+    return clone.textContent;
+  }
+
   function extractPosts() {
     return Array.from(document.querySelectorAll('.blog-post-item')).map(el => {
       const link = el.querySelector('h3 a');
       const href = link?.getAttribute('href') ?? '';
       return {
         slug:  href.replace(/^\/posts\//, '').replace(/\/$/, ''),
-        title: link?.textContent?.replace(/\s*\([^)]*\)\s*$/, '').trim() ?? '',
-        desc:  el.querySelector('.post-description')?.textContent?.trim() ?? '',
+        title: strippedText(link).replace(/\s*\([^)]*\)\s*$/, '').trim(),
+        desc:  strippedText(el.querySelector('.post-description')).trim(),
         date:  el.querySelector('.post-date')?.textContent?.trim() ?? '',
         tags:  (el.getAttribute('data-tags') ?? '').split(',').map(t => t.trim()).filter(Boolean),
         emoji: el.getAttribute('data-emoji') ?? '',
@@ -238,7 +245,7 @@
   function dist2(a, b) { return a.reduce((s, x, i) => s + (x - b[i]) ** 2, 0); }
   function euclid(a, b) { return Math.sqrt(dist2(a, b)); }
 
-  function kmeans2d(pts, k, runs = 40) {
+  function kmeans2d(pts, k, runs = 100) {
     const n = pts.length;
     if (n <= k) return pts.map((_, i) => i);
     let bestLabels = null, bestInertia = Infinity;
@@ -259,11 +266,14 @@
       }
       const cents  = ci.map(i => [...pts[i]]);
       const labels = new Array(n).fill(0);
+      const SIZE_REG = 0.08; // small bias against very large clusters (relative to n)
       for (let iter = 0; iter < 300; iter++) {
         let changed = false;
+        const sizes = new Array(k).fill(0);
+        for (const l of labels) sizes[l]++;
         for (let i = 0; i < n; i++) {
           let best = 0, bd = Infinity;
-          for (let j = 0; j < k; j++) { const d = dist2(pts[i], cents[j]); if (d < bd) { bd = d; best = j; } }
+          for (let j = 0; j < k; j++) { const d = dist2(pts[i], cents[j]) + SIZE_REG * (sizes[j] / n); if (d < bd) { bd = d; best = j; } }
           if (labels[i] !== best) { labels[i] = best; changed = true; }
         }
         if (!changed) break;
@@ -299,16 +309,18 @@
   }
 
   function autoK(pts, kMin = 2, kMax = 5) {
+    // Small parsimony penalty per extra cluster — prevents over-splitting on small datasets
+    // where k=5 with two 2-post clusters can outscore k=3 on silhouette alone.
     let bestK = kMin, bestScore = -Infinity;
     for (let k = kMin; k <= Math.min(kMax, pts.length - 1); k++) {
-      const score = silhouette(pts, kmeans2d(pts, k, 20));
+      const score = silhouette(pts, kmeans2d(pts, k)) - 0.01 * (k - kMin) ** 2;
       if (score > bestScore) { bestScore = score; bestK = k; }
     }
     return bestK;
   }
 
   // ── No singleton clusters ─────────────────────────────────────────────────────
-  // Iteratively merges any size-1 cluster into the spatially nearest other cluster.
+  // Iteratively merges any cluster with fewer than 3 posts into the spatially nearest other cluster.
 
   function fixSingletons(pts, labels) {
     let cur = [...labels];
@@ -317,7 +329,7 @@
       changed = false;
       const counts = {};
       for (const l of cur) counts[l] = (counts[l] ?? 0) + 1;
-      const lone = Object.keys(counts).map(Number).find(c => counts[c] === 1);
+      const lone = Object.keys(counts).map(Number).find(c => counts[c] < 3);
       if (lone === undefined) break;
       const idx    = cur.indexOf(lone);
       const others = [...new Set(cur)].filter(l => l !== lone);
@@ -337,6 +349,26 @@
     const unique = [...new Set(cur)].sort((a, b) => a - b);
     const remap  = Object.fromEntries(unique.map((v, i) => [v, i]));
     return cur.map(l => remap[l]);
+  }
+
+  // ── Merge all-misc clusters ───────────────────────────────────────────────────
+  // Misc posts are content-diverse by nature so k-means splits them into small
+  // clusters that share no vocabulary and fall back to the "ideas" label.
+  // This merges every cluster whose members are ALL tagged misc into one.
+
+  function mergeMiscClusters(posts, labels) {
+    const k = Math.max(...labels) + 1;
+    const miscClusters = [];
+    for (let c = 0; c < k; c++) {
+      const idxs = labels.reduce((a, l, i) => (l === c ? [...a, i] : a), []);
+      if (idxs.length && idxs.every(i => posts[i].tags.includes('misc'))) miscClusters.push(c);
+    }
+    if (miscClusters.length <= 1) return labels;
+    const target = miscClusters[0];
+    const merged = labels.map(l => miscClusters.includes(l) ? target : l);
+    const unique = [...new Set(merged)].sort((a, b) => a - b);
+    const remap  = Object.fromEntries(unique.map((v, i) => [v, i]));
+    return merged.map(l => remap[l]);
   }
 
   // ── Date → opacity ────────────────────────────────────────────────────────────
@@ -362,30 +394,88 @@
 
   function clusterKeywords(posts, labels) {
     const k = Math.max(...labels) + 1;
-    const GENERIC = new Set([
-      'posts', 'post', 'notes', 'note', 'paper', 'small', 'quick', 'rough', 'view', 'using',
-      'some', 'more', 'less', 'cool', 'bits', 'things', 'picture', 'problem', 'models', 'model',
-    ]);
-    const TAG_FALLBACK = { ml: 'learning', math: 'theory', physics: 'dynamics', stats: 'inference', misc: 'ideas' };
-    function low(w) { return (w ?? 'ideas').toLowerCase(); }
+    const TAG_FALLBACK = null; // use tag name directly
 
-    return Array.from({ length: k }, (_, c) => {
-      const idxs = labels.reduce((a, l, i) => (l === c ? [...a, i] : a), []);
-      if (!idxs.length) return 'ideas';
-      const freq = {}, tagFreq = {};
-      for (const i of idxs) {
-        for (const t of tokenize(`${posts[i].title} ${posts[i].desc}`)) {
-          if (GENERIC.has(t)) continue;
-          freq[t] = (freq[t] ?? 0) + 1;
-        }
-        for (const t of posts[i].tags) tagFreq[t] = (tagFreq[t] ?? 0) + 1;
-      }
-      const topWord = Object.entries(freq)
-        .sort((a, b) => b[1] - a[1] || b[0].length - a[0].length || a[0].localeCompare(b[0]))[0]?.[0];
-      if (topWord) return low(topWord);
-      const topTag = Object.entries(tagFreq).sort((a, b) => b[1] - a[1])[0]?.[0];
-      return low(TAG_FALLBACK[topTag] ?? topTag ?? 'ideas');
+    // Uni+bigram token set and bag per post
+    function postTokenSet(i) {
+      const words = tokenize(`${posts[i].title} ${posts[i].desc}`);
+      const bi    = words.slice(0, -1).map((w, j) => w + '_' + words[j + 1]);
+      return new Set([...words, ...bi]);
+    }
+    function postTokenBag(i) {
+      const words = tokenize(`${posts[i].title} ${posts[i].desc}`);
+      const bi    = words.slice(0, -1).map((w, j) => w + '_' + words[j + 1]);
+      return [...words, ...bi];
+    }
+
+    const clusterIdxs = Array.from({ length: k }, (_, c) =>
+      labels.reduce((a, l, i) => (l === c ? [...a, i] : a), [])
+    );
+
+    // Within-cluster doc frequency: how many posts in this cluster contain each term
+    const withinDf = clusterIdxs.map(idxs =>
+      idxs.reduce((acc, i) => {
+        for (const t of postTokenSet(i)) acc[t] = (acc[t] ?? 0) + 1;
+        return acc;
+      }, {})
+    );
+
+    // TF per cluster (raw count / total tokens)
+    const tfs = clusterIdxs.map(idxs => {
+      const freq = {};
+      for (const i of idxs) for (const t of postTokenBag(i)) freq[t] = (freq[t] ?? 0) + 1;
+      const len = Object.values(freq).reduce((s, x) => s + x, 0) || 1;
+      for (const t in freq) freq[t] /= len;
+      return freq;
     });
+
+    // IDF across clusters (each cluster = one doc)
+    const df = {};
+    for (const freq of tfs) for (const t in freq) df[t] = (df[t] ?? 0) + 1;
+
+    // Bigram penalty: score bigrams at 80% to bias toward unigrams when competitive
+    const BIGRAM_BIAS = 0.8;
+
+    // Score ranked candidates per cluster (before deduplication)
+    const allCandidates = clusterIdxs.map((idxs, c) => {
+      if (!idxs.length) return [];
+      const minSupport = Math.min(2, idxs.length);
+      const wdf = withinDf[c];
+      const freq = tfs[c];
+      return Object.entries(freq)
+        .filter(([t]) => (wdf[t] ?? 0) >= minSupport)
+        .map(([t, tf]) => {
+          const isBigram = t.includes('_');
+          const tfidf = tf * Math.log((k + 1) / df[t]);
+          return [t, isBigram ? tfidf * BIGRAM_BIAS : tfidf];
+        })
+        .sort((a, b) => b[1] - a[1]);
+    });
+
+    // Greedy deduplication: assign labels in order of confidence (highest top score first),
+    // each cluster picks its best unclaimed term.
+    const assigned = new Array(k).fill(null);
+    const used = new Set();
+    const order = allCandidates
+      .map((cands, c) => [c, cands[0]?.[1] ?? -Infinity])
+      .sort((a, b) => b[1] - a[1])
+      .map(([c]) => c);
+
+    for (const c of order) {
+      const idxs = clusterIdxs[c];
+      if (!idxs.length) { assigned[c] = 'misc'; continue; }
+
+      const top = allCandidates[c].find(([t]) => !used.has(t))?.[0];
+      if (top) { assigned[c] = top.replace(/_/g, ' '); used.add(top); continue; }
+
+      // Fallback to dominant tag
+      const tagFreq = {};
+      for (const i of idxs) for (const t of posts[i].tags) tagFreq[t] = (tagFreq[t] ?? 0) + 1;
+      const topTag = Object.entries(tagFreq).sort((a, b) => b[1] - a[1])[0]?.[0];
+      assigned[c] = (topTag ?? 'misc').toLowerCase();
+    }
+
+    return assigned;
   }
 
   // ── Shared dot renderer ───────────────────────────────────────────────────────
@@ -500,15 +590,23 @@
     cap.id = id;
     cap.className = 'constellation-caption';
 
+    const renderMath = el => {
+      if (window.renderMathInElement) {
+        renderMathInElement(el, { delimiters: [
+          { left: '\\(', right: '\\)', display: false },
+          { left: '\\[', right: '\\]', display: true },
+        ]});
+      }
+    };
     function setShort() {
       cap.innerHTML = shortHtml;
-      if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([cap]);
+      renderMath(cap);
       const expander = cap.querySelector('[data-expand]');
       if (expander) expander.addEventListener('click', e => { e.preventDefault(); setLong(); });
     }
     function setLong() {
       cap.innerHTML = longHtml;
-      if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([cap]);
+      renderMath(cap);
       const collapser = cap.querySelector('[data-collapse]');
       if (collapser) collapser.addEventListener('click', e => { e.preventDefault(); setShort(); });
     }
@@ -1119,10 +1217,11 @@
     svgContainer.appendChild(root);
   }
 
-  // ── Render: Probability Simplex ───────────────────────────────────────────────
-  // At each moment t the KDE defines a probability distribution over tags — a point
-  // on the (n-1)-simplex. PCA projects this path to 2D, revealing the geometric
-  // structure of how attention moves through topic space.
+  // ── Render: Entropy + Fisher-Rao Speed ───────────────────────────────────────
+  // At each moment t the KDE defines a probability distribution p(t) over tags.
+  // Shannon entropy H(t) = -Σ pₖ log pₖ / log n measures focus (low = concentrated).
+  // Fisher-Rao speed ‖ṗ‖_FR = ‖d√p/dt‖₂ is the velocity in the information-geometric
+  // metric on Δ⁴ — the sphere under the Hellinger embedding. Spikes = topic pivots.
 
   function renderSimplex(svgContainer, tooltipEl, posts, _unused, _labels, tagY) {
     const TAGS_ORDERED = Object.entries(tagY).sort((a, b) => a[1] - b[1]).map(([t]) => t);
@@ -1135,163 +1234,163 @@
     const { kdes, grid, gMin, gMax, tMin, tMax } = kdeData;
     const GRID = grid.length;
 
-    // Raw probability coordinates — each grid point is a probability distribution over tags.
-    // Using p_k directly (not sqrt) means posts ARE convex combinations of the vertex pure states,
-    // so after any linear (PCA) projection they remain inside the convex hull of the vertices.
-    const hellinger = grid.map((_, gi) => {
+    // ── Normalized probabilities + Hellinger coordinates ──────────────────────
+    // p_k(t) = KDE_k(t) / Σ KDE_j(t)    h_k(t) = √p_k(t)  (Hellinger embedding)
+    const probs = grid.map((_, gi) => {
       const vals = TAGS_ORDERED.map(tag => kdes[tag][gi]);
       const total = vals.reduce((a, b) => a + b, 0);
-      return total > 1e-30 ? vals.map(v => v / total) : TAGS_ORDERED.map(() => 1 / nTags);
+      return total > 1e-30 ? vals.map(v => v / total) : vals.map(() => 1 / nTags);
     });
+    const hellinger = probs.map(p => p.map(v => Math.sqrt(v)));
 
-    // Center Hellinger coords (remove mean before PCA)
-    const hmean = TAGS_ORDERED.map((_, k) => hellinger.reduce((s, h) => s + h[k], 0) / GRID);
-    const hcentered = hellinger.map(h => h.map((v, k) => v - hmean[k]));
-
-    // Covariance + two leading eigenvectors (Hellinger PCA)
-    const cov = Array.from({ length: nTags }, (_, j) =>
-      Array.from({ length: nTags }, (_, k) =>
-        hcentered.reduce((s, c) => s + c[j] * c[k], 0) / GRID
-      )
+    // ── Shannon entropy H(t) normalized to [0, 1] ─────────────────────────────
+    // H = 1 when attention is uniform across all tags; 0 when fully concentrated.
+    const entropy = probs.map(p =>
+      -p.reduce((s, pk) => s + (pk > 1e-15 ? pk * Math.log(pk) : 0), 0) / Math.log(nTags)
     );
-    const { v: e1, lam: l1 } = powerIter(cov, TAGS_ORDERED.map((_, i) => Math.sin(i * 1.7 + 0.3)));
-    const cov2 = deflate(cov, e1, l1);
-    const { v: e2, lam: l2 } = powerIter(cov2, TAGS_ORDERED.map((_, i) => Math.cos(i * 2.1 + 0.4)));
-    const totalVar = cov.reduce((s, row, j) => s + row[j], 0) || 1;
-    const varExp1 = Math.round(100 * l1 / totalVar), varExp2 = Math.round(100 * l2 / totalVar);
 
-    const dot = (a, b) => a.reduce((s, v, k) => s + v * b[k], 0);
-    const proj = hcentered.map(c => [dot(c, e1), dot(c, e2)]);
-
-    // Project simplex vertices (pure states) through Hellinger then center + project
-    const vertices = TAGS_ORDERED.map((_, k) => {
-      const h = TAGS_ORDERED.map((_, j) => Math.sqrt(j === k ? 1 : 0));
-      const hc = h.map((v, j) => v - hmean[j]);
-      return [dot(hc, e1), dot(hc, e2)];
+    // ── Fisher-Rao speed ‖ṗ‖_FR = ‖d√p/dt‖₂ via central differences ─────────
+    // The Fisher information metric on Δⁿ⁻¹ is the round metric on the positive
+    // orthant of Sⁿ⁻¹ under the Hellinger embedding h_k = √p_k — so Euclidean
+    // distance in Hellinger space is the geodesic distance in information geometry.
+    const frSpeed = grid.map((_, gi) => {
+      const hP = hellinger[Math.min(gi + 1, GRID - 1)];
+      const hM = hellinger[Math.max(gi - 1, 0)];
+      const sc = (gi === 0 || gi === GRID - 1) ? 1 : 2;
+      return Math.sqrt(hM.reduce((s, _, k) => s + ((hP[k] - hM[k]) / sc) ** 2, 0));
     });
 
-    // Per-post projections — uniform distribution over a post's tags, projected through PCA.
-    // With raw p_k coordinates, posts are exact convex combinations of vertex pure states,
-    // so they are guaranteed to lie inside the convex hull of the projected vertices.
-    const postProjData = posts.map(p => {
-      const pTags = p.tags.filter(t => TAGS_ORDERED.includes(t));
-      if (!pTags.length) return null;
-      const t = new Date(p.date).getTime();
-      if (!t || isNaN(t)) return null;
-      const prob = TAGS_ORDERED.map(tag => pTags.includes(tag) ? 1 / pTags.length : 0);
-      const hc = prob.map((v, k) => v - hmean[k]);
-      return { xy: [dot(hc, e1), dot(hc, e2)], t, post: p };
-    }).filter(Boolean);
-    const projD = proj;
-    const vertD = vertices;
-
-    // Bounding box from display coords
-    const allX = [...projD.map(p => p[0]), ...vertD.map(v => v[0])];
-    const allY = [...projD.map(p => p[1]), ...vertD.map(v => v[1])];
-    const xlo = Math.min(...allX), xhi = Math.max(...allX);
-    const ylo = Math.min(...allY), yhi = Math.max(...allY);
-    const xR = xhi - xlo || 1, yR = yhi - ylo || 1;
-
-    const HS = H;  // same height as other charts
-    const PADD = 62;
-    const sc = Math.min((W - 2 * PADD) / xR, (HS - 2 * PADD) / yR);
-    const offX = (W  - sc * xR) / 2, offY = (HS - sc * yR) / 2;
-    const spx = x => offX + (x - xlo) * sc;
-    const spy = y => offY + (yhi - y) * sc;
-
-    const root = svg('svg', { viewBox: `0 0 ${W} ${HS}`, width: '100%', style: 'display:block' });
-    root.appendChild(svg('rect', { x: 0, y: 0, width: W, height: HS, fill: '#fafafa', rx: 3 }));
-
-    // Vertex polygon
-    const vcx = vertD.reduce((s, v) => s + v[0], 0) / nTags;
-    const vcy = vertD.reduce((s, v) => s + v[1], 0) / nTags;
-    const vOrder = vertD.map((_, i) => i)
-      .sort((a, b) => Math.atan2(vertD[a][1] - vcy, vertD[a][0] - vcx) -
-                      Math.atan2(vertD[b][1] - vcy, vertD[b][0] - vcx));
-    const polyD = vOrder.map((k, i) =>
-      `${i === 0 ? 'M' : 'L'} ${spx(vertD[k][0]).toFixed(1)},${spy(vertD[k][1]).toFixed(1)}`
-    ).join(' ') + ' Z';
-    root.appendChild(svg('path', { d: polyD, fill: 'rgba(180,170,160,0.07)', stroke: '#c8c4be', 'stroke-width': 0.5 }));
-
-    // Trajectory — clipped to [tMin, tMax], single muted tone
-    // (tails before first / after last post become uniform-distribution noise)
+    // Normalize speed to [0, 1] over active window
     const giStart = grid.findIndex(t => t >= tMin);
     const giEnd   = grid.reduce((idx, t, i) => t <= tMax ? i : idx, 0);
-    for (let gi = Math.max(0, giStart); gi < Math.min(GRID - 1, giEnd); gi++) {
+    const gS = Math.max(0, giStart), gE = Math.min(GRID - 1, giEnd);
+    const maxSpeed = frSpeed.slice(gS, gE + 1).reduce((m, s) => Math.max(m, s), 1e-15);
+    const normSpeed = frSpeed.map(s => s / maxSpeed);
+
+    // ── Layout ─────────────────────────────────────────────────────────────────
+    const PADL = 50, PADR = 32, PADT = 30, PADB = 48;
+    const plotW = W - PADL - PADR;
+    const plotH = H - PADT - PADB;
+    const AXIS_Y = PADT + plotH;
+    const sx = t => PADL + ((t - gMin) / (gMax - gMin)) * plotW;
+    const sy = v => PADT + (1 - v) * plotH;
+
+    const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', style: 'display:block' });
+    root.appendChild(svg('rect', { x: 0, y: 0, width: W, height: H, fill: '#fafafa', rx: 3 }));
+
+    // Subtle horizontal gridlines
+    for (const yv of [0.25, 0.5, 0.75, 1.0]) {
       root.appendChild(svg('line', {
-        x1: spx(projD[gi][0]).toFixed(2),     y1: spy(projD[gi][1]).toFixed(2),
-        x2: spx(projD[gi + 1][0]).toFixed(2), y2: spy(projD[gi + 1][1]).toFixed(2),
-        stroke: '#b8b4b0', 'stroke-width': 1.3, opacity: '0.55',
-        'stroke-linecap': 'round',
+        x1: PADL, y1: sy(yv).toFixed(1), x2: PADL + plotW, y2: sy(yv).toFixed(1),
+        stroke: yv === 1.0 ? '#e0e0dc' : '#ebebeb', 'stroke-width': 0.7,
+        'pointer-events': 'none',
       }));
     }
+    // Baseline
+    root.appendChild(svg('line', {
+      x1: PADL, y1: AXIS_Y, x2: PADL + plotW, y2: AXIS_Y,
+      stroke: '#ddd', 'stroke-width': 0.8, 'pointer-events': 'none',
+    }));
 
+    // ── Entropy curve (filled area + Catmull-Rom stroke) ──────────────────────
+    const ENTROPY_COLOR = '#7a8fa6';
+    {
+      const pts = [];
+      for (let gi = gS; gi <= gE; gi++) pts.push([sx(grid[gi]), sy(entropy[gi])]);
+      if (pts.length > 1) {
+        const first = pts[0], last = pts[pts.length - 1];
+        const areaD = `M ${first[0].toFixed(1)},${AXIS_Y} L ${first[0].toFixed(1)},${first[1].toFixed(1)} ` +
+          pts.slice(1).map(([x, y]) => `L ${x.toFixed(1)},${y.toFixed(1)}`).join(' ') +
+          ` L ${last[0].toFixed(1)},${AXIS_Y} Z`;
+        root.appendChild(svg('path', { d: areaD, fill: ENTROPY_COLOR, opacity: '0.10', 'pointer-events': 'none' }));
+        root.appendChild(svg('path', {
+          d: catmullRomPath(pts), fill: 'none',
+          stroke: ENTROPY_COLOR, 'stroke-width': 1.5, opacity: '0.75',
+          'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'pointer-events': 'none',
+        }));
+      }
+    }
 
-    // Vertex dots + labels — label nudged away from polygon centroid, anchor chosen
-    // so text extends outward from the dot rather than back over it.
-    for (let k = 0; k < nTags; k++) {
-      const tag = TAGS_ORDERED[k], color = TAG_COLOR[tag];
-      const vx = spx(vertD[k][0]), vy = spy(vertD[k][1]);
-      const dx = vx - spx(vcx), dy = vy - spy(vcy);
-      const len = Math.sqrt(dx * dx + dy * dy) || 1;
-      const NUDGE = 20;
-      const lx = (vx + dx / len * NUDGE).toFixed(1);
-      const ly = (vy + dy / len * NUDGE + 3).toFixed(1);
-      // Anchor text so it grows away from the dot
-      const anchor = dx > 8 ? 'start' : dx < -8 ? 'end' : 'middle';
-      root.appendChild(svg('circle', { cx: vx.toFixed(1), cy: vy.toFixed(1), r: 3.5, fill: color, opacity: 0.6 }));
+    // ── Fisher-Rao speed curve (stroke only) ──────────────────────────────────
+    const SPEED_COLOR = '#a07060';
+    {
+      const pts = [];
+      for (let gi = gS; gi <= gE; gi++) pts.push([sx(grid[gi]), sy(normSpeed[gi])]);
+      if (pts.length > 1) {
+        root.appendChild(svg('path', {
+          d: catmullRomPath(pts), fill: 'none',
+          stroke: SPEED_COLOR, 'stroke-width': 1.3, opacity: '0.70',
+          'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'pointer-events': 'none',
+        }));
+      }
+    }
+
+    // ── Curve labels (right margin) ────────────────────────────────────────────
+    const labelX = PADL + plotW + 5;
+    for (const [val, color, label] of [
+      [entropy[gE],    ENTROPY_COLOR, 'H(t)'],
+      [normSpeed[gE],  SPEED_COLOR,   '‖ṗ‖'],
+    ]) {
       const lbl = svg('text', {
-        x: lx, y: ly, 'text-anchor': anchor,
-        'font-size': 9.5, fill: color, opacity: 0.8,
-        'font-family': 'Charter, Georgia, serif', 'font-style': 'italic', 'letter-spacing': '0.04em',
+        x: labelX, y: (sy(val) + 3.5).toFixed(1),
+        'font-size': 9, fill: color, opacity: '0.85',
+        'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
       });
-      lbl.textContent = tag;
+      lbl.textContent = label;
       root.appendChild(lbl);
     }
 
-    // Post dots — grey, at their KDE grid position.
-    // Hover: emoji appears above dot (same as map), full shared tooltip, click navigates.
-    for (const { t, post: p } of postProjData) {
-      const gi = Math.max(0, Math.min(GRID - 1, Math.round(((t - gMin) / (gMax - gMin)) * (GRID - 1))));
-      const [projX, projY] = projD[gi];
-      const cx = spx(projX).toFixed(1), cy = spy(projY).toFixed(1);
-      const dotOpacity = '0.38';
-      const dotEl = svg('circle', {
-        cx, cy, r: 3.2, fill: '#a0a0a0',
-        opacity: dotOpacity, style: 'cursor:pointer',
+    // ── Y-axis labels ──────────────────────────────────────────────────────────
+    for (const [v, label] of [[0, '0'], [0.5, '½'], [1, '1']]) {
+      const t = svg('text', {
+        x: PADL - 6, y: (sy(v) + 3.5).toFixed(1), 'text-anchor': 'end', 'font-size': 8.5,
+        fill: '#c8c8c4', 'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
       });
-      const emoEl = svg('text', {
-        x: cx, y: cy,
-        'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': '11', opacity: '0',
-        style: 'pointer-events:none;transition:opacity 0.35s ease',
-      });
-      emoEl.textContent = p.emoji;
-
-      dotEl.addEventListener('mouseenter', e => {
-        dotEl.setAttribute('opacity', '0');
-        emoEl.setAttribute('opacity', '1');
-        showTooltip(tooltipEl, p, e, svgContainer);
-      });
-      dotEl.addEventListener('mousemove', e => moveTooltip(tooltipEl, e, svgContainer));
-      dotEl.addEventListener('mouseleave', () => {
-        dotEl.setAttribute('opacity', dotOpacity);
-        emoEl.setAttribute('opacity', '0');
-        hideTooltip(tooltipEl);
-      });
-      dotEl.addEventListener('click', () => { window.location.href = p.href; });
-
-      root.appendChild(dotEl);
-      root.appendChild(emoEl);
+      t.textContent = label;
+      root.appendChild(t);
     }
 
-    // Variance-explained annotation
-    const ann = svg('text', {
-      x: W - 10, y: HS - 8, 'text-anchor': 'end',
-      'font-size': 8.5, fill: '#ccc',
-      'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
-    });
-    ann.textContent = `PC1 ${varExp1}%  PC2 ${varExp2}%`;
-    root.appendChild(ann);
+    // ── Post ticks + hit areas (same style as KDE view) ───────────────────────
+    for (const p of posts) {
+      const t = new Date(p.date).getTime();
+      if (!t || isNaN(t) || t < tMin || t > tMax) continue;
+      const px = sx(t);
+      const primaryTag = p.tags.find(tg => TAGS_ORDERED.includes(tg)) ?? TAGS_ORDERED[0];
+      const color = TAG_COLOR[primaryTag];
+      root.appendChild(svg('line', {
+        x1: px.toFixed(1), y1: (AXIS_Y + 1).toFixed(1), x2: px.toFixed(1), y2: (AXIS_Y + 6).toFixed(1),
+        stroke: color, 'stroke-width': 1.3, opacity: '0.6',
+      }));
+      const hit = svg('rect', {
+        x: (px - 7).toFixed(1), y: (AXIS_Y - 14).toFixed(1), width: 14, height: 24,
+        fill: 'transparent', style: 'cursor:pointer',
+      });
+      hit.addEventListener('mouseenter', e => showTooltip(tooltipEl, p, e, svgContainer));
+      hit.addEventListener('mousemove',  e => moveTooltip(tooltipEl, e, svgContainer));
+      hit.addEventListener('mouseleave', () => hideTooltip(tooltipEl));
+      hit.addEventListener('click', () => { window.location.href = p.href; });
+      root.appendChild(hit);
+    }
+
+    // ── X-axis date labels ─────────────────────────────────────────────────────
+    const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const yr0 = new Date(tMin).getFullYear(), mo0 = new Date(tMin).getMonth() < 6 ? 0 : 6;
+    outer: for (let yr = yr0; yr <= new Date(tMax).getFullYear() + 1; yr++) {
+      for (const mo of [0, 6]) {
+        if (yr === yr0 && mo < mo0) continue;
+        const t = new Date(yr, mo, 1).getTime();
+        if (t > tMax + 60 * 24 * 3600000) break outer;
+        const px = sx(t);
+        if (px < PADL - 1 || px > PADL + plotW + 1) continue;
+        const tl = svg('text', {
+          x: px.toFixed(1), y: AXIS_Y + 16,
+          'text-anchor': 'middle', 'font-size': 9, fill: '#c8c8c4',
+          'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
+        });
+        tl.textContent = `${MO[mo]} ${yr}`;
+        root.appendChild(tl);
+      }
+    }
 
     svgContainer.innerHTML = '';
     svgContainer.appendChild(root);
@@ -1312,7 +1411,7 @@
 
     const btnConst   = document.createElement('button'); btnConst.textContent   = 'map';
     const btnPhase   = document.createElement('button'); btnPhase.textContent   = 'KDE';
-    // const btnSimplex = document.createElement('button'); btnSimplex.textContent = 'simplex';
+    // const btnSimplex = document.createElement('button'); btnSimplex.textContent = 'focus';
     [btnConst, btnPhase].forEach(b => { b.style.cssText = base; });
 
     function setActive(id) {
@@ -1358,7 +1457,7 @@
     const { coords: rawCoords, fiedler } = lapEmbedFull(X);
     const embed2d  = rawCoords;
     const k        = autoK(embed2d);
-    const labels   = fixSingletons(embed2d, kmeans2d(embed2d, k));
+    const labels   = mergeMiscClusters(posts, fixSingletons(embed2d, kmeans2d(embed2d, k)));
 
     const tagY = computeTagOrdering(posts);
 
@@ -1396,7 +1495,7 @@
     const lnk = 'text-decoration:none;color:#bbb';
     const paperLnk = 'text-decoration:underline';
     const constShortHtml = `Embedded via TF-IDF and <a href="https://proceedings.neurips.cc/paper_files/paper/2001/file/f106b7f99d2cb30c3db1c3cc0fde9ccb-Paper.pdf" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Laplacian eigenmaps</a>, clustered by k-means. <a href="#" style="${lnk}" data-expand="1">(more)</a>`;
-    const constLongHtml  = `Each post is embedded as a weighted TF-IDF vector over unigrams, bigrams, and trigrams extracted from one-hot vectors over available tags, title/description text, and body prose (stripped of math). These are concatenated and \\(L^2\\)-normalized so weights reflect relative cosine influence. Pairwise cosine similarities are passed through a Gaussian kernel, giving an affinity graph. The 2D layout is computed via <a href="https://proceedings.neurips.cc/paper_files/paper/2001/file/f106b7f99d2cb30c3db1c3cc0fde9ccb-Paper.pdf" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Laplacian eigenmaps</a>. The second and third smallest eigenvectors of the normalized graph Laplacian define a 2D embedding. \\(k \\in \\{2,\\ldots,5\\}\\) is chosen to maximize silhouette score, then singleton clusters are merged. Cluster labels are generated from the most frequent non-generic token in that cluster's titles and descriptions. Lines are a minimum spanning tree within each cluster. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
+    const constLongHtml  = `Each post is embedded as a weighted TF-IDF vector over unigrams, bigrams, and trigrams extracted from one-hot vectors over available tags, title/description text, and body prose (stripped of math). These are concatenated and \\(L^2\\)-normalized so weights reflect relative cosine influence. Pairwise cosine similarities are passed through a Gaussian kernel, giving an affinity graph. The 2D layout is computed via <a href="https://proceedings.neurips.cc/paper_files/paper/2001/file/f106b7f99d2cb30c3db1c3cc0fde9ccb-Paper.pdf" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Laplacian eigenmaps</a>. The second and third smallest eigenvectors of the normalized graph Laplacian define a 2D embedding. \\(k \\in \\{2,\\ldots,5\\}\\) is chosen to maximize a parsimony-penalized silhouette score, then singleton and all-misc clusters are merged. Cluster labels are the highest cross-cluster TF-IDF unigram or bigram shared by \\(\\geq 2\\) posts in the cluster, deduplicated across clusters. Lines are a minimum spanning tree within each cluster. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
     injectCaption(svgEl, 'constellation-caption', constShortHtml, constLongHtml);
 
     // Render drift view
@@ -1409,7 +1508,6 @@
 
     // // Render simplex view
     // renderSimplex(simplexSvgEl, tooltipEl, posts, null, labels, tagY);
-    // // Simplex caption
     // const simplexShortHtml = `Per-tag KDE normalized to tag-mixture probabilities, projected via PCA. <a href="#" style="${lnk}" data-expand="1">(more)</a>`;
     // const simplexLongHtml = `Per-tag KDE values are normalized to a probability distribution in the 4-simplex \\(\\Delta^4\\). The vertices are pure-tag states; each point represents a convex combination of tags. Points are projected to 2D via PCA, and a <a href="https://en.wikipedia.org/wiki/Catmull%E2%80%93Rom_spline" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Catmull-Rom spline</a> interpolates the points to trace evolution over time. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
     // injectCaption(simplexSvgEl, 'simplex-caption', simplexShortHtml, simplexLongHtml);

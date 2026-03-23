@@ -5,10 +5,111 @@ compile.py - Compiles .mdtx files to HTML with LaTeX math support.
 Usage:
     python3 -m compile src
 """
-import os, re, sys, time
+import os, re, sys, time, subprocess, json
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple
+
+
+def _extract_braced_arg(s: str, i: int):
+    """Return (content, end_pos) for the balanced {…} group starting at s[i].
+    Skips over \\{ and \\} so escaped braces don't affect depth counting.
+    Returns (None, i) if s[i] is not '{' or braces are unmatched."""
+    if i >= len(s) or s[i] != '{':
+        return None, i
+    depth, j = 0, i
+    while j < len(s):
+        if s[j] == '\\' and j + 1 < len(s):
+            j += 2          # skip escaped character
+            continue
+        if s[j] == '{':
+            depth += 1
+        elif s[j] == '}':
+            depth -= 1
+            if depth == 0:
+                return s[i + 1:j], j + 1
+        j += 1
+    return None, i          # unmatched
+
+
+def _expand_physics_macros(latex: str) -> str:
+    """Expand \\norm, \\abs, \\dv, \\pdv (1- and 2-arg) to standard LaTeX
+    that KaTeX understands natively."""
+    result = []
+    i, n = 0, len(latex)
+
+    def skip_spaces(pos):
+        while pos < n and latex[pos] in ' \t\n':
+            pos += 1
+        return pos
+
+    while i < n:
+        if latex[i] == '\\' and i + 1 < n:
+            if latex[i + 1].isalpha():
+                # Collect the full command name
+                j = i + 1
+                while j < n and latex[j].isalpha():
+                    j += 1
+                cmd = latex[i:j]
+
+                if cmd == '\\norm':
+                    k = skip_spaces(j)
+                    arg, k = _extract_braced_arg(latex, k)
+                    if arg is not None:
+                        result.append(f'\\left\\| {arg} \\right\\|')
+                        i = k
+                        continue
+
+                elif cmd == '\\abs':
+                    k = skip_spaces(j)
+                    arg, k = _extract_braced_arg(latex, k)
+                    if arg is not None:
+                        result.append(f'\\left| {arg} \\right|')
+                        i = k
+                        continue
+
+                elif cmd == '\\dv':
+                    k = skip_spaces(j)
+                    arg1, k = _extract_braced_arg(latex, k)
+                    if arg1 is not None:
+                        k2 = skip_spaces(k)
+                        arg2, k2 = _extract_braced_arg(latex, k2)
+                        if arg2 is not None:
+                            result.append(f'\\frac{{d {arg1}}}{{d {arg2}}}')
+                            i = k2
+                            continue
+
+                elif cmd == '\\pdv':
+                    k = skip_spaces(j)
+                    arg1, k = _extract_braced_arg(latex, k)
+                    if arg1 is not None:
+                        k2 = skip_spaces(k)
+                        arg2, k2 = _extract_braced_arg(latex, k2)
+                        if arg2 is not None:
+                            # 2-arg form: \pdv{f}{x} → \frac{\partial f}{\partial x}
+                            result.append(f'\\frac{{\\partial {arg1}}}{{\\partial {arg2}}}')
+                            i = k2
+                        else:
+                            # 1-arg operator form: \pdv{x} → \frac{\partial}{\partial x}
+                            result.append(f'\\frac{{\\partial}}{{\\partial {arg1}}}')
+                            i = k
+                        continue
+
+                # Unrecognised command — pass through unchanged
+                result.append(cmd)
+                i = j
+                continue
+            else:
+                # Non-alpha after backslash (e.g. \\{ \\} \\, \\\\)
+                result.append(latex[i:i + 2])
+                i += 2
+                continue
+
+        result.append(latex[i])
+        i += 1
+
+    return ''.join(result)
+
 
 class MDTXCompiler:
     def __init__(self, source_dir: str):
@@ -1014,7 +1115,7 @@ class MDTXCompiler:
                 </div>
             </div>''')
 
-        posts_section = '\n'.join(posts_html)
+        posts_section = self.prerender_math('\n'.join(posts_html))
 
         # Read the current blog index template
         index_path = self.root_dir / "index.html"
@@ -1071,6 +1172,44 @@ class MDTXCompiler:
             print(f"Updated blog index with {len(posts)} posts")
         else:
             print("Warning: blog/index.html not found")
+
+    def prerender_math(self, html: str) -> str:
+        """Replace all LaTeX math blocks with pre-rendered KaTeX HTML."""
+        render_script = Path(__file__).resolve().parent / 'render_math.js'
+
+        # Collect (start, end, latex, display) for every math block
+        blocks = []
+        for m in re.finditer(r'\\\(([\s\S]+?)\\\)', html):
+            blocks.append((m.start(), m.end(), m.group(1), False))
+        for m in re.finditer(r'\\begin\{equation\}([\s\S]*?)\\end\{equation\}', html):
+            blocks.append((m.start(), m.end(), m.group(1), True))
+
+        if not blocks:
+            return html
+
+        blocks.sort(key=lambda b: b[0])
+
+        equations = [{'latex': _expand_physics_macros(latex), 'display': display}
+                     for _, _, latex, display in blocks]
+
+        proc = subprocess.run(
+            ['node', str(render_script)],
+            input=json.dumps(equations),
+            capture_output=True,
+            text=True,
+            encoding='utf8',
+        )
+        if proc.returncode != 0:
+            print(f'  [warn] render_math.js failed: {proc.stderr[:300]}', file=sys.stderr)
+            return html
+
+        rendered = json.loads(proc.stdout)
+
+        # Substitute in reverse order to keep positions valid
+        for (start, end, _, _), katex_html in reversed(list(zip(blocks, rendered))):
+            html = html[:start] + katex_html + html[end:]
+
+        return html
 
     def compile_file(self, path: Path):
         raw  = path.read_text(encoding='utf8')
@@ -1139,11 +1278,7 @@ class MDTXCompiler:
             fn_html = self.restore_urls_as_html(fn_html, url_map)
             body += "\n" + fn_html
 
-        if reqs:
-            req_text = "".join(f"\\(\\require{{{r}}}\\)" for r in reqs)
-            head_reqs = f"    <div style='display:none'>{req_text}</div>\n"
-        else:
-            head_reqs = ""
+        head_reqs = ""  # \require{} directives not needed with KaTeX pre-rendering
         title_raw = meta.get('title','Untitled')
         # Process title for inline math (convert { ... } to \( ... \))
         title     = self.replace_inline_math(title_raw)
@@ -1172,39 +1307,22 @@ class MDTXCompiler:
 <html lang="en">
 
 <head>
-{head_reqs}    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="../posts.css">
-    <script src="../posts_header.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
-
-    <!-- Configure MathJax to wait for TOC/footnotes before rendering -->
-    <script>
-        window.MathJax = {{
-            startup: {{
-                pageReady: () => {{
-                    // Wait for TOC and footnotes to initialize first
-                    return new Promise((resolve) => {{
-                        if (document.readyState === 'loading') {{
-                            document.addEventListener('DOMContentLoaded', () => {{
-                                // Give TOC/footnotes a moment to set up
-                                setTimeout(resolve, 100);
-                            }});
-                        }} else {{
-                            setTimeout(resolve, 100);
-                        }}
-                    }}).then(() => MathJax.startup.defaultPageReady());
-                }}
-            }}
-        }};
-    </script>
-    <script id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
-    <div id="header-placeholder"></div>
+    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/posts">Posts</a>
+        </nav>
+    </header>
 
     <main class="blog-post">
         <section class="intro">
@@ -1221,17 +1339,13 @@ class MDTXCompiler:
         </div>
     </footer>
 
-    <!-- Table of Contents Generator - loads before MathJax renders -->
     <script src="../toc-generator.js"></script>
-
-    <!-- Footnote Sidebar - loads before MathJax renders -->
     <script src="../footnote-sidebar.js"></script>
-
-    <!-- Collapsible Proofs -->
     <script src="../collapsible-proofs.js"></script>
 </body>
 </html>"""
 
+        html = self.prerender_math(html)
         output_file.write_text(html, encoding='utf8')
         print("Compiled →", path.name, "→", output_file.relative_to(self.root_dir))
 

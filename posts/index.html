@@ -5,16 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="posts.css">
-    <script src="../header.js"></script>
-    <script id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script src="analysis.js" defer></script>
 </head>
 
 <body>
-    <div id="header-placeholder"></div>
+    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <a href="/misc">Misc.</a>
+        </nav>
+    </header>
 
     <main>
         <h1>Posts</h1>
@@ -54,8 +61,8 @@
             <div class="blog-post-item" data-tags="ml, physics" data-emoji="🚚">
                 <span class="post-date">Jan 05, 2026</span>
                 <div class="post-content">
-                    <h3><a href="/posts/ot-mup">\(\mu\)P as Optimal Transport in a Vanilla MLP</a><div class="post-tags"><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div></h3>
-                    <p class="post-description">Deriving \(\mu\)P as the unique scaling maximizing Wasserstein transport under stability constraints</p>
+                    <h3><a href="/posts/ot-mup"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span>P as Optimal Transport in a Vanilla MLP</a><div class="post-tags"><span class="tag" data-tag="physics">physics</span><span class="tag" data-tag="ml">ml</span></div></h3>
+                    <p class="post-description">Deriving <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span>P as the unique scaling maximizing Wasserstein transport under stability constraints</p>
                 </div>
             </div>
             <div class="blog-post-item" data-tags="misc, stats" data-emoji="🏠">

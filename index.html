@@ -6,9 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DR</title>
     <link rel="stylesheet" href="style.css">
-    <script id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="header.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.profile-img-container');
@@ -28,18 +25,18 @@
             const moreBtn = document.getElementById('more-btn');
             const lessBtn = document.getElementById('less-btn');
             const newsControls = document.querySelector('.news-controls');
-            
+
             if (newsItems.length > 3) {
                 for (let i = 3; i < newsItems.length; i++) {
                     newsItems[i].style.display = 'none';
                 }
-                
+
                 moreBtn.style.display = 'inline-block';
                 newsControls.style.display = 'block';
             } else {
                 newsControls.style.display = 'none';
             }
-            
+
             moreBtn.addEventListener('click', function() {
                 for (let i = 3; i < newsItems.length; i++) {
                     newsItems[i].style.display = 'flex';
@@ -47,7 +44,7 @@
                 moreBtn.style.display = 'none';
                 lessBtn.style.display = 'inline-block';
             });
-            
+
             lessBtn.addEventListener('click', function() {
                 for (let i = 3; i < newsItems.length; i++) {
                     newsItems[i].style.display = 'none';
@@ -62,7 +59,13 @@
 </head>
 
 <body>
-    <div id="header-placeholder"></div>
+    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <a href="/misc">Misc.</a>
+        </nav>
+    </header>
 
     <main>
         <section class="intro">
@@ -84,7 +87,7 @@
             <div class="news-items">
                 <div class="news-item">
                     <div class="news-date">Mar 2026</div>
-                    <div class="news-content">Our software package ALPHANSO for computing (\(\alpha\),n) source terms is now released!</div>
+                    <div class="news-content">Our software package <a target="_blank" href="https://github.com/alphanso-org/alphanso">ALPHANSO</a> for computing (\(\alpha\),n) source terms is now released!</div>
                 </div>
                 <div class="news-item">
                     <div class="news-date">Aug 2025</div>

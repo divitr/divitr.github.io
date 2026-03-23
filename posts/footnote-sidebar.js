@@ -160,21 +160,6 @@
         sidenotes     = items.map(i => i.el);
         sidenoteItems = items.map(i => ({ el: i.el, ref: i.ref }));
 
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            MathJax.typesetPromise(items.map(i => i.el)).then(() => {
-                // Re-resolve overlaps now that sidenote heights reflect rendered math
-                if (items.length > 0) {
-                    items[0].placedTop = items[0].naturalTop;
-                    for (let i = 1; i < items.length; i++) {
-                        const prev = items[i - 1];
-                        const prevBottom = prev.placedTop + prev.el.offsetHeight + MIN_GAP;
-                        items[i].placedTop = Math.max(items[i].naturalTop, prevBottom);
-                    }
-                }
-                sidenoteItemsData = items.map(({ el, ref, naturalTop, placedTop }) => ({ el, ref, naturalTop, placedTop }));
-                items.forEach(({ el, placedTop }) => { el.style.top = `${placedTop}px`; });
-            }).catch(err => console.log('MathJax sidenote error:', err));
-        }
 
         // Tuck sidenotes that overlap the back-to-top button
         if (sidenoteScrollListener) window.removeEventListener('scroll', sidenoteScrollListener);
@@ -260,11 +245,7 @@
                     tooltip.style.top = `${top}px`;
                 };
 
-                if (window.MathJax && window.MathJax.typesetPromise) {
-                    MathJax.typesetPromise([tooltip]).then(position).catch(err => console.log('MathJax error:', err));
-                } else {
-                    position();
-                }
+                position();
             });
 
             ref.addEventListener('mouseleave', () => {
@@ -300,30 +281,14 @@
         }
     }
 
-    // Poll for MathJax.startup.promise (MathJax loads async, so it may not be set yet)
-    function afterMathJax(callback) {
-        let attempts = 0;
-        function tryHook() {
-            if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
-                window.MathJax.startup.promise.then(callback);
-            } else if (attempts < 30) {
-                attempts++;
-                setTimeout(tryHook, 100);
-            }
-            // If MathJax never loads, the initial positioning stands
-        }
-        tryHook();
-    }
-
     function init() {
         footnoteData = getFootnoteData();
         if (footnoteData.length === 0) return;
 
-        // First pass: position with current layout (header may not be loaded yet)
         applyMode(false);
 
-        // Correct pass: reposition after MathJax finishes (header will be loaded by then too)
-        afterMathJax(() => {
+        // Reposition once fonts have settled (KaTeX fonts load async via CSS)
+        requestAnimationFrame(() => {
             if (currentMode === 'sidebar') {
                 createSidenotes(footnoteData);
             }

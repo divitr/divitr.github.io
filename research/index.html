@@ -3,16 +3,23 @@
 
 <head>
     <meta charset="UTF-8">
-    <script id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left: '\\(', right: '\\)', display: false}, {left: '\\[', right: '\\]', display: true}]})"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Research</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../header.js"></script>
 </head>
 
 <body>
-    <div id="header-placeholder"></div>
+    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <a href="/misc">Misc.</a>
+        </nav>
+    </header>
 
     <main>
         <h1>Research</h1>
@@ -42,16 +49,17 @@
                 <div class="paper-content">
                     <div class="paper-title">ALPHANSO: Open-Source Modeling of (\(\alpha\),n) Neutron Source Terms</div>
                     <div class="paper-authors"><span class="me">Divit Rawal</span>, <a href="https://scholar.google.com/citations?user=cEJ85HAAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">Anthony J. Nelson</a>, <a href="https://scholar.google.com/citations?user=HPl2x1sAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">William Zywiec</a>, <a href="https://scholar.google.com/citations?user=nBmy5uIAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">Daniel Siefman</a></div>
-                    <div class="paper-venue"><em>ANS Student Conference</em>, 2026; <em>Under Review</em> (journal).</div>
+                    <div class="paper-venue"><em>Under Review</em> (journal).</div>
+                    <div class="paper-venue"><em>American Nuclear Society Student Conference</em>, 2026.</div>
                     <div class="paper-links">
-                        [<a href="https://github.com/alphanso-org/alphanso" target="_blank" rel="noopener noreferrer">GitHub</a>]
+                        [<a href="https://arxiv.org/abs/2603.17719" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://github.com/alphanso-org/alphanso" target="_blank" rel="noopener noreferrer">GitHub</a>]
                     </div>
                 </div>
             </div>
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">Foundation-Sec-8B-Instruct Technical Report</div>
-                    <div class="paper-authors">Cisco Foundation AI <span class="contribution-note">contributor: automated data collection and processing pipelines</span></div>
+                    <div class="paper-authors"><a href="https://fdtn.ai" target="_blank" rel="noopener noreferrer">Cisco Foundation AI</a> <span class="contribution-note">contributor: automated data collection and processing pipelines</span></div>
                     <div class="paper-venue"><em>Technical Report</em>, 2025.</div>
                     <div class="paper-links">
                         [<a href="https://arxiv.org/abs/2508.01059" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Instruct" target="_blank" rel="noopener noreferrer">HuggingFace</a>]
@@ -61,7 +69,7 @@
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">Foundation-Sec-8B Technical Report</div>
-                    <div class="paper-authors">Cisco Foundation AI <span class="contribution-note">contributor: automated data collection and processing pipelines</span></div>
+                    <div class="paper-authors"><a href="https://fdtn.ai" target="_blank" rel="noopener noreferrer">Cisco Foundation AI</a> <span class="contribution-note">contributor: automated data collection and processing pipelines</span></div>
                     <div class="paper-venue"><em>Technical Report</em>, 2025.</div>
                     <div class="paper-links">
                         [<a href="https://arxiv.org/abs/2504.21039" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B" target="_blank" rel="noopener noreferrer">HuggingFace</a>]
@@ -71,7 +79,7 @@
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">Measurement of off-shell Higgs boson production in the \(H^* \to ZZ \to 4\ell\) decay channel using a neural simulation-based inference technique in 13 TeV \(\text{pp}\) collisions with the ATLAS detector</div>
-                    <div class="paper-authors">ATLAS Collaboration <span class="contribution-note">contributor: neural nets for soft extrapolation</span></div>
+                    <div class="paper-authors"><a href="https://atlas.cern" target="_blank" rel="noopener noreferrer">ATLAS Collaboration</a> <span class="contribution-note">contributor: neural nets for soft extrapolation</span></div>
                     <div class="paper-venue"><em>Reports on Progress in Physics</em>, 2024.</div>
                     <div class="paper-links">
                         [<a href="https://doi.org/10.1088/1361-6633/adcd9a" target="_blank" rel="noopener noreferrer">DOI</a>] | [<a href="https://arxiv.org/abs/2412.01548" target="_blank" rel="noopener noreferrer">arXiv</a>]
@@ -81,7 +89,7 @@
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">An implementation of neural simulation-based inference for parameter estimation in ATLAS</div>
-                    <div class="paper-authors">ATLAS Collaboration <span class="contribution-note">contributor: particle reconstruction algorithms</span></div>
+                    <div class="paper-authors"><a href="https://atlas.cern" target="_blank" rel="noopener noreferrer">ATLAS Collaboration</a> <span class="contribution-note">contributor: particle reconstruction algorithms</span></div>
                     <div class="paper-venue"><em>Reports on Progress in Physics</em>, 2024.</div>
                     <div class="paper-links">
                         [<a href="https://doi.org/10.1088/1361-6633/add370" target="_blank" rel="noopener noreferrer">DOI</a>] | [<a href="https://arxiv.org/abs/2412.01600" target="_blank" rel="noopener noreferrer">arXiv</a>]

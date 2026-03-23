@@ -4,6 +4,8 @@
     --hover-color: #ffffff;
 }
 
+.katex { font-size: 1em !important; }
+
 body {
     font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
     font-size: 1.05rem;
@@ -437,7 +439,7 @@ a:hover {
 
 .paper-links a {
     color: var(--primary-color);
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .paper-links a:hover {
@@ -509,7 +511,4 @@ a:hover {
 .paper-authors .me {
     font-weight: 600;
     color: var(--primary-color);
-    text-decoration: underline;
-    text-decoration-color: var(--primary-color);
-    text-underline-offset: 2px;
 }

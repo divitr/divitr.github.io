@@ -1,27 +1,26 @@
 function initTOC() {
+    // Return a clone with KaTeX MathML subtrees removed so that textContent
+    // gives only the visible characters (no TeX annotation duplication).
+    function strippedClone(element) {
+        const clone = element.cloneNode(true);
+        clone.querySelectorAll('.katex-mathml').forEach(el => el.remove());
+        return clone;
+    }
+
     function createIdFromText(text) {
         return text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     }
 
-    // Set link content: use full innerHTML (with math) when it fits;
-    // otherwise cut the raw text at a safe point — never mid-expression.
+    // Set link content: use full visual HTML when the visible text fits;
+    // otherwise fall back to truncated plain text.
     function setLinkContent(link, element, maxLength) {
-        const raw = element.textContent;
+        const clone = strippedClone(element);
+        const raw = clone.textContent;
         if (raw.length <= maxLength) {
-            link.innerHTML = element.cloneNode(true).innerHTML;
+            link.innerHTML = clone.innerHTML;
             return;
         }
-        // Find a cut point that doesn't land inside a \(...\) expression.
-        let cutAt = maxLength;
-        const mathStart = raw.lastIndexOf('\\(', cutAt - 1);
-        if (mathStart !== -1) {
-            const mathEnd = raw.indexOf('\\)', mathStart);
-            if (mathEnd === -1 || mathEnd >= cutAt) {
-                // Cut would fall mid-expression — back up to just before \(
-                cutAt = mathStart;
-            }
-        }
-        link.textContent = raw.slice(0, cutAt).trimEnd() + '…';
+        link.textContent = raw.slice(0, maxLength).trimEnd() + '…';
     }
 
     const tocContainer = document.createElement('div');
@@ -187,16 +186,16 @@ function initTOC() {
     // First pass: assign IDs to h2 elements
     h2Elements.forEach((h2) => {
         if (!h2.id) {
-            h2.id = createIdFromText(h2.textContent);
+            h2.id = createIdFromText(strippedClone(h2).textContent);
         }
     });
-    
+
     // Second pass: assign IDs to h3 elements with parent section prefix
     h2Elements.forEach((h2) => {
         let next = h2.nextElementSibling;
         while (next && !(next.tagName && next.tagName.toLowerCase() === 'h2')) {
             if (next.tagName && next.tagName.toLowerCase() === 'h3' && !next.id) {
-                next.id = `${h2.id}.${createIdFromText(next.textContent)}`;
+                next.id = `${h2.id}.${createIdFromText(strippedClone(next).textContent)}`;
             }
             next = next.nextElementSibling;
         }
@@ -306,21 +305,6 @@ function initTOC() {
     window.addEventListener('scroll', highlightCurrentSection);
     window.addEventListener('resize', highlightCurrentSection);
 
-    // Typeset TOC math after MathJax finishes its initial page render.
-    // MathJax is loaded async so we poll for startup.promise.
-    let _attempts = 0;
-    function _tryTypesetTOC() {
-        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
-            window.MathJax.startup.promise.then(() => {
-                MathJax.typesetPromise([tocContainer]).catch(err => console.log('MathJax TOC error:', err));
-            });
-        } else if (_attempts < 30) {
-            _attempts++;
-            setTimeout(_tryTypesetTOC, 100);
-        }
-    }
-    _tryTypesetTOC();
 }
 
-// Initialize TOC after DOM loads (before MathJax renders)
 document.addEventListener('DOMContentLoaded', initTOC);
