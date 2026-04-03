@@ -1217,13 +1217,13 @@
     svgContainer.appendChild(root);
   }
 
-  // ── Render: Entropy + Fisher-Rao Speed ───────────────────────────────────────
-  // At each moment t the KDE defines a probability distribution p(t) over tags.
-  // Shannon entropy H(t) = -Σ pₖ log pₖ / log n measures focus (low = concentrated).
-  // Fisher-Rao speed ‖ṗ‖_FR = ‖d√p/dt‖₂ is the velocity in the information-geometric
-  // metric on Δ⁴ — the sphere under the Hellinger embedding. Spikes = topic pivots.
+  // ── Render: Interest Phase Portrait (Entropy vs. Speed) ──────────────────────
+  // State-space trajectory of intellectual focus.
+  // X-axis: Shannon entropy H(t) (0 = hyper-focused, 1 = uniform spread)
+  // Y-axis: Fisher-Rao speed ||ṗ||_FR (rate of change in topic distribution)
+  // The curve traces the evolution of your "mental state" through these two dimensions.
 
-  function renderSimplex(svgContainer, tooltipEl, posts, _unused, _labels, tagY) {
+  function renderDrift(svgContainer, tooltipEl, posts, _unused, _labels, tagY) {
     const TAGS_ORDERED = Object.entries(tagY).sort((a, b) => a[1] - b[1]).map(([t]) => t);
     const PALETTE = ['#7a8fa6', '#6a9a7a', '#a09060', '#8a7aaa', '#a07060'];
     const TAG_COLOR = Object.fromEntries(TAGS_ORDERED.map((t, i) => [t, PALETTE[i % PALETTE.length]]));
@@ -1234,25 +1234,18 @@
     const { kdes, grid, gMin, gMax, tMin, tMax } = kdeData;
     const GRID = grid.length;
 
-    // ── Normalized probabilities + Hellinger coordinates ──────────────────────
-    // p_k(t) = KDE_k(t) / Σ KDE_j(t)    h_k(t) = √p_k(t)  (Hellinger embedding)
+    // ── Metrics computation ────────────────────────────────────────────────────
     const probs = grid.map((_, gi) => {
       const vals = TAGS_ORDERED.map(tag => kdes[tag][gi]);
       const total = vals.reduce((a, b) => a + b, 0);
       return total > 1e-30 ? vals.map(v => v / total) : vals.map(() => 1 / nTags);
     });
-    const hellinger = probs.map(p => p.map(v => Math.sqrt(v)));
 
-    // ── Shannon entropy H(t) normalized to [0, 1] ─────────────────────────────
-    // H = 1 when attention is uniform across all tags; 0 when fully concentrated.
     const entropy = probs.map(p =>
       -p.reduce((s, pk) => s + (pk > 1e-15 ? pk * Math.log(pk) : 0), 0) / Math.log(nTags)
     );
 
-    // ── Fisher-Rao speed ‖ṗ‖_FR = ‖d√p/dt‖₂ via central differences ─────────
-    // The Fisher information metric on Δⁿ⁻¹ is the round metric on the positive
-    // orthant of Sⁿ⁻¹ under the Hellinger embedding h_k = √p_k — so Euclidean
-    // distance in Hellinger space is the geodesic distance in information geometry.
+    const hellinger = probs.map(p => p.map(v => Math.sqrt(v)));
     const frSpeed = grid.map((_, gi) => {
       const hP = hellinger[Math.min(gi + 1, GRID - 1)];
       const hM = hellinger[Math.max(gi - 1, 0)];
@@ -1260,137 +1253,125 @@
       return Math.sqrt(hM.reduce((s, _, k) => s + ((hP[k] - hM[k]) / sc) ** 2, 0));
     });
 
-    // Normalize speed to [0, 1] over active window
+    // Filtering to active window (posts start to end)
     const giStart = grid.findIndex(t => t >= tMin);
     const giEnd   = grid.reduce((idx, t, i) => t <= tMax ? i : idx, 0);
     const gS = Math.max(0, giStart), gE = Math.min(GRID - 1, giEnd);
+    
     const maxSpeed = frSpeed.slice(gS, gE + 1).reduce((m, s) => Math.max(m, s), 1e-15);
     const normSpeed = frSpeed.map(s => s / maxSpeed);
 
+    // ── Dynamic scaling ────────────────────────────────────────────────────────
+    // Calculate actual ranges to 'un-smush' the plot
+    const activeEntropy = entropy.slice(gS, gE + 1);
+    const hMin = Math.min(...activeEntropy), hMax = Math.max(...activeEntropy);
+    const activeSpeed = normSpeed.slice(gS, gE + 1);
+    const sMin = Math.min(...activeSpeed), sMax = Math.max(...activeSpeed);
+
+    const hRange = hMax - hMin || 0.1, sRange = sMax - sMin || 0.1;
+    const hPad = hRange * 0.1, sPad = sRange * 0.1; // 10% padding
+
     // ── Layout ─────────────────────────────────────────────────────────────────
-    const PADL = 50, PADR = 32, PADT = 30, PADB = 48;
-    const plotW = W - PADL - PADR;
-    const plotH = H - PADT - PADB;
-    const AXIS_Y = PADT + plotH;
-    const sx = t => PADL + ((t - gMin) / (gMax - gMin)) * plotW;
-    const sy = v => PADT + (1 - v) * plotH;
+    const PAD_L = 60, PAD_R = 60, PAD_T = 50, PAD_B = 60;
+    const plotW = W - PAD_L - PAD_R, plotH = H - PAD_T - PAD_B;
+
+    const sx = h => PAD_L + ((h - (hMin - hPad)) / (hRange + 2 * hPad)) * plotW;
+    const sy = v => PAD_T + (1 - (v - (sMin - sPad)) / (sRange + 2 * sPad)) * plotH;
 
     const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', style: 'display:block' });
     root.appendChild(svg('rect', { x: 0, y: 0, width: W, height: H, fill: '#fafafa', rx: 3 }));
 
-    // Subtle horizontal gridlines
-    for (const yv of [0.25, 0.5, 0.75, 1.0]) {
-      root.appendChild(svg('line', {
-        x1: PADL, y1: sy(yv).toFixed(1), x2: PADL + plotW, y2: sy(yv).toFixed(1),
-        stroke: yv === 1.0 ? '#e0e0dc' : '#ebebeb', 'stroke-width': 0.7,
-        'pointer-events': 'none',
-      }));
-    }
-    // Baseline
-    root.appendChild(svg('line', {
-      x1: PADL, y1: AXIS_Y, x2: PADL + plotW, y2: AXIS_Y,
-      stroke: '#ddd', 'stroke-width': 0.8, 'pointer-events': 'none',
-    }));
+    // ── Axes ───────────────────────────────────────────────────────────────────
+    const axisStyle = 'stroke:#e8e8e4;stroke-width:0.8';
+    root.appendChild(svg('line', { x1: PAD_L, y1: PAD_T, x2: PAD_L, y2: PAD_T + plotH, style: axisStyle }));
+    root.appendChild(svg('line', { x1: PAD_L, y1: PAD_T + plotH, x2: PAD_L + plotW, y2: PAD_T + plotH, style: axisStyle }));
 
-    // ── Entropy curve (filled area + Catmull-Rom stroke) ──────────────────────
-    const ENTROPY_COLOR = '#7a8fa6';
-    {
-      const pts = [];
-      for (let gi = gS; gi <= gE; gi++) pts.push([sx(grid[gi]), sy(entropy[gi])]);
-      if (pts.length > 1) {
-        const first = pts[0], last = pts[pts.length - 1];
-        const areaD = `M ${first[0].toFixed(1)},${AXIS_Y} L ${first[0].toFixed(1)},${first[1].toFixed(1)} ` +
-          pts.slice(1).map(([x, y]) => `L ${x.toFixed(1)},${y.toFixed(1)}`).join(' ') +
-          ` L ${last[0].toFixed(1)},${AXIS_Y} Z`;
-        root.appendChild(svg('path', { d: areaD, fill: ENTROPY_COLOR, opacity: '0.10', 'pointer-events': 'none' }));
+    // Axis labels — at the end of each axis, right-aligned
+    const labelStyle = 'font-size:9.5px;fill:#aaa;font-family:Charter,Georgia,serif;font-style:italic';
+    const xLab = svg('text', { x: PAD_L + plotW, y: PAD_T + plotH + 14, 'text-anchor': 'end', style: labelStyle });
+    xLab.textContent = 'entropy';
+    root.appendChild(xLab);
+
+    const yLab = svg('text', { x: PAD_L - 6, y: PAD_T, 'text-anchor': 'end', style: labelStyle, transform: `rotate(-90, ${PAD_L - 6}, ${PAD_T})` });
+    yLab.textContent = 'speed';
+    root.appendChild(yLab);
+
+    // ── Trajectory ─────────────────────────────────────────────────────────────
+    const trajectory = [];
+    for (let gi = gS; gi <= gE; gi++) {
+      trajectory.push([sx(entropy[gi]), sy(normSpeed[gi])]);
+    }
+
+    if (trajectory.length > 1) {
+      // Chunked path to vary opacity and color over time
+      const CHUNK = 8;
+      for (let i = 0; i < trajectory.length - 1; i += CHUNK) {
+        const end = Math.min(i + CHUNK + 1, trajectory.length);
+        const segment = trajectory.slice(i, end);
+        const progress = (i + gS - gS) / (gE - gS);
+        
+        // Find dominant tag for this segment to color it
+        const giMid = Math.floor((i + end) / 2) + gS;
+        const dominantTagIdx = probs[giMid].indexOf(Math.max(...probs[giMid]));
+        const color = TAG_COLOR[TAGS_ORDERED[dominantTagIdx]];
+
         root.appendChild(svg('path', {
-          d: catmullRomPath(pts), fill: 'none',
-          stroke: ENTROPY_COLOR, 'stroke-width': 1.5, opacity: '0.75',
-          'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'pointer-events': 'none',
+          d: catmullRomPath(segment),
+          fill: 'none',
+          stroke: color,
+          'stroke-width': 1.5,
+          opacity: (0.12 + progress * 0.68).toFixed(3),
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round'
         }));
       }
     }
 
-    // ── Fisher-Rao speed curve (stroke only) ──────────────────────────────────
-    const SPEED_COLOR = '#a07060';
-    {
-      const pts = [];
-      for (let gi = gS; gi <= gE; gi++) pts.push([sx(grid[gi]), sy(normSpeed[gi])]);
-      if (pts.length > 1) {
-        root.appendChild(svg('path', {
-          d: catmullRomPath(pts), fill: 'none',
-          stroke: SPEED_COLOR, 'stroke-width': 1.3, opacity: '0.70',
-          'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'pointer-events': 'none',
-        }));
-      }
-    }
-
-    // ── Curve labels (right margin) ────────────────────────────────────────────
-    const labelX = PADL + plotW + 5;
-    for (const [val, color, label] of [
-      [entropy[gE],    ENTROPY_COLOR, 'H(t)'],
-      [normSpeed[gE],  SPEED_COLOR,   '‖ṗ‖'],
-    ]) {
-      const lbl = svg('text', {
-        x: labelX, y: (sy(val) + 3.5).toFixed(1),
-        'font-size': 9, fill: color, opacity: '0.85',
-        'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
-      });
-      lbl.textContent = label;
-      root.appendChild(lbl);
-    }
-
-    // ── Y-axis labels ──────────────────────────────────────────────────────────
-    for (const [v, label] of [[0, '0'], [0.5, '½'], [1, '1']]) {
-      const t = svg('text', {
-        x: PADL - 6, y: (sy(v) + 3.5).toFixed(1), 'text-anchor': 'end', 'font-size': 8.5,
-        fill: '#c8c8c4', 'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
-      });
-      t.textContent = label;
-      root.appendChild(t);
-    }
-
-    // ── Post ticks + hit areas (same style as KDE view) ───────────────────────
-    for (const p of posts) {
+    // ── Post Markers ──────────────────────────────────────────────────────────
+    posts.forEach(p => {
       const t = new Date(p.date).getTime();
-      if (!t || isNaN(t) || t < tMin || t > tMax) continue;
-      const px = sx(t);
-      const primaryTag = p.tags.find(tg => TAGS_ORDERED.includes(tg)) ?? TAGS_ORDERED[0];
-      const color = TAG_COLOR[primaryTag];
-      root.appendChild(svg('line', {
-        x1: px.toFixed(1), y1: (AXIS_Y + 1).toFixed(1), x2: px.toFixed(1), y2: (AXIS_Y + 6).toFixed(1),
-        stroke: color, 'stroke-width': 1.3, opacity: '0.6',
-      }));
-      const hit = svg('rect', {
-        x: (px - 7).toFixed(1), y: (AXIS_Y - 14).toFixed(1), width: 14, height: 24,
+      if (!t || isNaN(t) || t < tMin || t > tMax) return;
+      
+      const gi = grid.findIndex(gt => gt >= t);
+      if (gi === -1) return;
+      
+      const x = sx(entropy[gi]), y = sy(normSpeed[gi]);
+      const dominantTag = p.tags.find(tg => TAGS_ORDERED.includes(tg)) ?? TAGS_ORDERED[0];
+      const color = TAG_COLOR[dominantTag];
+
+      const dot = svg('circle', {
+        cx: x, cy: y, r: 3,
+        fill: color, stroke: '#fafafa', 'stroke-width': 1,
+        'pointer-events': 'none',
+      });
+      const hit = svg('circle', {
+        cx: x, cy: y, r: 8,
         fill: 'transparent', style: 'cursor:pointer',
       });
-      hit.addEventListener('mouseenter', e => showTooltip(tooltipEl, p, e, svgContainer));
-      hit.addEventListener('mousemove',  e => moveTooltip(tooltipEl, e, svgContainer));
-      hit.addEventListener('mouseleave', () => hideTooltip(tooltipEl));
-      hit.addEventListener('click', () => { window.location.href = p.href; });
-      root.appendChild(hit);
-    }
 
-    // ── X-axis date labels ─────────────────────────────────────────────────────
-    const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const yr0 = new Date(tMin).getFullYear(), mo0 = new Date(tMin).getMonth() < 6 ? 0 : 6;
-    outer: for (let yr = yr0; yr <= new Date(tMax).getFullYear() + 1; yr++) {
-      for (const mo of [0, 6]) {
-        if (yr === yr0 && mo < mo0) continue;
-        const t = new Date(yr, mo, 1).getTime();
-        if (t > tMax + 60 * 24 * 3600000) break outer;
-        const px = sx(t);
-        if (px < PADL - 1 || px > PADL + plotW + 1) continue;
-        const tl = svg('text', {
-          x: px.toFixed(1), y: AXIS_Y + 16,
-          'text-anchor': 'middle', 'font-size': 9, fill: '#c8c8c4',
-          'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
-        });
-        tl.textContent = `${MO[mo]} ${yr}`;
-        root.appendChild(tl);
-      }
-    }
+      hit.addEventListener('mouseenter', e => {
+        dot.setAttribute('r', 5);
+        showTooltip(tooltipEl, p, e, svgContainer);
+      });
+      hit.addEventListener('mousemove', e => moveTooltip(tooltipEl, e, svgContainer));
+      hit.addEventListener('mouseleave', () => {
+        dot.setAttribute('r', 3);
+        hideTooltip(tooltipEl);
+      });
+      hit.addEventListener('click', () => { window.location.href = p.href; });
+
+      root.appendChild(dot);
+      root.appendChild(hit);
+    });
+
+    // ── Legend ─────────────────────────────────────────────────────────────────
+    const leg = svg('text', {
+      x: W - PAD_R + 10, y: H - 10, 'text-anchor': 'end', 'font-size': 9,
+      fill: '#c0c0bc', 'font-family': 'Charter, Georgia, serif', 'font-style': 'italic',
+      'pointer-events': 'none',
+    });
+    leg.textContent = 'opacity indicates recency';
+    root.appendChild(leg);
 
     svgContainer.innerHTML = '';
     svgContainer.appendChild(root);
@@ -1411,24 +1392,24 @@
 
     const btnConst   = document.createElement('button'); btnConst.textContent   = 'map';
     const btnPhase   = document.createElement('button'); btnPhase.textContent   = 'KDE';
-    // const btnSimplex = document.createElement('button'); btnSimplex.textContent = 'focus';
-    [btnConst, btnPhase].forEach(b => { b.style.cssText = base; });
+    const btnDrift   = document.createElement('button'); btnDrift.textContent   = 'drift';
+    [btnConst, btnPhase, btnDrift].forEach(b => { b.style.cssText = base; });
 
     function setActive(id) {
       btnConst.style.cssText   = base + `;color:${id==='constellation'?'#666':'#bbb'};font-weight:${id==='constellation'?'600':'normal'}`;
       btnPhase.style.cssText   = base + `;color:${id==='phase'?'#666':'#bbb'};font-weight:${id==='phase'?'600':'normal'}`;
-      // btnSimplex.style.cssText = base + `;color:${id==='simplex'?'#666':'#bbb'};font-weight:${id==='simplex'?'600':'normal'}`;
+      btnDrift.style.cssText   = base + `;color:${id==='drift'?'#666':'#bbb'};font-weight:${id==='drift'?'600':'normal'}`;
     }
 
     setActive('constellation');
 
     btnConst.addEventListener('click',   () => onSwitch('constellation'));
     btnPhase.addEventListener('click',   () => onSwitch('phase'));
-    // btnSimplex.addEventListener('click', () => onSwitch('simplex'));
+    btnDrift.addEventListener('click',   () => onSwitch('drift'));
 
     tabsEl.appendChild(btnConst);
     tabsEl.appendChild(btnPhase);
-    // tabsEl.appendChild(btnSimplex);
+    tabsEl.appendChild(btnDrift);
 
     container.insertBefore(tabsEl, container.firstChild);
 
@@ -1471,20 +1452,20 @@
       phaseSvgEl.style.display = 'none';
       svgEl.insertAdjacentElement('afterend', phaseSvgEl);
     }
-    // let simplexSvgEl = document.getElementById('simplex-svg');
-    // if (!simplexSvgEl) {
-    //   simplexSvgEl = document.createElement('div');
-    //   simplexSvgEl.id = 'simplex-svg';
-    //   simplexSvgEl.style.display = 'none';
-    //   phaseSvgEl.insertAdjacentElement('afterend', simplexSvgEl);
-    // }
+    let driftSvgEl = document.getElementById('drift-svg');
+    if (!driftSvgEl) {
+      driftSvgEl = document.createElement('div');
+      driftSvgEl.id = 'drift-svg';
+      driftSvgEl.style.display = 'none';
+      phaseSvgEl.insertAdjacentElement('afterend', driftSvgEl);
+    }
 
     // Inject tabs
     const tabs = injectTabs(container, id => {
       tabs.setActive(id);
       svgEl.style.display        = id === 'constellation' ? 'block' : 'none';
       phaseSvgEl.style.display   = id === 'phase'         ? 'block' : 'none';
-      // simplexSvgEl.style.display = id === 'simplex'       ? 'block' : 'none';
+      driftSvgEl.style.display   = id === 'drift'         ? 'block' : 'none';
       hideTooltip(tooltipEl);
     });
 
@@ -1506,11 +1487,11 @@
     const phaseLongHtml  = `Each tag's activity is modeled by Gaussian kernel density estimation with bandwidth given by Silverman's formula. Tags are stacked in the order dictated by the <a href="https://en.wikipedia.org/wiki/Algebraic_connectivity" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Fiedler vector</a>. The center of mass thread traces the normalized weighted average of the tag-strip baselines over time, with weights given by the instantaneous KDE values. Gaussian process regression fits per-post CoM values, giving the thread and uncertainty band, and thread opacity indicates normalized Shannon entropy across tags. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
     injectCaption(phaseSvgEl, 'phase-caption', phaseShortHtml, phaseLongHtml);
 
-    // // Render simplex view
-    // renderSimplex(simplexSvgEl, tooltipEl, posts, null, labels, tagY);
-    // const simplexShortHtml = `Per-tag KDE normalized to tag-mixture probabilities, projected via PCA. <a href="#" style="${lnk}" data-expand="1">(more)</a>`;
-    // const simplexLongHtml = `Per-tag KDE values are normalized to a probability distribution in the 4-simplex \\(\\Delta^4\\). The vertices are pure-tag states; each point represents a convex combination of tags. Points are projected to 2D via PCA, and a <a href="https://en.wikipedia.org/wiki/Catmull%E2%80%93Rom_spline" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Catmull-Rom spline</a> interpolates the points to trace evolution over time. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
-    // injectCaption(simplexSvgEl, 'simplex-caption', simplexShortHtml, simplexLongHtml);
+    // Render drift view
+    renderDrift(driftSvgEl, tooltipEl, posts, null, labels, tagY);
+    const driftShortHtml = `Topic entropy vs. <a href="https://en.wikipedia.org/wiki/Fisher_information_metric" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Fisher-Rao</a> speed. Trajectory colored by dominant tag. <a href="#" style="${lnk}" data-expand="1">(more)</a>`;
+    const driftLongHtml = `Per-tag KDE values are normalized to a tag-mixture distribution \\(p(t)\\) at each point in time. Normalized Shannon entropy is given by \\(H = -\\sum_k p_k \\log p_k / \\log n\\). <a href="https://en.wikipedia.org/wiki/Fisher_information_metric" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Fisher-Rao speed</a> \\(\\|\\dot{p}\\|_{FR} = \\|\\tfrac{d}{dt}\\sqrt{p}\\|_2\\) is computed via central differences on the Hellinger embedding \\(\\sqrt{p}\\), giving the instantaneous velocity on the sphere. A <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Catmull-Rom spline</a> interpolates the trajectory, colored by dominant tag. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
+    injectCaption(driftSvgEl, 'drift-caption', driftShortHtml, driftLongHtml);
   }
 
   // ── Toggle + penguin ──────────────────────────────────────────────────────────
