@@ -376,11 +376,11 @@ Link to external resources: [arXiv](https://arxiv.org/)
 
 ## Footnotes
 
-Footnotes can be added using the `[^1]:` syntax:
+Footnotes can be added using named labels like `[^lee]:`:
 
-Here's a statement that needs a citation[^1].
+Here's a statement that needs a citation[^lee].
 
-[^1]: This is the footnote content that appears at the bottom of the page.
+[^lee]: This is the footnote content that appears at the bottom of the page.
 
 ## Comments
 

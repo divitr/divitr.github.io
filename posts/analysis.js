@@ -266,7 +266,7 @@
       }
       const cents  = ci.map(i => [...pts[i]]);
       const labels = new Array(n).fill(0);
-      const SIZE_REG = 0.08; // small bias against very large clusters (relative to n)
+      const SIZE_REG = 0.05; // mild bias against very large clusters (relative to n)
       for (let iter = 0; iter < 300; iter++) {
         let changed = false;
         const sizes = new Array(k).fill(0);
@@ -309,46 +309,27 @@
   }
 
   function autoK(pts, kMin = 2, kMax = 5) {
-    // Small parsimony penalty per extra cluster — prevents over-splitting on small datasets
-    // where k=5 with two 2-post clusters can outscore k=3 on silhouette alone.
+    // Light parsimony penalty per extra cluster — enough to avoid silly over-splitting,
+    // but not so much that the scorer defaults toward too-few groups.
     let bestK = kMin, bestScore = -Infinity;
     for (let k = kMin; k <= Math.min(kMax, pts.length - 1); k++) {
-      const score = silhouette(pts, kmeans2d(pts, k)) - 0.01 * (k - kMin) ** 2;
+      const labels = kmeans2d(pts, k);
+      const counts = new Array(k).fill(0);
+      for (const l of labels) counts[l]++;
+      const mean = pts.length / k;
+      const imbalance = counts.reduce((s, c) => s + ((c - mean) / mean) ** 2, 0) / k;
+      const smallClusterPenalty = counts.reduce((s, c) => {
+        if (c >= 3) return s;
+        return s + (3 - c) ** 2;
+      }, 0) / k;
+      const score =
+        silhouette(pts, labels)
+        - 0.0035 * (k - kMin) ** 2
+        - 0.05 * imbalance
+        - 0.08 * smallClusterPenalty;
       if (score > bestScore) { bestScore = score; bestK = k; }
     }
     return bestK;
-  }
-
-  // ── No singleton clusters ─────────────────────────────────────────────────────
-  // Iteratively merges any cluster with fewer than 3 posts into the spatially nearest other cluster.
-
-  function fixSingletons(pts, labels) {
-    let cur = [...labels];
-    let changed = true;
-    while (changed) {
-      changed = false;
-      const counts = {};
-      for (const l of cur) counts[l] = (counts[l] ?? 0) + 1;
-      const lone = Object.keys(counts).map(Number).find(c => counts[c] < 3);
-      if (lone === undefined) break;
-      const idx    = cur.indexOf(lone);
-      const others = [...new Set(cur)].filter(l => l !== lone);
-      // Find nearest cluster centroid in 2D
-      let best = others[0], bd = Infinity;
-      for (const l of others) {
-        const members = pts.filter((_, i) => cur[i] === l);
-        const cx = members.reduce((s, p) => s + p[0], 0) / members.length;
-        const cy = members.reduce((s, p) => s + p[1], 0) / members.length;
-        const d  = dist2(pts[idx], [cx, cy]);
-        if (d < bd) { bd = d; best = l; }
-      }
-      cur[idx] = best;
-      changed = true;
-    }
-    // Renormalize labels to 0…k-1
-    const unique = [...new Set(cur)].sort((a, b) => a - b);
-    const remap  = Object.fromEntries(unique.map((v, i) => [v, i]));
-    return cur.map(l => remap[l]);
   }
 
   // ── Merge all-misc clusters ───────────────────────────────────────────────────
@@ -883,8 +864,9 @@
     legend.textContent = 'opacity indicates recency, size indicates length';
     root.appendChild(legend);
 
-    svgContainer.innerHTML = '';
-    svgContainer.appendChild(root);
+    const oldSvg = svgContainer.querySelector('svg');
+    if (oldSvg) oldSvg.remove();
+    svgContainer.insertBefore(root, svgContainer.firstChild);
   }
 
   // ── Tag ordering via co-occurrence Fiedler vector ────────────────────────────
@@ -959,7 +941,8 @@
     }
 
     const globalBW = silverman(times);
-    const pad_t = globalBW * 1.2;
+    const span = tMax - tMin;
+    const pad_t = span > 0 ? Math.min(globalBW * 0.45, span * 0.08) : globalBW * 0.45;
     const gMin = tMin - pad_t, gMax = tMax + pad_t;
     const GRID = 300;
     const grid = Array.from({ length: GRID }, (_, i) => gMin + (i / (GRID - 1)) * (gMax - gMin));
@@ -1213,8 +1196,9 @@
       }
     }
 
-    svgContainer.innerHTML = '';
-    svgContainer.appendChild(root);
+    const oldSvg = svgContainer.querySelector('svg');
+    if (oldSvg) oldSvg.remove();
+    svgContainer.insertBefore(root, svgContainer.firstChild);
   }
 
   // ── Render: Interest Phase Portrait (Entropy vs. Speed) ──────────────────────
@@ -1223,7 +1207,7 @@
   // Y-axis: Fisher-Rao speed ||ṗ||_FR (rate of change in topic distribution)
   // The curve traces the evolution of your "mental state" through these two dimensions.
 
-  function renderDrift(svgContainer, tooltipEl, posts, _unused, _labels, tagY) {
+  function renderDrift(svgContainer, tooltipEl, posts, _unused, _labels, tagY, animate = false) {
     const TAGS_ORDERED = Object.entries(tagY).sort((a, b) => a[1] - b[1]).map(([t]) => t);
     const PALETTE = ['#7a8fa6', '#6a9a7a', '#a09060', '#8a7aaa', '#a07060'];
     const TAG_COLOR = Object.fromEntries(TAGS_ORDERED.map((t, i) => [t, PALETTE[i % PALETTE.length]]));
@@ -1302,6 +1286,7 @@
       trajectory.push([sx(entropy[gi]), sy(normSpeed[gi])]);
     }
 
+    const animatedSegments = [];
     if (trajectory.length > 1) {
       // Chunked path to vary opacity and color over time
       const CHUNK = 8;
@@ -1315,19 +1300,22 @@
         const dominantTagIdx = probs[giMid].indexOf(Math.max(...probs[giMid]));
         const color = TAG_COLOR[TAGS_ORDERED[dominantTagIdx]];
 
-        root.appendChild(svg('path', {
+        const path = svg('path', {
           d: catmullRomPath(segment),
           fill: 'none',
           stroke: color,
           'stroke-width': 1.5,
-          opacity: (0.12 + progress * 0.68).toFixed(3),
+          opacity: animate ? 0 : (0.12 + progress * 0.68).toFixed(3),
           'stroke-linecap': 'round',
           'stroke-linejoin': 'round'
-        }));
+        });
+        root.appendChild(path);
+        animatedSegments.push({ path, progress, opacity: 0.12 + progress * 0.68 });
       }
     }
 
     // ── Post Markers ──────────────────────────────────────────────────────────
+    const markerMeta = [];
     posts.forEach(p => {
       const t = new Date(p.date).getTime();
       if (!t || isNaN(t) || t < tMin || t > tMax) return;
@@ -1342,27 +1330,47 @@
       const dot = svg('circle', {
         cx: x, cy: y, r: 3,
         fill: color, stroke: '#fafafa', 'stroke-width': 1,
+        opacity: animate ? 0 : 1,
+        style: 'transition:opacity 0.2s ease, r 0.2s ease',
         'pointer-events': 'none',
       });
+      const emo = svg('text', {
+        x, y, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
+        'font-size': 12, opacity: 0,
+        style: 'pointer-events:none;user-select:none;transition:opacity 0.2s ease',
+      });
+      emo.textContent = p.emoji;
       const hit = svg('circle', {
         cx: x, cy: y, r: 8,
-        fill: 'transparent', style: 'cursor:pointer',
+        fill: 'transparent', opacity: animate ? 0 : 1,
+        style: 'cursor:pointer',
       });
 
       hit.addEventListener('mouseenter', e => {
+        dot.setAttribute('opacity', 0);
         dot.setAttribute('r', 5);
+        emo.setAttribute('opacity', 1);
         showTooltip(tooltipEl, p, e, svgContainer);
       });
       hit.addEventListener('mousemove', e => moveTooltip(tooltipEl, e, svgContainer));
       hit.addEventListener('mouseleave', () => {
+        dot.setAttribute('opacity', 1);
         dot.setAttribute('r', 3);
+        emo.setAttribute('opacity', 0);
         hideTooltip(tooltipEl);
       });
       hit.addEventListener('click', () => { window.location.href = p.href; });
 
       root.appendChild(dot);
+      root.appendChild(emo);
       root.appendChild(hit);
+      markerMeta.push({
+        dot, emo, hit, color,
+        progress: gE === gS ? 1 : (gi - gS) / (gE - gS),
+      });
     });
+
+    markerMeta.sort((a, b) => a.progress - b.progress);
 
     // ── Legend ─────────────────────────────────────────────────────────────────
     const leg = svg('text', {
@@ -1373,8 +1381,62 @@
     leg.textContent = 'opacity indicates recency';
     root.appendChild(leg);
 
-    svgContainer.innerHTML = '';
-    svgContainer.appendChild(root);
+    const oldSvg = svgContainer.querySelector('svg');
+    if (oldSvg) oldSvg.remove();
+    svgContainer.insertBefore(root, svgContainer.firstChild);
+
+    if (animate && animatedSegments.length) {
+      const easeFade = t => t * t * (3 - 2 * t);
+      let totalAnimatedLength = 0;
+      for (const seg of animatedSegments) {
+        const len = seg.path.getTotalLength();
+        seg.length = len;
+        seg.startLength = totalAnimatedLength;
+        totalAnimatedLength += len;
+        seg.endLength = totalAnimatedLength;
+        seg.path.setAttribute('stroke-dasharray', len.toFixed(2));
+        seg.path.setAttribute('stroke-dashoffset', len.toFixed(2));
+      }
+
+      let lastShown = -1;
+      const duration = 3000;
+      const start = performance.now();
+
+      function frame(now) {
+        const p = Math.min(1, (now - start) / duration);
+        const revealedLength = p * totalAnimatedLength;
+        for (const seg of animatedSegments) {
+          const visible = Math.max(0, Math.min(seg.length, revealedLength - seg.startLength));
+          const local = seg.length > 0 ? visible / seg.length : 1;
+          const fade = easeFade(local);
+          seg.path.setAttribute('opacity', (local > 0 ? seg.opacity * fade : 0).toFixed(3));
+          seg.path.setAttribute('stroke-dashoffset', (seg.length - visible).toFixed(2));
+        }
+
+        for (let i = lastShown + 1; i < markerMeta.length; i++) {
+          if (markerMeta[i].progress > p) break;
+          markerMeta[i].dot.setAttribute('opacity', 1);
+          markerMeta[i].hit.setAttribute('opacity', 1);
+          lastShown = i;
+        }
+
+        if (p < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          for (const seg of animatedSegments) {
+            seg.path.removeAttribute('stroke-dasharray');
+            seg.path.removeAttribute('stroke-dashoffset');
+            seg.path.setAttribute('opacity', seg.opacity.toFixed(3));
+          }
+          for (const m of markerMeta) {
+            m.dot.setAttribute('opacity', 1);
+            m.hit.setAttribute('opacity', 1);
+          }
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
   }
 
   // ── Tab injector ──────────────────────────────────────────────────────────────
@@ -1438,7 +1500,7 @@
     const { coords: rawCoords, fiedler } = lapEmbedFull(X);
     const embed2d  = rawCoords;
     const k        = autoK(embed2d);
-    const labels   = mergeMiscClusters(posts, fixSingletons(embed2d, kmeans2d(embed2d, k)));
+    const labels   = mergeMiscClusters(posts, kmeans2d(embed2d, k));
 
     const tagY = computeTagOrdering(posts);
 
@@ -1467,6 +1529,7 @@
       phaseSvgEl.style.display   = id === 'phase'         ? 'block' : 'none';
       driftSvgEl.style.display   = id === 'drift'         ? 'block' : 'none';
       hideTooltip(tooltipEl);
+      if (id === 'drift') renderDrift(driftSvgEl, tooltipEl, posts, null, labels, tagY, true);
     });
 
     // Render constellation

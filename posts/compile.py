@@ -5,7 +5,7 @@ compile.py - Compiles .mdtx files to HTML with LaTeX math support.
 Usage:
     python3 -m compile src
 """
-import os, re, sys, time, subprocess, json
+import os, re, sys, time, subprocess, json, html
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple
@@ -111,6 +111,33 @@ def _expand_physics_macros(latex: str) -> str:
     return ''.join(result)
 
 
+def _plain_title_text(text: str) -> str:
+    """Convert MDTX title text into a plain string suitable for <title>."""
+    def math_repl(match):
+        inner = match.group(1)
+        inner = re.sub(r'\\([A-Za-z]+)', lambda m: {
+            'mu': 'μ',
+            'theta': 'θ',
+            'phi': 'φ',
+            'psi': 'ψ',
+            'alpha': 'α',
+            'beta': 'β',
+            'gamma': 'γ',
+            'delta': 'δ',
+            'epsilon': 'ε',
+            'lambda': 'λ',
+            'sigma': 'σ',
+            'tau': 'τ',
+            'omega': 'ω',
+        }.get(m.group(1), m.group(1)), inner)
+        inner = re.sub(r'[{}^_]', '', inner)
+        inner = re.sub(r'\s+', ' ', inner).strip()
+        return inner
+
+    text = re.sub(r'\{([^{}]*)\}', math_repl, text)
+    return html.escape(text.strip(), quote=False)
+
+
 class MDTXCompiler:
     def __init__(self, source_dir: str):
         # Source directory is posts/src/
@@ -130,7 +157,8 @@ class MDTXCompiler:
         return False
 
     def remove_comments(self, text: str) -> str:
-        return re.sub(r'//.*', '', text)
+        # Treat comments as whole-line directives so literal `//` can appear in prose/code.
+        return re.sub(r'(?m)^[ \t]*//.*(?:\n|$)', '', text)
 
     def process_requires(self, text: str) -> Tuple[List[str], str]:
         reqs, out = [], []
@@ -208,7 +236,8 @@ class MDTXCompiler:
             # Escape HTML characters in inline code
             code = code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
             return f'<code>{code}</code>'
-        return re.sub(r'`([^`]+)`', repl, text)
+        # Inline code should stay on one line; do not let unmatched backticks bleed across paragraphs.
+        return re.sub(r'`([^`\n]+)`', repl, text)
 
     def extract_footnotes(self, text: str) -> Tuple[Dict[str,str], str]:
         fns, out = {}, []
@@ -220,23 +249,49 @@ class MDTXCompiler:
                 out.append(L)
         return fns, "\n".join(out)
 
-    def replace_footrefs(self, text: str, fns: Dict[str,str]) -> str:
-        def r(m):
-            i = m.group(1)
-            if i in fns:
-                return f'<sup><a href="#fn{i}" id="fnref{i}" aria-label="Footnote {i}">{i}</a></sup>'
-            return m.group(0)
-        return re.sub(r'\[\^([^\]]+)\]', r, text)
+    def build_footnote_numbers(self, text: str, fns: Dict[str, str]) -> Dict[str, int]:
+        footnote_numbers = {}
+        next_number = 1
 
-    def footnotes_html(self, fns: Dict[str,str]) -> str:
+        for match in re.finditer(r'\[\^([^\]]+)\]', text):
+            label = match.group(1)
+            if label in fns and label not in footnote_numbers:
+                footnote_numbers[label] = next_number
+                next_number += 1
+
+        # Keep unreferenced footnotes stable by appending them in definition order.
+        for label in fns:
+            if label not in footnote_numbers:
+                footnote_numbers[label] = next_number
+                next_number += 1
+
+        return footnote_numbers
+
+    def replace_footrefs(self, text: str, fns: Dict[str,str], footnote_numbers: Dict[str, int]) -> str:
+        def r(m):
+            label = m.group(1)
+            if label in fns and label in footnote_numbers:
+                number = footnote_numbers[label]
+                return f'<sup><a href="#fn{number}" id="fnref{number}" aria-label="Footnote {number}">{number}</a></sup>'
+            return m.group(0)
+
+        # Do not rewrite footnote markers inside code/pre blocks that should render literally.
+        parts = re.split(r'(<code>[\s\S]*?</code>|<pre[\s\S]*?</pre>|<[^>]*>)', text)
+        for i in range(len(parts)):
+            if not parts[i].startswith('<'):
+                parts[i] = re.sub(r'\[\^([^\]]+)\]', r, parts[i])
+        return ''.join(parts)
+
+    def footnotes_html(self, fns: Dict[str,str], footnote_numbers: Dict[str, int]) -> str:
         if not fns:
             return ""
         parts = ['<div class="footnotes">','<ol>']
-        for i, t in fns.items():
+        for label, t in sorted(fns.items(), key=lambda item: footnote_numbers[item[0]]):
+            number = footnote_numbers[label]
             processed_text = t.strip()
             processed_text = self.replace_inline_math(processed_text)
             processed_text = self.apply_emphasis(processed_text)
-            parts.append(f'<li id="fn{i}">{processed_text} <a href="#fnref{i}" class="footnote-backref" aria-label="Back to reference">↩</a></li>')
+            parts.append(f'<li id="fn{number}">{processed_text} <a href="#fnref{number}" class="footnote-backref" aria-label="Back to reference">↩</a></li>')
         parts.append('</ol></div>')
         return "\n".join(parts)
 
@@ -1229,6 +1284,7 @@ class MDTXCompiler:
             print(f"Skipping {path.name}: visibility=hidden")
             return
         fns,  body = self.extract_footnotes(body)
+        footnote_numbers = self.build_footnote_numbers(body, fns)
         
         # ←── minimal fix: strip any leftover 'desc:' or 'tags:' lines 
         body = re.sub(r'(?m)^(?:desc|tags):.*\n', '', body)
@@ -1261,7 +1317,7 @@ class MDTXCompiler:
 
 
         # Process footnotes
-        body = self.replace_footrefs(body, fns)
+        body = self.replace_footrefs(body, fns, footnote_numbers)
         
         # Process paragraphs last (after all other blocks are processed)
         body = self.process_paragraphs(body)
@@ -1273,15 +1329,16 @@ class MDTXCompiler:
         body = self.replace_inline_math(body)
 
         # append footnotes (restore URLs and math here since fn_html is built after body processing)
-        fn_html = self.footnotes_html(fns)
+        fn_html = self.footnotes_html(fns, footnote_numbers)
         if fn_html:
             fn_html = self.restore_urls_as_html(fn_html, url_map)
             body += "\n" + fn_html
 
         head_reqs = ""  # \require{} directives not needed with KaTeX pre-rendering
         title_raw = meta.get('title','Untitled')
-        # Process title for inline math (convert { ... } to \( ... \))
+        # HTML title for on-page heading, plain title for the document <title>
         title     = self.replace_inline_math(title_raw)
+        doc_title = _plain_title_text(title_raw)
         tags      = meta.get('tags', '')
 
         # Generate tags HTML for the post
@@ -1313,7 +1370,7 @@ class MDTXCompiler:
     <link rel="stylesheet" href="../posts.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
+    <title>{doc_title}</title>
 </head>
 
 <body>
