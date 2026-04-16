@@ -38,6 +38,7 @@
                 <button class="viz-btn" id="viz-toggle">analysis</button>
             </div>
 
+            <div id="active-filter-status"></div>
             <div id="constellation-container" style="display:none;position:relative;margin:1.2rem 0 0;padding-bottom:1.5rem;border-bottom:1px solid #eee">
                 <div id="constellation-status"
                      style="color:#aaa;font-size:0.83rem;padding:2rem 0;text-align:center"></div>
@@ -212,6 +213,14 @@
                             activeFilters.add('all');
                             document.querySelector('[data-filter="all"]').classList.add('active');
                         }
+                    }
+
+                    // Update status line
+                    const status = document.getElementById('active-filter-status');
+                    if (activeFilters.has('all') || activeFilters.size < 2) {
+                        status.textContent = '';
+                    } else {
+                        status.textContent = 'filtered for ' + Array.from(activeFilters).join(' & ');
                     }
 
                     // Filter posts based on active filters

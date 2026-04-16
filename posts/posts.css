@@ -110,6 +110,13 @@
     font-weight: 525;
 }
 
+#active-filter-status {
+    font-size: 0.8rem;
+    color: #bbb;
+    min-height: 1.2em;
+    margin-top: 0.25rem;
+}
+
 /* Post tags */
 .post-tags {
     margin-top: 0.5rem;
