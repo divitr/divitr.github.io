@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Divit Rawal</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left:'\\(', right:'\\)', display:false},{left:'\\[', right:'\\]', display:true}]});"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.profile-img-container');
@@ -84,14 +88,19 @@
         
 
         <!-- <section class="news">
+            <h2 class="section-label">News</h2>
             <div class="news-items">
                 <div class="news-item">
+                    <div class="news-date">Apr 2026</div>
+                    <div class="news-content">ALPHANSO received Best Paper (Mathematics, Computation, and AI Applications) at the 2026 ANS student conference.</div>
+                </div>
+                <div class="news-item">
                     <div class="news-date">Mar 2026</div>
-                    <div class="news-content">Our software package <a target="_blank" href="https://github.com/alphanso-org/alphanso">ALPHANSO</a> for computing (\(\alpha\),n) source terms is now released!</div>
+                    <div class="news-content">Released <a target="_blank" href="https://github.com/alphanso-org/alphanso">ALPHANSO</a>, a software package for computing (\(\alpha\),n) source terms.</div>
                 </div>
                 <div class="news-item">
                     <div class="news-date">Aug 2025</div>
-                    <div class="news-content">I was awarded a grant from VESSL AI!</div>
+                    <div class="news-content">Awarded a grant from VESSL AI for research into information geometry and embedding methods.</div>
                 </div>
             </div>
             <div class="news-controls">
