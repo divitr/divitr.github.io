@@ -124,14 +124,15 @@
 
   // ── Feature construction ──────────────────────────────────────────────────────
   // Three signals, squared-weight blend:
-  //   Tags (W=2):  one-hot over personal tags — pulls same-tagged posts together
-  //   Desc (W=2):  title+desc TF-IDF, minDf=1 — unique summary keywords per post
-  //   Body (W=1):  prose TF-IDF, minDf=1 — now keeps discriminative rare terms
+  //   Tags (W=2):    one-hot over personal tags — pulls same-tagged posts together
+  //   Desc (W=1.45): title+desc TF-IDF, minDf=1 — summary keywords per post
+  //   Body (W=1.35): prose TF-IDF, minDf=1 — discriminative full-post terms
   //
-  // Relative cosine weight = W²: so tags:desc:body = 4:4:1.
+  // Relative cosine weight = W²: so tags stay strongest, while body now matters
+  // about as much as metadata instead of being mostly decorative.
 
   function buildFeatures(posts, bodies) {
-    const W_TAG = 2, W_DESC = 2, W_BODY = 1;
+    const W_TAG = 2, W_DESC = 1.45, W_BODY = 1.35;
 
     // Tag one-hot, L2-normalized per post
     const tagVecs = posts.map(p => {
@@ -143,7 +144,7 @@
     // Description TF-IDF with bigrams+trigrams (minDf=1)
     // Phrases like "neural_tangent", "heat_equation", "category_theory" are highly discriminative
     const descVecs = tfidf(
-      posts.map(p => ngramTokenize([p.title, p.title, p.title, p.desc, p.desc].join(' '))),
+      posts.map(p => ngramTokenize([p.title, p.title, p.desc, p.desc].join(' '))),
       1
     );
 
@@ -266,7 +267,7 @@
       }
       const cents  = ci.map(i => [...pts[i]]);
       const labels = new Array(n).fill(0);
-      const SIZE_REG = 0.05; // mild bias against very large clusters (relative to n)
+      const SIZE_REG = 0.14; // stronger balancing bias against oversized clusters
       for (let iter = 0; iter < 300; iter++) {
         let changed = false;
         const sizes = new Array(k).fill(0);
@@ -309,8 +310,8 @@
   }
 
   function autoK(pts, kMin = 2, kMax = 5) {
-    // Light parsimony penalty per extra cluster — enough to avoid silly over-splitting,
-    // but not so much that the scorer defaults toward too-few groups.
+    // Prefer larger, more evenly sized clusters unless extra clusters clearly improve
+    // separation. This keeps the constellation from fragmenting into small islands.
     let bestK = kMin, bestScore = -Infinity;
     for (let k = kMin; k <= Math.min(kMax, pts.length - 1); k++) {
       const labels = kmeans2d(pts, k);
@@ -324,9 +325,9 @@
       }, 0) / k;
       const score =
         silhouette(pts, labels)
-        - 0.0035 * (k - kMin) ** 2
-        - 0.05 * imbalance
-        - 0.08 * smallClusterPenalty;
+        - 0.02 * (k - kMin) ** 2
+        - 0.14 * imbalance
+        - 0.18 * smallClusterPenalty;
       if (score > bestScore) { bestScore = score; bestK = k; }
     }
     return bestK;
@@ -1228,6 +1229,14 @@
     const entropy = probs.map(p =>
       -p.reduce((s, pk) => s + (pk > 1e-15 ? pk * Math.log(pk) : 0), 0) / Math.log(nTags)
     );
+    // Entropy often bunches near 1 once the tag mixture is diffuse. Use a monotone
+    // logit coordinate for plotting so high-entropy states do not collapse into
+    // the right edge. The metric itself remains Shannon entropy.
+    const ENTROPY_EPS = 1e-4;
+    const entropyCoord = entropy.map(h => {
+      const x = Math.max(ENTROPY_EPS, Math.min(1 - ENTROPY_EPS, h));
+      return Math.log(x / (1 - x));
+    });
 
     const hellinger = probs.map(p => p.map(v => Math.sqrt(v)));
     const frSpeed = grid.map((_, gi) => {
@@ -1244,12 +1253,18 @@
     
     const maxSpeed = frSpeed.slice(gS, gE + 1).reduce((m, s) => Math.max(m, s), 1e-15);
     const normSpeed = frSpeed.map(s => s / maxSpeed);
+    // Fisher-Rao speed is usually heavy-tailed: a few sharp topic transitions can
+    // pin the y-scale and compress quieter recent motion at the bottom. asinh is
+    // linear near zero and logarithmic in the tail, so it expands low-speed
+    // structure without discarding high-speed excursions.
+    const SPEED_KNEE = 0.025;
+    const speedCoord = normSpeed.map(s => Math.asinh(s / SPEED_KNEE) / Math.asinh(1 / SPEED_KNEE));
 
     // ── Dynamic scaling ────────────────────────────────────────────────────────
     // Calculate actual ranges to 'un-smush' the plot
-    const activeEntropy = entropy.slice(gS, gE + 1);
+    const activeEntropy = entropyCoord.slice(gS, gE + 1);
     const hMin = Math.min(...activeEntropy), hMax = Math.max(...activeEntropy);
-    const activeSpeed = normSpeed.slice(gS, gE + 1);
+    const activeSpeed = speedCoord.slice(gS, gE + 1);
     const sMin = Math.min(...activeSpeed), sMax = Math.max(...activeSpeed);
 
     const hRange = hMax - hMin || 0.1, sRange = sMax - sMin || 0.1;
@@ -1283,7 +1298,7 @@
     // ── Trajectory ─────────────────────────────────────────────────────────────
     const trajectory = [];
     for (let gi = gS; gi <= gE; gi++) {
-      trajectory.push([sx(entropy[gi]), sy(normSpeed[gi])]);
+      trajectory.push([sx(entropyCoord[gi]), sy(speedCoord[gi])]);
     }
 
     const animatedSegments = [];
@@ -1323,7 +1338,7 @@
       const gi = grid.findIndex(gt => gt >= t);
       if (gi === -1) return;
       
-      const x = sx(entropy[gi]), y = sy(normSpeed[gi]);
+      const x = sx(entropyCoord[gi]), y = sy(speedCoord[gi]);
       const dominantTag = p.tags.find(tg => TAGS_ORDERED.includes(tg)) ?? TAGS_ORDERED[0];
       const color = TAG_COLOR[dominantTag];
 
@@ -1553,7 +1568,7 @@
     // Render drift view
     renderDrift(driftSvgEl, tooltipEl, posts, null, labels, tagY);
     const driftShortHtml = `Topic entropy vs. <a href="https://en.wikipedia.org/wiki/Fisher_information_metric" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Fisher-Rao</a> speed. Trajectory colored by dominant tag. <a href="#" style="${lnk}" data-expand="1">(more)</a>`;
-    const driftLongHtml = `Per-tag KDE values are normalized to a tag-mixture distribution \\(p(t)\\) at each point in time. Normalized Shannon entropy is given by \\(H = -\\sum_k p_k \\log p_k / \\log n\\). <a href="https://en.wikipedia.org/wiki/Fisher_information_metric" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Fisher-Rao speed</a> \\(\\|\\dot{p}\\|_{FR} = \\|\\tfrac{d}{dt}\\sqrt{p}\\|_2\\) is computed via central differences on the Hellinger embedding \\(\\sqrt{p}\\), giving the instantaneous velocity on the sphere. A <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Catmull-Rom spline</a> interpolates the trajectory, colored by dominant tag. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
+    const driftLongHtml = `Per-tag KDE values are normalized to a tag-mixture distribution \\(p(t)\\) at each point in time. Normalized Shannon entropy is given by \\(H = -\\sum_k p_k \\log p_k / \\log n\\). <a href="https://en.wikipedia.org/wiki/Fisher_information_metric" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Fisher-Rao speed</a> \\(\\|\\dot{p}\\|_{FR} = \\|\\tfrac{d}{dt}\\sqrt{p}\\|_2\\) is computed via central differences on the Hellinger embedding \\(\\sqrt{p}\\), giving the instantaneous velocity on the sphere. A <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline" target="_blank" rel="noopener noreferrer" style="${paperLnk}">Catmull-Rom spline</a> interpolates the trajectory, colored by dominant tag. The plotted coordinates are \\(x=\\operatorname{logit}(H)\\) and \\(y=\\operatorname{asinh}(s/\\kappa)/\\operatorname{asinh}(1/\\kappa)\\), where \\(s\\) is normalized Fisher-Rao speed. <a href="#" style="${lnk}" data-collapse="1">(less)</a>`;
     injectCaption(driftSvgEl, 'drift-caption', driftShortHtml, driftLongHtml);
   }
 

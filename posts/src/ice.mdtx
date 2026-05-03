@@ -1,0 +1,423 @@
+req: physics;
+
+title: Ferroelectric Mean-Field Games on Ice;
+date: Apr 30, 2026;
+desc: A mean-field polarization game on top of the six-vertex model;
+emoji: 🧊;
+tags: stats, physics;
+
+## Introduction
+
+In standard models of ice, we treat Oxygen as lying on a lattice and Hydrogen as lying on the bonds between Oxygens. There is a local rule that each Oxygen atom has two nearby Hydrogens, and two farther away Hydrogens. If we encode the positions of the Hydrogens by arrows, we get a simple condition: every lattice point has two arrows coming in and two arrows going out. From this, we have six different types of lattice points, or vertices (hence the name *six-vertex model*).
+
+image:
+src: six_types.svg
+alt: The six allowed local arrow configurations satisfying the ice rule
+width: 100%
+caption: The six types of vertices.
+end image;
+
+A full configuration is made by choosing one of these six allowed patterns at every vertex, consistently across shared edges. This consistency quite important, it's what allows the local rule to propagate into global structure.
+
+The ordinary six-vertex model assigns an energy (equivalently a Boltzmann weight) to each of the six allowed vertex types. A configuration is then more or less likely depending on the product of its local weights, subject to the ice rule. This is not a mean field model. However, if the arrows are balanced in all directions, the system has no preferred orientation. If many local arrow patterns lean the same way, the whole lattice is polarized (the hydrogen-bond orientations or dipoles collectively choose a direction).
+
+In what follows, we'll consider the standard six-vertex model, but add a global reward for polarization. Once we add a payoff depending on the global polarization, the whole thing becomes a constrained mean-field potential game: the legal moves are still governed by the ice rule, but the reward depends on how well each local orientation agrees with the collective state.
+
+## The Six-Vertex Model
+
+Here we'll introduce some notation and convention for the standard six-vertex model (without our modification).
+
+Let {\Lambda\subset \mathbb Z^2} be a finite region of the square lattice. A configuration {\omega} assigns an orientation to each edge of {\Lambda}. Note that not every orientation is allowed. We write {\Omega_\Lambda} for the set of configurations satisfying the ice rule.[^1]
+
+Because of the ice rule, every interior vertex must be one of the six allowed local arrow patterns. Label these six types by {1,\dots,6}. For a configuration {\omega\in\Omega_\Lambda}, write
+
+{
+\tau_v(\omega)\in\{1,\dots,6\}
+}
+
+for the local type appearing at vertex {v}.
+
+The ordinary six-vertex model assigns an energy {\varepsilon_i} to each vertex type {i}. Equivalently, at inverse temperature {\beta}, we can assign the Boltzmann weight
+
+{
+w_i=e^{-\beta\varepsilon_i}.
+}
+
+The energy of an admissible configuration is then the sum of its local vertex energies:
+
+{
+H_\Lambda^0(\omega)
+=
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}.
+}
+
+And thus the ordinary six-vertex Gibbs measure is
+
+{
+\mathbb P_\Lambda^0(\omega)
+=
+\frac{1}{Z_\Lambda^0}
+\exp\left[
+-\beta
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
+\right]
+\mathbf 1_{\{\omega\in\Omega_\Lambda\}},
+}
+
+where
+
+{
+Z_\Lambda^0
+=
+\sum_{\omega}
+\exp\left[
+-\beta
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
+\right]
+\mathbf 1_{\{\omega\in\Omega_\Lambda\}}
+}
+
+is the partition function. Equivalently, using the weights {w_i},
+
+{
+\mathbb P_\Lambda^0(\omega)
+=
+\frac{1}{Z_\Lambda^0}
+\prod_{v\in\Lambda}
+w_{\tau_v(\omega)}
+\mathbf 1_{\{\omega\in\Omega_\Lambda\}}.
+}
+
+It's worth noting that so far, there is no mean-field interaction. The Hamiltonian is a sum of local vertex energies, and the only coupling between different vertices comes from the fact that neighboring vertices share edge arrows. The ordinary six-vertex model is therefore a constrained local Gibbs model.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Polarization and the Mean-Field Game
+
+### Polarization
+
+To add a mean-field interaction, we first need a macroscopic quantity for the interaction to depend on. For the six-vertex model, a natural choice is polarization.
+
+Each of the six local vertex types carries some local arrow bias. Depending on the convention used to label the six vertices, this bias can point horizontally, vertically, or vanish by symmetry. We encode this by assigning a vector
+
+{
+q_i\in\mathbb R^2,
+\qquad i=1,\dots,6,
+}
+
+to each vertex type. {q_i} is the local dipole or local arrow-flow associated with type {i}.
+
+Given a configuration {\omega\in\Omega_\Lambda}, define its empirical polarization by averaging these local vectors over the lattice:
+
+{
+M_\Lambda(\omega)
+\doteq
+\frac{1}{|\Lambda|}
+\sum_{v\in\Lambda}
+q_{\tau_v(\omega)}.
+}
+
+This is the macroscopic order parameter. If {M_\Lambda(\omega)=0}, the configuration has no preferred global direction: local orientations may exist, but they cancel in the aggregate. If {M_\Lambda(\omega)\neq 0}, the configuration is globally polarized. In that case, the local arrow patterns collectively choose a direction. The exact values of the individual {q_i} are irrelevant, we care only about the empirical average.
+
+### Ferroelectric Alignment
+
+The ordinary six-vertex model only assigns local energies to local vertex types. To favor global polarization, we add a reward for configurations with large {|M_\Lambda(\omega)|}.
+
+The simplest choice is the quadratic ferroelectric term
+
+{
+-\frac{J}{2}|\Lambda|\,|M_\Lambda(\omega)|^2,
+\qquad J\geq 0.
+}
+
+Since this term is subtracted from the energy, configurations with larger polarization have lower energy and are therefore more likely. The constant {J} controls the strength of the alignment incentive (think Ising model). The factor {|\Lambda|} is also important. The polarization {M_\Lambda(\omega)} is an average over the lattice, so {|M_\Lambda(\omega)|^2} is typically order one. Multiplying by {|\Lambda|} makes the mean-field contribution extensive, on the same scale as the local energy sum.
+
+The mean-field Hamiltonian is therefore
+
+{
+\mathcal H_\Lambda^{\mathrm{MF}}(\omega)
+=
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
+-
+\frac{J}{2}|\Lambda|\,|M_\Lambda(\omega)|^2.
+}
+
+The corresponding Gibbs measure is
+
+{
+\mathbb P_{\Lambda,J}(\omega)
+=
+\frac{1}{Z_{\Lambda,J}}
+\exp\left[
+-\beta
+\left(
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
+-
+\frac{J}{2}|\Lambda|\,|M_\Lambda(\omega)|^2
+\right)
+\right]
+\mathbf 1_{\{\omega\in\Omega_\Lambda\}}.
+}
+
+This is still an ice model, we have just changed the weights according to polarization.
+
+### Game Interpretation
+
+This model can now be read as a mean-field game, but with a constraint. The “agents” are not independent particles that can freely choose their states. A single vertex cannot usually change its type on its own, because changing one vertex would also change the arrows on neighboring edges and may violate the ice rule nearby. The admissible moves are collective ice-preserving rearrangements, such as loop flips.
+
+The population statistic is the empirical polarization {M_\Lambda(\omega)}. A local part of the configuration is rewarded when its polarization points in the same direction as this population average. Since every local choice contributes to the same global average, the interaction is mean-field.
+
+In this sense, the model is a constrained mean-field potential game. The constraint is the ice rule, which determines the legal state space {\Omega_\Lambda}. The potential is the negative Hamiltonian, or equivalently the log Gibbs weight:
+
+{
+-\mathcal H_\Lambda^{\mathrm{MF}}(\omega)
+=
+-
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
++
+\frac{J}{2}|\Lambda|\,|M_\Lambda(\omega)|^2.
+}
+
+The dictionary is:
+
+list[u]:
+
+- **State**: an ice configuration {\omega\in\Omega_\Lambda}.
+- **Population statistic**: empirical polarization {M_\Lambda(\omega)}.
+- **Incentive**: increase alignment with the global polarization.
+- **Admissible moves**: ice-preserving rearrangements, such as loop flips.
+- **Potential**: the negative mean-field Hamiltonian {-\mathcal H_\Lambda^{\mathrm{MF}}}.
+end list;
+
+## Solving the Model
+
+The mean-field term is global, but it has a neat structure: it depends on the configuration only through the empirical polarization {M_\Lambda(\omega)}. This lets us solve the model by comparing it to the ordinary six-vertex model in an external field.
+
+The idea is that a polarized population creates an effective field. If the system has polarization {m}, then the mean-field reward encourages local vertices to align with {m}. From the point of view of the local six-vertex model, this looks like an external field proportional to {m}. The equilibrium condition will be that the polarization produced by this effective field is the same polarization that generated the field in the first place.
+
+### External Field
+
+To make this precise, let us first introduce the ordinary six-vertex model in an external field. Let {h\in\mathbb R^2}. Define
+
+{
+\mathcal H_\Lambda^{0,h}(\omega)
+=
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
+-
+h\cdot
+\sum_{v\in\Lambda}
+q_{\tau_v(\omega)}.
+}
+
+The field term favors configurations whose total polarization points in the direction of {h}. Since
+
+{
+\sum_{v\in\Lambda}
+q_{\tau_v(\omega)}
+=
+|\Lambda|M_\Lambda(\omega),
+}
+
+we can equivalently write the field contribution as {-|\Lambda|h\cdot M_\Lambda(\omega)}.
+
+Let {Z_\Lambda^0(h)} be the corresponding partition function, and define the infinite-volume pressure
+
+{
+p_0(h)
+\doteq
+\lim_{|\Lambda|\to\infty}
+\frac{1}{\beta|\Lambda|}
+\log Z_\Lambda^0(h).
+}
+
+The gradient of the pressure gives the average polarization response:
+
+{
+\nabla p_0(h)
+=
+\lim_{|\Lambda|\to\infty}
+\mathbb E_\Lambda^{0,h}
+[
+M_\Lambda
+].
+}
+
+In this sense, {p_0} encodes how the ordinary ice model responds when we push it with a field {h}. The mean-field model will be solved by choosing this field self-consistently: instead of being imposed from outside, the effective field is generated by the polarization of the system itself.
+
+### Variational Formula
+
+Now return to the mean-field model, but we now allow an additional external field {h}. The Hamiltonian is
+
+{
+\mathcal H_{\Lambda,J}^{h}(\omega)
+=
+\sum_{v\in\Lambda}
+\varepsilon_{\tau_v(\omega)}
+-
+h\cdot
+\sum_{v\in\Lambda}
+q_{\tau_v(\omega)}
+-
+\frac{J}{2}|\Lambda|\,|M_\Lambda(\omega)|^2.
+}
+
+Let
+
+{
+p_J(h)
+\doteq
+\lim_{|\Lambda|\to\infty}
+\frac{1}{\beta|\Lambda|}
+\log Z_{\Lambda,J}(h)
+}
+
+be the thermodynamic pressure of this model.
+
+The mean-field pressure can be written in terms of the ordinary six-vertex pressure {p_0}. The formula is
+
+{
+p_J(h)
+=
+\sup_{m\in\mathbb R^2}
+\left\{
+p_0(h+Jm)
+-
+\frac{J}{2}|m|^2
+\right\}.
+}
+
+Now instead of solving a new long-range interacting model directly, we optimize over possible macroscopic polarizations {m}. For each candidate {m}, the ordinary six-vertex model feels the effective field {h+Jm}. The term {p_0(h+Jm)} measures the pressure of that ordinary model under the effective field, while {\frac{J}{2}|m|^2} is the quadratic mean-field cost associated with producing the field.
+
+A maximizer {m_\star} of this variational problem is an equilibrium polarization.
+
+### Self-Consistency
+
+Suppose {m_\star} maximizes the variational formula
+
+{
+p_J(h)
+=
+\sup_{m\in\mathbb R^2}
+\left\{
+p_0(h+Jm)
+-
+\frac{J}{2}|m|^2
+\right\}.
+}
+
+At an interior maximizer, the gradient with respect to {m} must vanish. Differentiating gives
+
+{
+J\nabla p_0(h+Jm_\star)
+-
+Jm_\star
+=
+0.
+}
+
+When {J>0}, this is equivalent to the self-consistency equation
+
+{
+m_\star
+=
+\nabla p_0(h+Jm_\star).
+}
+
+This is the mean-field equation for the polarization.
+
+The left side is the actual macroscopic polarization of the mean-field model. The right side is the polarization that the ordinary six-vertex model would produce if it were placed in the effective field {h+Jm_\star}. At equilibrium, they must be identical. In other words, a self-consistent equilibrium is a polarization that reproduces itself through this response map.
+
+When {h=0}, the equation becomes
+
+{
+m_\star
+=
+\nabla p_0(Jm_\star).
+}
+
+The unpolarized solution {m_\star=0} is always present when the underlying six-vertex model is symmetric. A phase transition occurs when this solution stops being the only stable solution, and nonzero self-consistent polarizations appear.
+
+## Phase Transitions
+
+Take the self-consistency equation at {h=0}:
+
+{
+m=\nabla p_0(Jm).
+}
+
+Assume the underlying six-vertex model is symmetric, so {\nabla p_0(0)=0}. Linearize near {m=0}:
+
+{
+\nabla p_0(Jm)
+=
+\nabla p_0(0)
++
+D^2p_0(0)Jm
++
+O(|m|^2).
+}
+
+Define susceptibility
+
+{
+\chi_0
+\doteq
+D^2p_0(0).
+}
+
+Then
+
+{
+m
+=
+J\chi_0 m
++
+O(|m|^2).
+}
+
+The unpolarized state loses stability when {J\chi_0} has an eigenvalue bigger than 1, i.e.
+
+{
+J\lambda_{\max}(\chi_0)>1.
+}
+
+Equivalently, the critical coupling is
+
+{
+J_c
+=
+\frac{1}{\lambda_{\max}(\chi_0)}.
+}
+
+The susceptibility {\chi_0} measures how strongly the ordinary six-vertex model responds to a small external field. If {\chi_0} is large, then even a weak field produces a noticeable polarization. In that case, the mean-field feedback does not need to be very strong to sustain a polarized state.
+
+If {\chi_0} is small, the ordinary six-vertex model resists polarization. A small self-generated field dies out, and the unpolarized state remains stable. The transition occurs exactly when the feedback loop becomes strong enough: a small polarization creates an effective field, the field induces more polarization, and the induced polarization reinforces the original one.
+
+So the criterion
+
+{
+J\lambda_{\max}(\chi_0)>1
+}
+
+encodes that spontaneous polarization appears when mean-field alignment beats the inverse linear response of the underlying ice model.
+
+footnotes:
+[^1]: Boundary conditions can be handled in several different ways, e.g., by fixing the boundary arrows or by using periodic boundary conditions. Here, the boundary convention is not important; the main point of interest is the bulk constraint imposed at each interior vertex.

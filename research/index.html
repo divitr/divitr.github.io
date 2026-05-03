@@ -111,9 +111,8 @@ document.querySelectorAll('.abstract-toggle').forEach(link => {
     link.addEventListener('click', function(e) {
         e.preventDefault();
         const box = document.getElementById('abstract-' + this.dataset.arxivId);
-        const open = box.style.display === 'block';
-        box.style.display = open ? 'none' : 'block';
-        this.textContent = open ? 'abstract' : 'hide abstract';
+        const open = box.classList.toggle('open');
+        this.textContent = open ? 'hide abstract' : 'abstract';
     });
 });
 </script>
