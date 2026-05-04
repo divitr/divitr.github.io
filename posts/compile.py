@@ -312,6 +312,12 @@ class MDTXCompiler:
         )
         return pattern.sub(repl, text)
 
+    def process_image_row(self, text: str) -> str:
+        def repl(m):
+            inner = self.process_image(m.group(1))
+            return f'<div class="mdtx-image-row">{inner}</div>'
+        return re.sub(r'image-row:\s*\n(.*?)\nend image-row;?', repl, text, flags=re.DOTALL)
+
     def process_image(self, text: str) -> str:
         def repl(m):
             src=alt=width=caption=""
@@ -1307,6 +1313,7 @@ class MDTXCompiler:
 
         # Process all block-level elements first (before paragraphs)
         body = self.process_code(body)
+        body = self.process_image_row(body)
         body = self.process_image(body)
         body = self.process_example(body)
         body = self.process_environments(body)

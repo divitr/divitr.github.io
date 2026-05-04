@@ -491,6 +491,20 @@ footer a:hover {
     justify-content: center;
 }
 
+.blog-post .mdtx-image-row {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 1.4rem 0;
+}
+
+.blog-post .mdtx-image-row figure.mdtx-figure {
+    margin: 0;
+    flex: 1;
+}
+
 .blog-post .mdtx-figure-inner {
     max-width: 100%;
     display: inline-flex;

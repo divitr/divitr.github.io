@@ -510,6 +510,12 @@ a:hover {
     color: #999;
 }
 
+.contributions-note {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 1.5rem;
+}
+
 .contribution-note::before {
     content: '(';
 }
@@ -519,10 +525,12 @@ a:hover {
 }
 
 .paper-award {
-    display: inline;
+    display: block;
     font-size: 0.9rem;
     font-style: italic;
     color: #666;
+    padding-left: 1.75rem;
+    margin-bottom: 0.3rem;
 }
 
 /* Paper Author Styling - Added Jan 2026 */

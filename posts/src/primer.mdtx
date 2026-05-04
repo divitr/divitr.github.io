@@ -1,0 +1,176 @@
+title: A Brief Primer on ML Theory and My Work;
+date: May 04, 2026;
+desc: A less technical, (hopefully) more accessible introduction to some of my work;
+tags: misc;
+emoji: ;
+visibility: hidden;
+
+A lot of theory work is often difficult to parse without extensive background in the literature, tools, and conventions of the field. This is an attempt to somewhat lower that barrier and make some of the work I'm interested in/do a bit more accessible.
+
+I'll try to structure this as a brief intro to why anyone should care about or even work on ML theory, then go through some of the work I've done.
+
+## Why Study Theory?
+
+More or less every field of science follows a very similar process: a phenomenon is identified, analyzed, explained, then scaled. This is especially exemplified in physics: thermodynamics preceded steam engines, quantum mechanics was studied before creating the transistor, etc. The explanation is more than just an intellectual curiosity -- it identifies the right control parameters and objects of study, which are exactly what allow one to make predictions rather than just observations.
+
+For the most part, machine learning has skipped the middle steps. Once a phenomenon is observed, it is scaled without understanding. While empirical work is important, it leaves us with the fundamental problem that most of our knowledge of machine learning is *observational*. We know that certain things work. We often don't know *why*, in the sense of a mechanistic account that would let us predict what happens when we change the setting.
+
+For example, we have plenty of new research constantly coming out on MLPs or even older algorithms like KRR -- algorithms which have been around since the 60s. The gap between what we can explain and what we can build is growing significantly faster than in any other field, and closing this gap is both intellectually and practically underprioritized.
+
+To that end, most of my work is an attempt to understand how existing methods work and their behavior in toy settings of interest (usually with a statistical or physical flavor).
+
+## A Theory of Saddle Escape in Deep Nonlinear Networks
+
+### Motivation
+
+In deep neural networks initialized at small scale (i.e. {\text{weights} \overset{i.i.d.}{\sim} \mathcal N(0, \varepsilon^2)} for {\varepsilon} very small), loss seems to plateau for long periods of time, then suddenly drop, then plateau again, drop again, etc.
+
+image:
+src: nonlinear_escape/stepwise_learning_mech_openq_12.png;
+alt: Loss curve showing stepwise learning dynamics with plateaus and sharp transitions;
+width: 90%;
+caption: Image from [learningmechanics.pub](https://learningmechanics.pub/openquestions/stepwise-learning/).;
+end image;
+
+Generally, a common testbed for theories of training dynamics is the deep linear network: {f(x) \doteq W_L W_{L-1} W_{L-2} \cdots W_1 x} (a standard MLP where the activation function is {\sigma(x) = x}). In this setting, there's a large number of results on the dynamics and stepwise nature of learning at small initialization.[^1] In particular, analyses of the deep linear network benefit from the balance condition {W_{l+1}^\top W_{l+1} - W_{l}W_l^\top = \text{const}} preserved by gradient flow. Intuitively, this means that the "scale" of weight matrices relative to each other remains constant throughout training.
+
+Generalizing beyond the deep linear network has made quite a bit of progress recently[^2], but is usually limited to specific activation functions or is not derived from first principles and the core mechanics of learning.
+
+Our work in this paper is intended as a generalization of small-init training dynamics in fully connected neural networks.
+
+### Main Results
+
+**A new imbalance identity.** The deep linear balance condition {W_{l+1}^\top W_{l+1} - W_l W_l^\top = \text{const}} says something intuitive: the relative scale of adjacent weight matrices doesn't change during training. Layers that start at the same scale stay at the same scale. This is what makes deep linear networks tractable: the conservation law acts as a constraint that keeps the dynamics organized.
+
+For nonlinear networks, this exact conservation breaks. But *how* it breaks turns out to be controlled entirely by a single functional of the activation. Define the layer imbalance as
+{\Delta_l \doteq \|W_{l+1}\|_F^2 - \|W_l\|_F^2,}
+the difference in squared Frobenius norms of adjacent weight matrices. For any smooth activation {\sigma} and any differentiable loss, we derive the exact identity
+{
+\frac{d\Delta_l}{dt} = 2\mathbb{E}\!\left[\left\langle W_{l+1}^\top \nabla_{z_{l+1}} \ell,\, \varphi_\sigma(z_l) \right\rangle\right],
+}
+where {\varphi_\sigma(z) \doteq z\sigma'(z) - \sigma(z)} is the "homogeneity deficit" of {\sigma} -- intuitively, how much it breaks [Euler's homogeneous function theorem](https://mathworld.wolfram.com/EulersHomogeneousFunctionTheorem.html). For the linear activation {\sigma(z) = z}, we get {\varphi_\sigma(z) = z \cdot 1 - z = 0} identically, recovering exact conservation. For any genuinely nonlinear activation, {\varphi_\sigma \neq 0}, and the imbalance drifts at a rate determined by {\varphi_\sigma} evaluated at the current pre-activations.
+
+Now, Taylor expanding about the origin, we may classify all smooth activations into universality classes based on the order {q} of the first nonlinear term in their Taylor expansion:
+
+list[u]:
+ - **Class A (linear, {q = \infty}):** {\varphi_\sigma \equiv 0}, imbalance exactly conserved. Includes ReLU almost everywhere.[^3]
+ - **Class B (generic nonlinear, {q = 3}):** tanh, erf, sin. The most common activations. Imbalance drifts at cubic order.
+ - **Class C ({q = 2}):** GELU, Swish. Drifts at quadratic order.
+ - **Class D ({\sigma(0) \neq 0}):** sigmoid, softplus. Constant drift term.[^4]
+end list;
+
+The classification matters because two activations in the same class have *qualitatively identical* training dynamics under small initialization -- they differ only by a constant prefactor {K^{(\sigma)}} that depends on the specific activation. Whether we use tanh or sin or erf makes no qualitative difference to the shape of the loss curve; only the class and the prefactor matter.
+
+image-row:
+image:
+src: nonlinear_escape/universality_panel_a.png;
+alt: Raw escape time vs initialization scale for Class B and C activations;
+width: 100%;
+caption: Raw escape time {t_\text{esc}} vs. {\varepsilon} for Class B (tanh, erf, sin; solid) and Class C (GELU, Swish; dashed).;
+end image;
+image:
+src: nonlinear_escape/universality_panel_b.png;
+alt: Escape time rescaled by K, collapsing Class B activations onto a master curve;
+width: 100%;
+caption: After rescaling by {K^{(\sigma)}}, all Class B curves collapse onto a single master curve.;
+end image;
+end image-row;
+
+**Symmetric balanced ansatz.** The imbalance identity tells us *how* the relative scale of adjacent layers drifts, but we still have a system of coupled matrix ODEs -- one for each {W_l \in \mathbb{R}^{n \times n}} -- which in general is intractable.
+
+In order to analyze this system, we simplify it. In particular, we can find a special submanifold that gradient flow preserves. Consider restricting to weight matrices of the form
+{W_l = X_l \, \mathbf{v}\mathbf{u}^\top,}
+where {\mathbf{u}, \mathbf{v} \in \mathbb{R}^n} are fixed unit vectors and {X_l \in \mathbb{R}} is a per-layer scalar amplitude. We call this the *symmetric submanifold*: all layers share the same input and output directions, and differ only in their scale. At small initialization, the first singular vectors of all layers align with the top singular direction of the end-to-end map, and the gradient flow approximately preserves this alignment.[^5]
+
+On this submanifold, the full matrix dynamics reduce to a system of scalar ODEs in the amplitudes {X_1, \ldots, X_L}. Under gradient flow, layers initialized at the same scale tend to stay at comparable scales (this is the approximate analog of the deep linear balance condition). We therefore make the *balanced ansatz*: that at the bottleneck -- the {r} layers with the smallest initial scale -- all amplitudes are equal, {X_1 = \cdots = X_r \doteq X(t)}. This reduces the entire system to a single scalar ODE in {X}.
+
+Restricting the gradient flow to the ansatz manifold gives an exact ODE for the scalar amplitudes {X_1, \ldots, X_L} (Theorem 4 of the paper):
+{
+\frac{dX_\ell}{dt} = -\mathbb{E}_g\!\left[(f(g) - \beta_1\sigma(g))\,\partial_{X_\ell} f\right],
+}
+where {f(g) = \sqrt{N}\,X_L\,\sigma(X_{L-1}\sigma(\cdots\sigma(X_1 g)\cdots))} is the scalar composition and {\partial_{X_\ell}f} is given explicitly by the chain rule. The key point is that this is a closed system in the {X_\ell} alone -- all the matrix structure has been absorbed. The agreement between this reduced ODE and full-parameter gradient descent is tight with no free parameters.
+
+image-row:
+image:
+src: nonlinear_escape/exactness_panel_a.png;
+alt: Loss vs time showing reduced scalar ODE matches full gradient descent;
+width: 100%;
+caption: Loss vs. time: reduced ODE (solid) overlaid on {NL}-parameter gradient descent (circles).;
+end image;
+image:
+src: nonlinear_escape/exactness_panel_b.png;
+alt: Layer scales vs time showing scalar ODE trajectories match full gradient descent;
+width: 100%;
+caption: Layer scales {X_\ell} vs. time: scalar ODE trajectories match the full-parameter dynamics.;
+end image;
+end image-row;
+
+At leading order near the origin, the chain rule simplifies and the ODE takes the clean form
+{
+\frac{dX_\ell}{dt} = K^{(\sigma)} \prod_{m \neq \ell} X_m + R_\ell(X),
+}
+where {K^{(\sigma)}} collects all activation- and loss-dependent constants, and {R_\ell} is a higher-order remainder. The structure is straightforward: each layer grows at a rate set by the product of all other layers' amplitudes. Under the balanced ansatz {X_1 = \cdots = X_r = X} with the remaining {L-r} layers at {O(1)}, every bottleneck layer obeys the same scalar ODE:
+{\dot{X} = K^{(\sigma)}_{\mathrm{eff}}\, X^{r-1}.}
+This is separable -- integrating from {\varepsilon} to {O(1)} gives the escape time:
+
+proposition[escape-time][Escape time law]:
+Under the symmetric balanced ansatz, for a depth-{L} network with {r} bottleneck layers initialized at scale {\varepsilon} and a Class B activation, the escape time from the saddle satisfies
+{\tau_\star = \Theta\left(\varepsilon^{-(r-2)}
+\right).}
+end proposition;
+
+A few things are worth noting. First, the exponent is {r-2}, where {r} is the number of bottleneck layers -- *not* the total depth {L}. Adding layers outside the bottleneck doesn't change how long training stagnates. Second, at {r = 2} the escape time is {\Theta(1)}: escape is fast regardless of {\varepsilon}, and small initialization costs nothing. Third, for Class C activations (GELU, Swish), the remainder {R_\ell} enters at lower order and shifts the exponent to {r-1}, so GELUs are strictly slower to escape at small init than tanh.
+
+**Lifting to He-init.** The ansatz analysis assumed the network starts *on* the symmetric submanifold. Real networks -- particularly those initialized with the standard [He-normal](https://www.geeksforgeeks.org/deep-learning/kaiming-initialization-in-deep-learning/) scheme -- don't satisfy this: neurons in the same layer are drawn independently, so no two rows agree. Thus, a natural question arises: Does the {r-2} exponent survive off-manifold?
+
+We answer in the affirmative. We first find a scalar observable that tracks learning progress without reference to any manifold structure. The right object is the *signal energy*
+{\gamma(W) \doteq \mathbb{E}[f(x)\,g(x)],}
+the correlation between the network output and the teacher (here {g(x) = \sigma(v_1^\top x)} for the single-mode teacher). This is coordinate-free: it doesn't depend on how the network is parameterized or on any ansatz, just on the end-to-end function.
+
+We can derive an exact identity for how {\gamma} evolves under gradient flow (Proposition 8):
+{
+\frac{d\gamma}{dt} = \beta_1 h_\sigma\, T(W)\bigl(1 + O(M^2)\bigr) - S(W),
+}
+where {T(W) = \sum_\ell \|G_\ell\|_F^2} is the aggregate squared Frobenius norm of the layerwise gradient tensors {G_\ell = \mathbb{E}[g\,\delta_\ell h_{\ell-1}^\top]}, {M = \max_\ell \|W_\ell\|_{\mathrm{op}}} is the bottleneck operator scale, and {S(W)} is a self-interaction term that is bounded above by {C \gamma T(W)} and hence subleading when {\gamma \ll 1}. At early times when {M} is small, this simplifies to
+{\dot{\gamma} \approx c\, T(W), \quad c = \tfrac{1}{2}\beta_1 h_\sigma.}
+
+Now the task is to bound {T(W)} from below. Each gradient tensor {G_\ell} factorizes as a product of layerwise linear-path gains {y_m}, so {T(W) \asymp \sum_{\ell} \prod_{m \neq \ell} y_m^2}. By the AM-GM inequality applied to the {r} bottleneck layers,
+{\sum_{\ell \leq r} \prod_{m \neq \ell} y_m \geq r \cdot \left(\prod_{m=1}^r y_m\right)^{(r-1)/r} \gtrsim \gamma^{2/r},}
+where the last step uses {\gamma \lesssim \prod_m y_m} (the signal is bounded by the product of gains). Substituting gives
+{\dot{\gamma} \geq c\,\gamma^{2/r}.}
+This ODE has the same structure as before: separating and integrating from {\gamma(0) = \Theta(\varepsilon^r)} to {\gamma = \Theta(1)} gives {\tau_\star = \Theta(\varepsilon^{-(r-2)}) } -- the same exponent, derived without any reduction or ansatz.[^6]
+
+The prefactor differs from the on-manifold result (AM-GM is tight only when all layer gains are equal, which is exactly the balanced condition on the manifold), but the scaling law is intrinsic to the geometry of the problem.
+
+image:
+src: nonlinear_escape/he_init.png;
+alt: Loss curve showing stepwise learning dynamics with plateaus and sharp transitions;
+width: 90%;
+caption: The {r-2} exponent survives at He-normal initialization.;
+end image;
+
+## Rao-Blackwellized Score Matching on Manifolds
+
+TODO
+
+## Minimax Rates for Hyperbolic Hierarchical Learning
+
+TODO
+
+## Some Good References
+
+Some of my favorite references.
+
+list[u]:
+ - [the Pehlevan lab's resources](https://pehlevan.seas.harvard.edu/resources-0)
+ - [the learning mechanics website](https://learningmechanics.pub)
+ - pretty much any of Sanjeev Arora's papers are really good references on the optimization side of ML theory
+end list;
+
+[^1]: See e.g. [Jacot et al.](https://arxiv.org/abs/2106.15933), [Saxe et al.](https://arxiv.org/abs/1312.6120), [Arora et al.](https://arxiv.org/abs/1802.06509).
+[^2]: See e.g. [Kunin et al.](https://arxiv.org/abs/2506.06489), [Bantzis et al.](https://arxiv.org/abs/2505.21722).
+[^3]: This is because ReLU is differentiable everywhere except {x=0}, which has measure 0.
+[^4]: It is simple to see that recentering reduces Class D to either Class B or C.
+[^5]: The submanifold is preserved *exactly* by gradient flow because the teacher, loss, and data distribution are all invariant under permutation of the hidden neurons in any layer. Since every neuron in layer {l} carries the same weight row on the manifold, permuting neurons leaves the dynamics unchanged (the manifold is the {S_N} fixed point). This symmetry is exact, so the manifold is flow-invariant.
+[^6]: The initial nondegeneracy condition {|\gamma(W(0))| \geq c_{\mathrm{nd}} \varepsilon^r} needed for the lower bound holds with probability {\geq 1 - \delta} at He-normal init for any fixed {\delta > 0} by Gaussian anti-concentration.
+[^mode_ordering]: Here, modes are organized by strength: {\beta_1 > \beta_2 > \cdots > \beta_{r^*} > 0}.

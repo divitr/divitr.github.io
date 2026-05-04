@@ -419,5 +419,4 @@ J\lambda_{\max}(\chi_0)>1
 
 encodes that spontaneous polarization appears when mean-field alignment beats the inverse linear response of the underlying ice model.
 
-footnotes:
 [^1]: Boundary conditions can be handled in several different ways, e.g., by fixing the boundary arrows or by using periodic boundary conditions. Here, the boundary convention is not important; the main point of interest is the bulk constraint imposed at each interior vertex.

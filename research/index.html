@@ -25,7 +25,7 @@
         <h1>Research</h1>
 
         <section class="current-work-section">
-            <p>I'm interested in statistical/machine learning theory for overparameterized models, particularly questions relating to generalization, implicit bias, and learning dynamics, often using tools from optimization and statistical physics.</p>
+            <p>My interests generally lie in statistical/machine learning theory for overparameterized models, particularly questions relating to generalization, implicit bias, and learning dynamics, often using tools from optimization and statistical physics.</p>
 
             <p>My current work is in deep learning theory at <a href="https://bair.berkeley.edu/" target="_blank" rel="noopener noreferrer">BAIR</a> in the <a href="https://deweeselab.com" target="_blank" rel="noopener noreferrer">DeWeese lab</a>, neutron production in (\(\alpha\),n) reactions at <a href="https://www.llnl.gov/" target="_blank" rel="noopener noreferrer">LLNL</a>, and information geometry (generously supported by a grant from <a href="https://vessl.ai/" target="_blank" rel="noopener noreferrer">VESSL AI</a>).</p>
 
@@ -33,6 +33,20 @@
         </section>
         <section class="papers-section">
             <h2>Papers</h2>
+            <!-- <div class="paper-item">
+                <div class="paper-content">
+                    <div class="paper-title">A Theory of Saddle Escape in Deep Nonlinear Networks</div>
+                    <div class="paper-authors"><span class="me">Divit Rawal</span>, <a
+                            href="https://scholar.google.com/citations?user=DZ9-LmkAAAAJ&hl=en" target="_blank"
+                            rel="noopener noreferrer">Michael R. DeWeese</a></div>
+                    <div class="paper-venue"><em>Preprint</em>, 2026.</div>
+                    <div class="paper-links">
+                        [<a href="#" class="abstract-toggle" data-arxiv-id="2601.20047">abstract</a>] | [<a
+                            href="https://arxiv.org/abs/2601.20047" target="_blank" rel="noopener noreferrer">arXiv</a>]
+                    </div>
+                    <div class="paper-abstract" id="abstract-2601.20047" data-loaded="1">In deep networks with small initialization, training exhibits long plateaus separated by sharp feature-acquisition transitions. Whereas shallow nonlinear networks and deep linear networks are well studied, extending these analyses to deep nonlinear networks remains challenging. We derive an exact identity for the imbalance of Frobenius norms of layer weight matrices that holds for any smooth activation and any differentiable loss and use this to classify activation functions into four universality classes. On the permutation-symmetric submanifold, the identity combines with an approximate balance law to reduce the full matrix flow to a scalar ODE, giving a critical-depth escape time law \(\tau_\star = \Theta(\varepsilon^{-(r-2)})\) governed by the number \(r\) of layers at the bottleneck scale rather than the total depth \(L\). We find that this same \(r-2\) exponent is recovered under He-normal initialization with \(r\) bottleneck layers rescaled by \(\varepsilon\), where the symmetry manifold is preserved by the flow but not attracting. We find close agreement between our theory and numerical simulations.</div>
+                </div>
+            </div> -->
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">Minimax Rates for Hyperbolic Hierarchical Learning</div>
@@ -51,7 +65,8 @@
                     <div class="paper-title">ALPHANSO: Open-Source Modeling of (\(\alpha\),n) Neutron Source Terms</div>
                     <div class="paper-authors"><span class="me">Divit Rawal</span>, <a href="https://scholar.google.com/citations?user=cEJ85HAAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">Anthony J. Nelson</a>, <a href="https://scholar.google.com/citations?user=HPl2x1sAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">William Zywiec</a>, <a href="https://scholar.google.com/citations?user=nBmy5uIAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">Daniel Siefman</a></div>
                     <div class="paper-venue"><em>Under Review</em> (journal).</div>
-                    <div class="paper-venue"><em>American Nuclear Society Student Conference</em>, 2026 <span class="paper-award">(Best Paper: Mathematics, Computation, and AI Applications).</span> [<a href="/assets/ans_poster.pdf" target="_blank" rel="noopener noreferrer">poster</a>]</div>
+                    <div class="paper-venue"><em>American Nuclear Society Student Conference</em>, 2026 [<a href="/assets/ans_poster.pdf" target="_blank" rel="noopener noreferrer">poster</a>]</div>
+                    <div class="paper-award">&#9492; 🏆 Best Paper: Mathematics, Computation, and AI Applications.</div>
                     <div class="paper-venue"><em>Institute of Nuclear Materials Management Annual Meeting, 2026.</em></div>
                     <div class="paper-links">
                         [<a href="#" class="abstract-toggle" data-arxiv-id="2603.17719">abstract</a>] | [<a href="https://arxiv.org/abs/2603.17719" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://github.com/alphanso-org/alphanso" target="_blank" rel="noopener noreferrer">GitHub</a>]
@@ -59,15 +74,27 @@
                     <div class="paper-abstract" id="abstract-2603.17719" data-loaded="1">Applications ranging from nuclear safeguards to dark matter detection require accurate predictions of neutron fields produced by (\(\alpha\),n) reactions. Legacy tools like SOURCES-4C remain widely used but suffer from significant limitations, including outdated nuclear data, missing target nuclides, and restricted accessibility. Here, we present ALPHANSO, an open-source Python package for calculating (\(\alpha\),n) neutron source terms. ALPHANSO incorporates modern nuclear data libraries and formats covering all naturally occurring target nuclides and provides a transparent, modular framework for updating or extending the data as new evaluations are released. Comparison with SOURCES-4C and experimental measurements across a range of elements and materials shows that ALPHANSO reproduces neutron yields and spectra that typically match or exceed the accuracy of existing codes. These results demonstrate that ALPHANSO is a reliable, accessible, modern replacement for legacy (\(\alpha\),n) source term codes. Its open-source design and modular data handling make it readily extensible to future evaluated nuclear data and low-background applications.</div>
                 </div>
             </div>
+        </section>
+
+        <p class="contributions-note">I have also contributed to:
+            <a href="https://arxiv.org/abs/2508.01059" target="_blank" rel="noopener noreferrer">Foundation-Sec-8B-Instruct</a> and
+            <a href="https://arxiv.org/abs/2504.21039" target="_blank" rel="noopener noreferrer">Foundation-Sec-8B</a> during an internship at <a href="https://www.cisco.com/site/us/en/solutions/artificial-intelligence/foundation-ai/index.html" target="_blank" rel="noopener noreferrer">Cisco Foundation AI</a>, as well as
+            <a href="https://arxiv.org/abs/2412.01548" target="_blank" rel="noopener noreferrer">off-shell Higgs production via neural SBI (ATLAS)</a> and <a href="https://arxiv.org/abs/2412.01600" target="_blank" rel="noopener noreferrer">neural SBI for parameter estimation in ATLAS</a> as a researcher in the <a href="https://sites.uci.edu/daniel/" target="_blank" rel="noopener noreferrer">Whiteson lab</a>.
+        </p>
+
+
+        
+        <!--
+            Full paper entries for contributed works (kept for reference):
+
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">Foundation-Sec-8B-Instruct Technical Report</div>
                     <div class="paper-authors"><a href="https://fdtn.ai" target="_blank" rel="noopener noreferrer">Cisco Foundation AI</a> <span class="contribution-note">contributor: automated data collection and processing pipelines</span></div>
                     <div class="paper-venue"><em>Technical Report</em>, 2025.</div>
                     <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2508.01059">abstract</a>] | [<a href="https://arxiv.org/abs/2508.01059" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Instruct" target="_blank" rel="noopener noreferrer">HuggingFace</a>]
+                        [<a href="https://arxiv.org/abs/2508.01059" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Instruct" target="_blank" rel="noopener noreferrer">HuggingFace</a>]
                     </div>
-                    <div class="paper-abstract" id="abstract-2508.01059" data-loaded="1">Large language models (LLMs) have shown remarkable success across many domains, yet their integration into cybersecurity applications remains limited due to a lack of general-purpose cybersecurity data, representational complexity, and safety and regulatory concerns. To address this gap, we previously introduced Foundation-Sec-8B, a cybersecurity-focused LLM suitable for fine-tuning on downstream tasks. That model, however, was not designed for chat-style interactions or instruction-following. In this report, we release Foundation-Sec-8B-Instruct: a model specifically trained for general-purpose cybersecurity dialogue. Built on Foundation-Sec-8B, it combines domain-specific knowledge with instruction-following, conversational capabilities, and alignment with human preferences to produce high-quality, relevant responses. Comprehensive evaluations show that Foundation-Sec-8B-Instruct outperforms Llama 3.1-8B-Instruct on a range of cybersecurity tasks while matching its instruction-following performance. It is also competitive with GPT-4o-mini on cyber threat intelligence and instruction-following tasks. We envision Foundation-Sec-8B-Instruct becoming an indispensable assistant in the daily workflows of cybersecurity professionals. We release the model publicly <a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Instruct" target="_blank" rel="noopener noreferrer">here</a>.</div>
                 </div>
             </div>
             <div class="paper-item">
@@ -76,20 +103,18 @@
                     <div class="paper-authors"><a href="https://fdtn.ai" target="_blank" rel="noopener noreferrer">Cisco Foundation AI</a> <span class="contribution-note">contributor: automated data collection and processing pipelines</span></div>
                     <div class="paper-venue"><em>Technical Report</em>, 2025.</div>
                     <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2504.21039">abstract</a>] | [<a href="https://arxiv.org/abs/2504.21039" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B" target="_blank" rel="noopener noreferrer">HuggingFace</a>]
+                        [<a href="https://arxiv.org/abs/2504.21039" target="_blank" rel="noopener noreferrer">arXiv</a>] | [<a href="https://huggingface.co/fdtn-ai/Foundation-Sec-8B" target="_blank" rel="noopener noreferrer">HuggingFace</a>]
                     </div>
-                    <div class="paper-abstract" id="abstract-2504.21039" data-loaded="1">As transformer-based large language models (LLMs) increasingly permeate society, they have revolutionized domains such as software engineering, creative writing, and digital arts. However, their adoption in cybersecurity remains limited due to challenges like scarcity of specialized training data and complexity of representing cybersecurity-specific knowledge. To address these gaps, we present Foundation-Sec-8B, a cybersecurity-focused LLM built on the Llama 3.1 architecture and enhanced through continued pretraining on a carefully curated cybersecurity corpus. We evaluate Foundation-Sec-8B across both established and new cybersecurity benchmarks, showing that it matches Llama 3.1-70B and GPT-4o-mini in certain cybersecurity-specific tasks. By releasing our model to the public, we aim to accelerate progress and adoption of AI-driven tools in both public and private cybersecurity contexts.</div>
                 </div>
             </div>
             <div class="paper-item">
                 <div class="paper-content">
-                    <div class="paper-title">Measurement of off-shell Higgs boson production in the \(H^* \to ZZ \to 4\ell\) decay channel using a neural simulation-based inference technique in 13 TeV \(\text{pp}\) collisions with the ATLAS detector</div>
+                    <div class="paper-title">Measurement of off-shell Higgs boson production in the H* to ZZ to 4l decay channel using a neural simulation-based inference technique in 13 TeV pp collisions with the ATLAS detector</div>
                     <div class="paper-authors"><a href="https://atlas.cern" target="_blank" rel="noopener noreferrer">ATLAS Collaboration</a> <span class="contribution-note">contributor: neural nets for soft extrapolation</span></div>
                     <div class="paper-venue"><em>Reports on Progress in Physics</em>, 2024.</div>
                     <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2412.01548">abstract</a>] | [<a href="https://doi.org/10.1088/1361-6633/adcd9a" target="_blank" rel="noopener noreferrer">DOI</a>] | [<a href="https://arxiv.org/abs/2412.01548" target="_blank" rel="noopener noreferrer">arXiv</a>]
+                        [<a href="https://doi.org/10.1088/1361-6633/adcd9a" target="_blank" rel="noopener noreferrer">DOI</a>] | [<a href="https://arxiv.org/abs/2412.01548" target="_blank" rel="noopener noreferrer">arXiv</a>]
                     </div>
-                    <div class="paper-abstract" id="abstract-2412.01548" data-loaded="1">A measurement of off-shell Higgs boson production in the \(H^* \to ZZ \to 4\ell\) decay channel is presented. The measurement uses \(140\ \text{fb}^{-1}\) of proton-proton collisions at \(\sqrt{s} = 13\ \text{TeV}\) collected by the ATLAS detector at the Large Hadron Collider and supersedes the previous result in this decay channel using the same dataset. The data analysis is performed using a neural simulation-based inference method, which builds per-event likelihood ratios using neural networks. The observed (expected) off-shell Higgs boson production signal strength in the \(ZZ \to 4\ell\) decay channel at 68% CL is \(0.87^{+0.75}_{-0.54}\) (\(1.00^{+1.04}_{-0.95}\)). The evidence for off-shell Higgs boson production using the \(ZZ \to 4\ell\) decay channel has an observed (expected) significance of \(2.5\sigma\) (\(1.3\sigma\)). The expected result represents a significant improvement relative to that of the previous analysis of the same dataset, which obtained an expected significance of \(0.5\sigma\). When combined with the most recent ATLAS measurement in the \(ZZ \to 2\ell 2\nu\) decay channel, the evidence for off-shell Higgs boson production has an observed (expected) significance of \(3.7\sigma\) (\(2.4\sigma\)). The off-shell measurements are combined with the measurement of on-shell Higgs boson production to obtain constraints on the Higgs boson total width. The observed (expected) value of the Higgs boson width at 68% CL is \(4.3^{+2.7}_{-1.9}\) (\(4.1^{+3.5}_{-3.4}\)) MeV.</div>
                 </div>
             </div>
             <div class="paper-item">
@@ -98,12 +123,11 @@
                     <div class="paper-authors"><a href="https://atlas.cern" target="_blank" rel="noopener noreferrer">ATLAS Collaboration</a> <span class="contribution-note">contributor: particle reconstruction algorithms</span></div>
                     <div class="paper-venue"><em>Reports on Progress in Physics</em>, 2024.</div>
                     <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2412.01600">abstract</a>] | [<a href="https://doi.org/10.1088/1361-6633/add370" target="_blank" rel="noopener noreferrer">DOI</a>] | [<a href="https://arxiv.org/abs/2412.01600" target="_blank" rel="noopener noreferrer">arXiv</a>]
+                        [<a href="https://doi.org/10.1088/1361-6633/add370" target="_blank" rel="noopener noreferrer">DOI</a>] | [<a href="https://arxiv.org/abs/2412.01600" target="_blank" rel="noopener noreferrer">arXiv</a>]
                     </div>
-                    <div class="paper-abstract" id="abstract-2412.01600" data-loaded="1">Neural simulation-based inference is a powerful class of machine-learning-based methods for statistical inference that naturally handles high-dimensional parameter estimation without the need to bin data into low-dimensional summary histograms. Such methods are promising for a range of measurements, including at the Large Hadron Collider, where no single observable may be optimal to scan over the entire theoretical phase space under consideration, or where binning data into histograms could result in a loss of sensitivity. This work develops a neural simulation-based inference framework for statistical inference, using neural networks to estimate probability density ratios, which enables the application to a full-scale analysis. It incorporates a large number of systematic uncertainties, quantifies the uncertainty due to the finite number of events in training samples, develops a method to construct confidence intervals, and demonstrates a series of intermediate diagnostic checks that can be performed to validate the robustness of the method. As an example, the power and feasibility of the method are assessed on simulated data for a simplified version of an off-shell Higgs boson couplings measurement in the four-lepton final states. This approach represents an extension to the standard statistical methodology used by the experiments at the Large Hadron Collider, and can benefit many physics analyses.</div>
                 </div>
             </div>
-        </section>
+        -->
 
     </main>
 <script>
