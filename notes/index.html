@@ -20,7 +20,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const input = document.getElementById('notes-filter');
             const noResults = document.getElementById('notes-no-results');
-            const sections = document.querySelectorAll('.notes-section');
+            const sections = document.querySelectorAll('.notes-section:not(#courses)');
 
             input.addEventListener('input', function () {
                 const query = this.value.toLowerCase().trim();
@@ -42,12 +42,65 @@
 
                 noResults.style.display = totalVisible === 0 && query ? 'block' : 'none';
             });
+
+            document.querySelectorAll('.expandable-item').forEach(item => {
+                const trigger = item.querySelector('.expand-trigger');
+                const nestedList = item.querySelector('.nested-list');
+
+                const hint = document.createElement('span');
+                hint.className = 'expand-hint';
+                hint.textContent = ' (click to expand)';
+                hint.style.opacity = '0';
+                trigger.appendChild(hint);
+
+                trigger.addEventListener('mouseenter', () => { hint.style.opacity = '1'; });
+                trigger.addEventListener('mouseleave', () => { hint.style.opacity = '0'; });
+                trigger.addEventListener('click', () => {
+                    const open = nestedList.style.display !== 'none';
+                    nestedList.style.display = open ? 'none' : 'block';
+                    hint.textContent = open ? ' (click to expand)' : ' (click to collapse)';
+                });
+            });
+
+            const coursesSection = document.getElementById('courses');
+            const coursesLink = document.querySelector('a[href="#courses"]');
+            const coursesPara = coursesLink.parentElement;
+
+            const hideHint = document.createElement('span');
+            hideHint.className = 'expand-hint';
+            hideHint.textContent = ' (hide)';
+            hideHint.style.opacity = '0';
+            hideHint.style.cursor = 'pointer';
+            hideHint.style.pointerEvents = 'auto';
+            const coursesHeading = coursesSection.querySelector('h2');
+            coursesHeading.appendChild(hideHint);
+
+            coursesHeading.style.cursor = 'default';
+            coursesHeading.addEventListener('mouseenter', () => { hideHint.style.opacity = '1'; });
+            coursesHeading.addEventListener('mouseleave', () => { hideHint.style.opacity = '0'; });
+            hideHint.addEventListener('click', () => {
+                coursesSection.style.display = 'none';
+                coursesPara.style.display = '';
+            });
+
+            coursesLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                coursesPara.style.display = 'none';
+                coursesSection.style.display = '';
+                coursesSection.querySelectorAll('.nested-list').forEach(nl => {
+                    nl.style.display = 'block';
+                });
+                coursesSection.querySelectorAll('.expand-hint').forEach(h => {
+                    if (h !== hideHint) h.textContent = ' (click to collapse)';
+                });
+                coursesSection.scrollIntoView({ behavior: 'smooth' });
+            });
         });
     </script>
 
     <main>
         <h1>Notes</h1>
-        <p>A collection of crib sheets and course notes, ordered (roughly) in reverse chronological order.</p>
+        <p>An incomplete collection of crib sheets and course notes for some courses at Berkeley.</p>
         <input type="text" id="notes-filter" class="notes-filter" placeholder="search" autocomplete="off" spellcheck="false">
 
         <p class="notes-no-results" id="notes-no-results">no results.</p>
@@ -93,7 +146,7 @@
                 <a href="/notes/5b.pdf" target="_blank" rel="noopener noreferrer">PHYSICS 5B &mdash; Electromagnetism, Waves, and Optics</a>
             </div>
             <div class="notes-item">
-                <a href="/notes/70.pdf" target="_blank" rel="noopener noreferrer">CS 70 &mdash; Discrete Mathematics & Probability Theory</a>
+                <a href="/notes/70.pdf" target="_blank" rel="noopener noreferrer">CS 70 &mdash; Discrete Mathematics and Probability Theory</a>
             </div>
             <div class="notes-item">
                 <a href="/notes/61b.pdf" target="_blank" rel="noopener noreferrer">CS 61B &mdash; Data Structures</a>
@@ -111,6 +164,83 @@
                 <a href="/notes/16a.pdf" target="_blank" rel="noopener noreferrer">EECS 16A &mdash; Information Devices and Systems</a>
             </div>
         </section>
+
+        <section id="courses" class="notes-section" style="display: none;">
+            <h2 style="margin-top: 2.5rem; margin-bottom: 1.5rem; font-size: 1.5rem;">Courses by Semester</h2>
+            <p>(Non-technnical courses omitted; 2XY course numbers are graduate-level.)</p>
+            <ul class="misc-list" style="margin-left: 0;">
+                <li class="expandable-item">
+                    <span class="expand-trigger">Sp26</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">STAT 210B &mdash; Mathematical Statistics</li>
+                        <li class="nested-header">CS 294 &mdash; Learning for Control and Dynamics</li>
+                        <li class="nested-header">STAT 133 &mdash; Computing with Data</li>
+                        <li class="nested-header">EECS 127 &mdash; Optimization</li>
+                        <li class="nested-header">PHYSICS 105 &mdash; Analytic Mechanics</li>
+                        <li class="nested-header">PHYSICS 111A &mdash; Instrumentation Laboratory</li>
+                    </ul>
+                </li>
+                <li class="expandable-item">
+                    <span class="expand-trigger">Fa25</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">STAT C241A &mdash; Statistical Learning Theory</li>
+                        <li class="nested-header">STAT 210A &mdash; Theoretical Statistics</li>
+                        <li class="nested-header">EECS 126 &mdash; Probability and Random Processes</li>
+                        <li class="nested-header">PHYSICS 5C &mdash; Thermodynamics and Quantum Mechanics</li>
+                        <li class="nested-header">PHYSICS 5CL &mdash; Experimental Physics II</li>
+                    </ul>
+                </li>
+                <li class="expandable-item">
+                    <span class="expand-trigger">Su25</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">STAT 20 &mdash; Probability and Statistics</li>
+                        <li class="nested-header">MATH 53 &mdash; Multivariable Calculus</li>
+                        <li class="nested-header">CS 61C &mdash; Machine Structures</li>
+                    </ul>
+                </li>
+                <li class="expandable-item">
+                    <span class="expand-trigger">Sp25</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">STAT 260 &mdash; Randomized Linear Algebra, Optimization, Large-Scale Learning</li>
+                        <li class="nested-header">MATH 128A &mdash; Numerical Analysis</li>
+                        <li class="nested-header">PHYSICS 137B &mdash; Quantum Mechanics II</li>
+                        <li class="nested-header">PHYSICS 112 &mdash; Statistical and Thermal Physics</li>
+                        <li class="nested-header">PHYSICS 5BL &mdash; Experimental Physics I</li>
+                    </ul>
+                </li>
+                <li class="expandable-item">
+                    <span class="expand-trigger">Fa24</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">MATH 110 &mdash; Abstract Linear Algebra</li>
+                        <li class="nested-header">MATH 113 &mdash; Abstract Algebra</li>
+                        <li class="nested-header">CS 70 &mdash; Discrete Mathematics and Probability Theory</li>
+                        <li class="nested-header">PHYSICS 137A &mdash; Quantum Mechanics I</li>
+                        <li class="nested-header">PHYSICS 5B &mdash; Electromagnetism, Waves, and Optics</li>
+                    </ul>
+                </li>
+                <li class="expandable-item">
+                    <span class="expand-trigger">Sp24</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">EE 122 &mdash; Communication Networks</li>
+                        <li class="nested-header">STAT 33B &mdash; Advanced Programming in R</li>
+                        <li class="nested-header">CS 61B &mdash; Data Structures</li>
+                        <li class="nested-header">PHYSICS 89 &mdash; Mathematical Physics</li>
+                        <li class="nested-header">PHYSICS 5A &mdash; Mechanics and Relativity</li>
+                        <li class="nested-header">CS 198 &mdash; Computer Vision</li>
+                        <li class="nested-header">PHYSICS 198 &mdash; Differential Geometry and Lie Groups [Audit]</li>
+                    </ul>
+                </li>
+                <li class="expandable-item">
+                    <span class="expand-trigger">Fa23</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">CS 61A &mdash; Computer Programs</li>
+                        <li class="nested-header">EECS 16A &mdash; Information Devices and Systems</li>
+                        <li class="nested-header">EE 198 &mdash; PCB Engineering</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+        <p>A full course schedule may be found <a href="#courses">here</a>.</p>
     </main>
 </body>
 

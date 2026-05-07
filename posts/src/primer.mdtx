@@ -2,7 +2,7 @@ title: A Brief Primer on ML Theory and My Work;
 date: May 04, 2026;
 desc: A less technical, (hopefully) more accessible introduction to some of my work;
 tags: misc;
-emoji: ;
+emoji: ʹ;
 visibility: hidden;
 
 A lot of theory work is often difficult to parse without extensive background in the literature, tools, and conventions of the field. This is an attempt to somewhat lower that barrier and make some of the work I'm interested in/do a bit more accessible.
@@ -28,7 +28,7 @@ In deep neural networks initialized at small scale (i.e. {\text{weights} \overse
 image:
 src: nonlinear_escape/stepwise_learning_mech_openq_12.png;
 alt: Loss curve showing stepwise learning dynamics with plateaus and sharp transitions;
-width: 90%;
+width: 80%;
 caption: Image from [learningmechanics.pub](https://learningmechanics.pub/openquestions/stepwise-learning/).;
 end image;
 
@@ -145,13 +145,74 @@ The prefactor differs from the on-manifold result (AM-GM is tight only when all 
 image:
 src: nonlinear_escape/he_init.png;
 alt: Loss curve showing stepwise learning dynamics with plateaus and sharp transitions;
-width: 90%;
+width: 80%;
 caption: The {r-2} exponent survives at He-normal initialization.;
 end image;
 
 ## Rao-Blackwellized Score Matching on Manifolds
 
-TODO
+### Motivation
+
+[Denoising score matching](https://johfischer.com/2022/09/18/denoising-score-matching/) (DSM) is the method that enables diffusion models. The setup is as follows: take a training sample {X}, corrupt it with Gaussian noise {Z = X + \sigma\xi}, and train a network to regress the denoising direction {(Z - X)/\sigma^2}. By Tweedie's formula (a nice reference is [STAT 210A Fa24 HW6 Problem 4](https://stat210a.berkeley.edu/fall-2024/homework/homework6.pdf)), this is equivalent to learning the score function {\nabla \log q} of the data distribution, which is what we need to run Langevin dynamics or reverse a diffusion.
+
+This works cleanly when the data distribution is absolutely continuous with respect to Lebesgue measure[^7]. But in practice, high-dimensional data (e.g. images, protein structures[^8], climate fields) concentrates near low-dimensional submanifolds {M \subset \mathbb{R}^D}. Under this *manifold hypothesis*, the ambient score {\nabla \log q} is not well-defined at {\sigma = 0} (the law is singular with respect to Lebesgue measure), so DSM only makes sense at a strictly positive noise level {\sigma > 0}.
+
+At finite {\sigma}, DSM regresses a well-defined tangent target
+{T_\sigma = \frac{1}{\sigma^2} P_{T_{\pi(X)}M}(Z - X),}
+the component of the denoising direction lying along the manifold, where {\pi(X) \in M} is the nearest-point projection. But {T_\sigma} carries a large normal-fiber contribution: the noise {\xi} has components both along {M} (signal) and orthogonal to {M} (pure noise), and the normal component leaks through even after projection, inflating the variance of {T_\sigma} by {d/\sigma^2} -- which diverges as {\sigma \to 0^+}. So ambient DSM is regressing the intrinsic score *plus* a diverging noise term, and it's not obvious whether the two can be separated.
+
+### Main Results
+
+**Rao-Blackwellization.** The [Rao-Blackwell theorem](https://stat210a.berkeley.edu/fall-2025/reader/unbiased-estimation.html#the-rao-blackwell-theorem) is a classical result in statistics: conditioning an estimator on a [sufficient statistic](https://stat210a.berkeley.edu/fall-2025/reader/sufficiency.html) can only help -- it reduces variance while keeping the estimator unbiased (in other words, conditioning any unbiased estimator on a sufficient statistic yields an estimator with strictly lower variance, and thus lower MSE). Applied here, the right thing to condition on is {\pi(X) \in M}: among all statistics of {X} that collapse to a manifold position (formally, all *fiber-collapsing summaries*[^9] {S(X)} with {\sigma(S) \subseteq \sigma(\pi(X))}), the nearest-point projection {\pi(X)} is the finest. Conditioning on it averages away the normal-fiber noise while retaining all signal.
+
+This defines the Rao-Blackwellized tangent target:
+{r_\sigma(z) \doteq \mathbb{E}[T_\sigma \mid \pi(X) = z] \in T_z M.}
+
+Among all fiber-collapsing summaries {S(X)}, the RB risk admits a Pythagorean decomposition
+{\mathbb{E}\|T_\sigma - \eta_S\|^2 = \mathbb{E}\|r_\sigma(\pi(X)) - \eta_S\|^2 + \mathbb{E}\|T_\sigma - r_\sigma(\pi(X))\|^2,}
+showing {r_\sigma(\pi(X))} is the unique {L^2}-optimal predictor in this class. The excess risk from any coarser summary is exactly {\mathbb{E}\|r_\sigma(\pi(X)) - \eta_S\|^2} -- the cost of coarsening {\pi(X)} to {S}.
+
+**Variance collapse and a singular Bayes-risk floor.** Now we can quantify the payoff of targeting {r_\sigma} over {T_\sigma}:
+
+theorem[variance-collapse][Variance collapse under Rao-Blackwellization]:
+Uniformly in {z \in M},
+{\operatorname{Var}(T_\sigma \mid \pi(X) = z) = \frac{d}{\sigma^2} + O(1).}
+Consequently, {\operatorname{Var}(T_\sigma) = \frac{d}{\sigma^2} + O(1)} while {\operatorname{Var}(r_\sigma(\pi(X))) = O(1)}.
+end theorem;
+
+The {d/\sigma^2} term is an *irreducible Bayes-risk floor*. For any fiber-collapsing summary {S}, the infimum over all {S}-measurable estimators {\eta} of {\mathbb{E}\|T_\sigma - \eta\|^2} equals {d/\sigma^2 + O(1)}. No coarsening can beat this floor; only conditioning on {\pi(X)} exactly achieves it.
+
+image:
+src: rbized_sm/variance_collapse.png;
+alt: Second moment of raw denoising target vs Rao-Blackwellized target vs noise scale on S^2;
+width: 80%;
+caption: Second moment of {T_\sigma} and {r_\sigma(\pi(X))} on {S^2} under vMF({\mu, \kappa=2}) (the [von Mises-Fisher distribution](https://en.wikipedia.org/wiki/Von_Mises%E2%80%93Fisher_distribution)), as a function of noise scale {\sigma}.
+end image;
+
+**The extrinsic {\sigma^2} correction.** Having identified {r_\sigma} as the right target, the natural next question is what it actually equals. Expanding {r_\sigma(z)} in {\sigma} on any smooth embedded submanifold {M}, the leading term is just the intrinsic Riemannian score {\nabla_M \log q(z)} -- same as what fully intrinsic methods give. The subleading {\sigma^2} correction decomposes into two geometrically distinct pieces:
+
+{r_\sigma(z) = \nabla_M \log q(z) + \sigma^2\bigl[b_q(z) + g_M^{\mathrm{ext}}(z)\bigr] + o(\sigma^2).}
+
+The first piece, {b_q}, is an intrinsic *flat-Tweedie* bias involving {\Delta_M \log q} and {\|\nabla_M \log q\|^2}. It appears in both ambient and intrinsic DSM analyses and is separately removable. The second piece, {g_M^{\mathrm{ext}}}, is a purely extrinsic curvature correction that is invisible to any method that noises intrinsically along {M}, since intrinsic noise never leaves the manifold and thus never senses the embedding geometry.
+
+To understand {g_M^{\mathrm{ext}}}, it helps to keep two kinds of curvature separate. Extrinsic curvature describes how {M} bends in {\mathbb{R}^D}: if you walk along {M}, the normal directions rotate, and the rate of that rotation is the *Weingarten operator* {W_\nu} -- a linear map on the tangent space for each normal direction {\nu}. It encodes how quickly the manifold tilts away from its tangent plane as you move along it. Intrinsic curvature is what one could measure from inside {M} without knowing it is embedded anywhere -- captured by the *Ricci endomorphism* {\mathrm{Ric}_z^\sharp}, also a linear map on {T_z M}. Both act on the same tangent space, so they can be directly compared.
+
+The extrinsic correction is their discrepancy, applied to the score direction:
+{g_M^{\mathrm{ext}}(z) = \bigl(\tfrac{1}{2}W_{H(z)} - \mathrm{Ric}_z^\sharp\bigr)\nabla_M \log q(z),}
+where {W_{H(z)}} uses the Weingarten operator in the mean-curvature direction {H(z)}.[^10] When extrinsic and intrinsic curvature are in balance -- {\tfrac{1}{2}W_H = \mathrm{Ric}^\sharp} -- the two terms cancel and {g_M^{\mathrm{ext}} = 0}. Crucially, {g_M^{\mathrm{ext}}} depends only on the geometry of {M}, not on {q} itself, so it can be subtracted off as a post-hoc correction without knowing the density.
+
+**A happy accident on {S^2}.** On {S^d \subset \mathbb{R}^{d+1}}, the symmetry of the sphere forces both curvature tensors to be scalar multiples of the identity on each tangent space. Working out the two sides, {g_{S^d}^{\mathrm{ext}}} reduces to a scalar multiple of {\nabla_M \log q} with coefficient {\alpha_d = 1 - d/2}.
+
+At {d = 2}, {\alpha_2 = 0}: the correction vanishes. This is not special to the sphere -- on any 2-dimensional surface embedded in any {\mathbb{R}^D}, the Gauss equation[^11] forces {\tfrac{1}{2}W_H = \mathrm{Ric}^\sharp}, so extrinsic and intrinsic curvature are always in balance on a surface. Ambient DSM on {S^2} therefore matches the intrinsic score up to the removable Tweedie bias, with no embedding correction needed.
+
+image:
+src: rbized_sm/langevin_concentration.png;
+alt: Equilibrium density of z dot mu on S^2, S^6, S^10 under ambient DSM and RB+debias Langevin drifts;
+width: 95%;
+caption: Equilibrium density of {z \cdot \mu} under Langevin dynamics on {S^d} targeting vMF({\mu, \kappa=5}), {\sigma=0.3}. On {S^2} all three coincide; on {S^6} and {S^{10}} the ambient target under-concentrates, and the correction recovers it.;
+end image;
+
+The {S^2} coincidence is structural, not lucky: it follows from the classification of surfaces in Riemannian geometry (the Einstein identity holds in dimension 2 universally). It explains why ambient diffusion models perform surprisingly well on spherical scientific data -- climate fields, protein orientations, directional statistics -- without requiring any special structure beyond the data lying on {S^2}.
 
 ## Minimax Rates for Hyperbolic Hierarchical Learning
 
@@ -174,3 +235,8 @@ end list;
 [^5]: The submanifold is preserved *exactly* by gradient flow because the teacher, loss, and data distribution are all invariant under permutation of the hidden neurons in any layer. Since every neuron in layer {l} carries the same weight row on the manifold, permuting neurons leaves the dynamics unchanged (the manifold is the {S_N} fixed point). This symmetry is exact, so the manifold is flow-invariant.
 [^6]: The initial nondegeneracy condition {|\gamma(W(0))| \geq c_{\mathrm{nd}} \varepsilon^r} needed for the lower bound holds with probability {\geq 1 - \delta} at He-normal init for any fixed {\delta > 0} by Gaussian anti-concentration.
 [^mode_ordering]: Here, modes are organized by strength: {\beta_1 > \beta_2 > \cdots > \beta_{r^*} > 0}.
+[^7]: A good barebones understanding of measures is given in the [STAT 210A course reader](https://stat210a.berkeley.edu/fall-2025/reader/probability.html).
+[^8]: In particular, proteins live on the {SE(3)} manifold (they are equivariant to translation and rotation). More on symmetries and ML in [this old post](https://divitr.github.io/posts/cat-theor-ml/).
+[^9]: The *fiber* over a point {z \in M} is the set of all ambient points that project to {z}: {\pi^{-1}(z) = \{x \in \mathbb{R}^D : \pi(x) = z\}}. It's a copy of the normal space {N_z M} -- the "tube slice" above {z}. A fiber-collapsing summary {S(X)} assigns the same value to everything in a fiber, so it can tell you *which fiber you're in* (your manifold position) but not *where within the fiber* (your normal offset). The finest such summary is {\pi(X)} itself; any coarser one groups nearby manifold points together and loses information.
+[^10]: The mean-curvature vector {H(z) = \sum_{i=1}^d \Pi_z(e_i, e_i) \in N_z M} is the trace of the second fundamental form over an orthonormal basis {(e_i)} of {T_z M}. On {S^d} with outward normal {z}, {H(z) = -dz}, so {W_{H(z)} = d\,\mathrm{Id}_{T_z M}}.
+[^11]: The Gauss equation relates extrinsic and intrinsic curvature via {\mathrm{Ric}_z^\sharp = W_{H(z)} - \mathcal{S}_z}, where {\mathcal{S}_z = \sum_\alpha W_{n_\alpha}^2} sums squared Weingarten operators over a normal frame. In dimension 2, the scalar curvature identity forces {\tfrac{1}{2}W_H = \mathrm{Ric}^\sharp} -- a coincidence that fails in all higher dimensions.
