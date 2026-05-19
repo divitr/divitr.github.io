@@ -725,10 +725,11 @@ class MDTXCompiler:
         return text
 
     def process_lists_in_example(self, text: str) -> str:
-        """Process lists in example boxes that don't have explicit 'end list;' markers"""
+        """Process lists in example boxes, handling both explicit 'end list;' and bare list blocks"""
         pattern = re.compile(
             r'list\[([^\]]+)\]:\s*\n'
-            r'((?:[ \t]*-[ \t]*[^\n]*(?:\n[ \t]+[^\n]*)*\n?)*)',  # Match list items and their continuations
+            r'((?:[ \t]*-[ \t]*[^\n]*(?:\n[ \t]+[^\n]*)*\n?)*)'
+            r'(?:[ \t]*end list;?)?',  # consume optional end list; marker
             re.DOTALL
         )
         def repl(m):
@@ -971,8 +972,9 @@ class MDTXCompiler:
                 i += 1
             return ''.join(out)
 
-        # Split by HTML tags and process only non-tag parts
-        parts = re.split(r'(<[^>]*>)', text)
+        # Split by HTML tags and process only non-tag parts.
+        # Use <[a-zA-Z/] so LaTeX operators like "< \infty" don't get treated as tag opens.
+        parts = re.split(r'(<[a-zA-Z/][^>]*>)', text)
         for i in range(len(parts)):
             if not parts[i].startswith('<'):
                 parts[i] = process_math_in_content(parts[i])
@@ -1286,9 +1288,6 @@ class MDTXCompiler:
         visibility = meta.get('visibility', 'visible').strip().lower()
         if visibility not in ('visible', 'hidden'):
             visibility = 'visible'
-        if visibility == 'hidden':
-            print(f"Skipping {path.name}: visibility=hidden")
-            return
         fns,  body = self.extract_footnotes(body)
         footnote_numbers = self.build_footnote_numbers(body, fns)
         
@@ -1358,6 +1357,12 @@ class MDTXCompiler:
             if tag_list:
                 tags_html = '<div class="post-tags">' + ''.join([f'<span class="tag" data-tag="{tag}">{tag}</span>' for tag in tag_list]) + '</div>'
 
+        emoji = meta.get('emoji', '')
+        if emoji:
+            favicon_html = f'    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>{emoji}</text></svg>">\n'
+        else:
+            favicon_html = ''
+
         # Get current timestamp for footer
         compile_time = datetime.now().strftime("%b %d, %Y at %H:%M")
         
@@ -1378,7 +1383,7 @@ class MDTXCompiler:
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{doc_title}</title>
-</head>
+{favicon_html}</head>
 
 <body>
     <header>
@@ -1399,7 +1404,7 @@ class MDTXCompiler:
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled {compile_time} | <a href="../src/{path.name}" target="_blank">Source</a></p>
+            <p>Compiled {compile_time} | <a href="../src/{path.name}" target="_blank">source</a></p>
         </div>
     </footer>
 
