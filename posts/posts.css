@@ -848,3 +848,159 @@ sup a:hover {
     background: var(--primary-color);
     margin-left: auto;
 }
+
+:root[data-theme="dark"] {
+    /* Code pre and inline styling */
+    .blog-post pre {
+        background: #1c1c1e !important;
+        border-color: #323235 !important;
+    }
+    .blog-post pre code {
+        color: var(--primary-color) !important;
+    }
+    .blog-post code {
+        background: #2c2c2e !important;
+        color: #ff7b72 !important; /* Elegant warm coral inline code highlight */
+    }
+
+    /* Muted blog layout dates and backlink actions */
+    .blog-post-date {
+        color: #86868b !important;
+    }
+    
+    /* Dynamic tooltips (footnotes) */
+    .footnote-tooltip {
+        background: #1c1c1e !important;
+        border-color: #323235 !important;
+        color: #a8a8ad !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .footnote-sidenote .sidenote-number {
+        color: #555559 !important;
+    }
+    .footnote-sidenote a {
+        color: #86868b !important;
+    }
+    .footnote-sidenote a:hover {
+        color: var(--primary-color) !important;
+    }
+    .footnote-sidenote.highlighted {
+        color: var(--primary-color) !important;
+    }
+    .footnote-sidenote.highlighted .sidenote-number {
+        color: #98989d !important;
+    }
+    
+    /* Mathematical proofs & environment layouts */
+    .proof-box {
+        border-left-color: #323235 !important;
+    }
+    .proof-box-title a {
+        border-bottom-color: #555559 !important;
+    }
+    .qed-box {
+        border-color: var(--primary-color) !important;
+    }
+    .qed-box:hover {
+        background: rgba(226, 226, 229, 0.1) !important;
+    }
+
+    /* Tag filters & list indices */
+    .tag-filter {
+        color: #86868b !important;
+    }
+    .tag-filter:hover {
+        color: var(--primary-color) !important;
+    }
+    .tag-filter.active {
+        color: var(--primary-color) !important;
+    }
+    #active-filter-status {
+        color: #555559 !important;
+    }
+    
+    .blog-post-item {
+        border-color: #323235 !important;
+    }
+    .blog-post-item .post-date {
+        color: #86868b !important;
+    }
+    
+    .post-tags .tag {
+        color: #86868b !important;
+    }
+    .post-tags .tag::before {
+        color: #48484a !important;
+    }
+    .post-tags .tag.highlighted {
+        color: var(--primary-color) !important;
+    }
+    .post-tags .tag.highlighted::before {
+        color: var(--primary-color) !important;
+    }
+
+    /* Visual buttons (TOC / Graph controls) */
+    .viz-btn {
+        color: #86868b !important;
+    }
+    .viz-btn:hover {
+        color: var(--primary-color) !important;
+    }
+    .viz-btn.active {
+        color: var(--primary-color) !important;
+    }
+
+    /* Interactive Graph Constellation HUD */
+    .constellation-tooltip {
+        color: var(--primary-color) !important;
+    }
+    .constellation-tooltip::before {
+        background: rgba(21, 21, 22, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Interactive Graph Constellation & Drift SVGs Overrides */
+    #constellation-container {
+        border-bottom-color: #323235 !important;
+    }
+    #constellation-container svg rect[fill="#fafafa"] {
+        fill: var(--background-color) !important;
+    }
+    #constellation-container svg circle[stroke="#fafafa"] {
+        stroke: var(--background-color) !important;
+    }
+    #constellation-container svg text[stroke="#fafafa"] {
+        stroke: var(--background-color) !important;
+    }
+    #constellation-container svg text[fill="white"] {
+        fill: var(--background-color) !important;
+    }
+    #constellation-container svg text[fill="#666"] {
+        fill: var(--primary-color) !important;
+    }
+
+    /* KaTeX Math block overrides */
+    .katex-display, 
+    .katex {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+
+    /* Example box block overrides */
+    .example-box {
+        background-color: #1c1c1e !important;
+        border-left-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+    }
+    .example-box-title {
+        color: var(--primary-color) !important;
+    }
+    .example-box-description {
+        color: #86868b !important;
+    }
+    .example-box ul li::before {
+        color: var(--primary-color) !important;
+    }
+}

@@ -533,6 +533,10 @@ a:hover {
     margin-bottom: 0.3rem;
 }
 
+.paper-award .award-label {
+    font-weight: 600;
+}
+
 /* Paper Author Styling - Added Jan 2026 */
 .paper-authors {
     font-size: 0.95rem;
@@ -556,4 +560,114 @@ a:hover {
 .paper-authors .me {
     font-weight: 600;
     color: var(--primary-color);
+}
+
+:root[data-theme="dark"] {
+    --primary-color: #ceced2;     /* Softer cream-silver paper (much less harsh) */
+    --background-color: #151516;  /* Deep, premium warm-charcoal matte */
+    --hover-color: #1c1c1d;
+}
+
+:root[data-theme="dark"] {
+
+    /* Core layout typography & canvas */
+    body {
+        color: var(--primary-color);
+        background: var(--background-color);
+    }
+
+    a {
+        color: var(--primary-color);
+    }
+    
+    /* Academic border lines & dividers */
+    header, 
+    .contact-item, 
+    .news, 
+    .notes-item, 
+    .papers-section, 
+    .paper-item, 
+    .last-updated {
+        border-color: #323235 !important; /* Slightly brighter, more defined borders */
+    }
+    
+    /* Muted academic metadata text - raised for better contrast */
+    .contact-label, 
+    .paper-venue, 
+    .paper-abstract, 
+    .paper-meta, 
+    .paper-award, 
+    .contributions-note {
+        color: #a8a8ad !important;
+    }
+    
+    /* Subtly hidden dates and document actions - raised for readability */
+    .news-date, 
+    .paper-links, 
+    .paper-links a, 
+    .notes-no-results {
+        color: #86868b !important;
+    }
+    
+    .footer .separator {
+        color: #323235 !important;
+    }
+    
+    .expand-hint, 
+    .contribution-note {
+        color: #98989d !important;
+    }
+    
+    .nested-header {
+        color: #86868b !important;
+    }
+    
+    .news-btn {
+        color: #86868b !important;
+    }
+    .news-btn:hover {
+        color: #b2b2b7 !important;
+    }
+    
+    /* Coursework notes filter input */
+    .notes-filter {
+        color: var(--primary-color);
+        border-bottom-color: #323235;
+    }
+    .notes-filter::placeholder {
+        color: #555559;
+    }
+    .notes-filter:focus {
+        border-color: #98989d;
+    }
+
+    /* Authors details */
+    .paper-authors {
+        color: #cfcfd2 !important;
+    }
+    .paper-authors a {
+        color: #cfcfd2 !important;
+        text-decoration-color: #555559;
+    }
+    .paper-authors a:hover {
+        color: var(--primary-color) !important;
+        text-underline-offset: 2px;
+        text-decoration-color: var(--primary-color);
+    }
+
+    /* Soften image luminance under dark-adapted lighting */
+    .profile-img {
+        opacity: 0.84;
+        transition: opacity 0.25s ease;
+    }
+    .profile-img:hover {
+        opacity: 1;
+    }
+
+    /* KaTeX Math block overrides */
+    .katex-display, 
+    .katex {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
 }
