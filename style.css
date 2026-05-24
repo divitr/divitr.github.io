@@ -4,6 +4,11 @@
     --hover-color: #ffffff;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+
 .katex { font-size: 1em !important; }
 
 body {

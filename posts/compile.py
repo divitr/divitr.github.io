@@ -333,6 +333,12 @@ class MDTXCompiler:
             # Strip any "imgs/" prefix since images are directly in the output directory
             if src.startswith('imgs/'):
                 src = src[5:]  # Remove "imgs/" prefix
+            
+            # If the source starts with research/, posts/, or assets/, ensure it has a leading slash
+            for prefix in ['research/', 'posts/', 'assets/']:
+                if src.startswith(prefix):
+                    src = '/' + src
+                    break
 
             inner_style = f' style="width:{width}"' if width else ''
             img_html = f'<img src="{src}" alt="{alt}">'
@@ -987,6 +993,20 @@ class MDTXCompiler:
 
         return text
 
+    def process_abstract(self, text: str) -> str:
+        pattern = re.compile(
+            r'abstract:\s*\n(?P<body>[\s\S]*?)\nend abstract;?',
+            re.IGNORECASE
+        )
+
+        def repl(match):
+            body = match.group('body').strip()
+            prefix_pattern = re.compile(r'^(?:\*\*|<strong>|<b>)?\s*Abstract\b\.?\s*(?:\*\*|</strong>|</b>)?\s*', re.IGNORECASE)
+            body_content = prefix_pattern.sub('', body).strip()
+            return f'<div class="abstract-text">\n<strong>Abstract.</strong> {body_content}\n</div>'
+
+        return pattern.sub(repl, text)
+
     def process_headings(self, text: str) -> str:
         out = []
         for L in text.splitlines():
@@ -1074,8 +1094,17 @@ class MDTXCompiler:
             text = text.replace(placeholder, html_link)
         return text
 
+    def update_research_index(self):
+        """Update research/index.html to automatically insert or remove TLDR links based on metadata."""
+        pass
+
     def generate_blog_index(self):
         """Generate the blog index page from all MDTX files"""
+        is_tldr = "research" in str(self.source_dir) or "tldr" in str(self.source_dir)
+        if is_tldr:
+            self.update_research_index()
+            return
+            
         mdtx_files = list(self.source_dir.glob("*.mdtx"))
         posts = []
         
@@ -1275,6 +1304,7 @@ class MDTXCompiler:
         return html
 
     def compile_file(self, path: Path):
+        is_tldr = "research" in str(path) or "tldr" in str(path)
         raw  = path.read_text(encoding='utf8')
         
         # Extract ALL URLs IMMEDIATELY after reading, before any processing
@@ -1295,7 +1325,7 @@ class MDTXCompiler:
         body = re.sub(r'(?m)^(?:desc|tags):.*\n', '', body)
 
         # now build date + desc blocks from meta, with emphasis and math processing
-        date_html = f'            <p class="date">{self.apply_emphasis(meta["date"])}</p>\n' if meta.get("date") else ""
+        date_html = f'            <p class="date">{self.apply_emphasis(meta["date"])}</p>\n' if (not is_tldr and meta.get("date")) else ""
         desc_raw = meta.get("desc", "")
         if desc_raw:
             desc_processed = self.replace_inline_math(desc_raw)
@@ -1325,6 +1355,9 @@ class MDTXCompiler:
         # Process footnotes
         body = self.replace_footrefs(body, fns, footnote_numbers)
         
+        # Process abstract
+        body = self.process_abstract(body)
+        
         # Process paragraphs last (after all other blocks are processed)
         body = self.process_paragraphs(body)
         
@@ -1349,7 +1382,7 @@ class MDTXCompiler:
 
         # Generate tags HTML for the post
         tags_html = ''
-        if tags and tags.strip():
+        if not is_tldr and tags and tags.strip():
             tag_order = ['stats', 'physics', 'math', 'ml', 'misc']
             tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
             # Sort tags by canonical order
@@ -1372,6 +1405,32 @@ class MDTXCompiler:
         output_dir.mkdir(exist_ok=True)
         output_file = output_dir / "index.html"
 
+        # Determine main wrapper class based on post type
+        main_class = "blog-post tldr-post" if is_tldr else "blog-post"
+        
+        # Navigation header customization
+        if is_tldr:
+            header_html = ""
+        else:
+            header_html = f"""    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/posts">Posts</a>
+        </nav>
+    </header>"""
+
+        # Pre-title labels for TLDR pages
+        tldr_header_pre = ""
+        if is_tldr:
+            arxiv_id = meta.get('arxiv', '').strip()
+            pdf_link = meta.get('pdf', '').strip()
+            paper_url = f"https://arxiv.org/abs/{arxiv_id}" if arxiv_id else pdf_link
+            
+            tldr_header_pre = f"""<div class="tldr-nav-row">
+                <a href="/research/#paper-{path.stem}" class="tldr-nav-back">\\(\\longleftarrow\\) back to research</a>
+                <a href="{paper_url}" target="_blank" rel="noopener noreferrer" class="tldr-nav-paper">paper</a>
+            </div>\n            """
+
         html = f"""<!DOCTYPE html>
 <html lang="en">
 
@@ -1379,24 +1438,18 @@ class MDTXCompiler:
     <meta charset="UTF-8">
     <script src="/theme.js"></script>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="stylesheet" href="../../style.css">
-    <link rel="stylesheet" href="../posts.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/posts/posts.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{doc_title}</title>
 {favicon_html}</head>
 
 <body>
-    <header>
-        <div class="monogram"><a href="/">DR</a></div>
-        <nav>
-            <a href="/posts">Posts</a>
-        </nav>
-    </header>
-
-    <main class="blog-post">
+{header_html}
+    <main class="{main_class}">
         <section class="intro">
-            <h1>{title}</h1>
+            {tldr_header_pre}<h1>{title}</h1>
             {tags_html}
 {date_html}{desc_html}        </section>
 
@@ -1409,9 +1462,9 @@ class MDTXCompiler:
         </div>
     </footer>
 
-    <script src="../toc-generator.js"></script>
-    <script src="../footnote-sidebar.js"></script>
-    <script src="../collapsible-proofs.js"></script>
+    <script src="/posts/toc-generator.js"></script>
+    <script src="/posts/footnote-sidebar.js"></script>
+    <script src="/posts/collapsible-proofs.js"></script>
 </body>
 </html>"""
 

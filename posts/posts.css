@@ -1004,3 +1004,103 @@ sup a:hover {
         color: var(--primary-color) !important;
     }
 }
+
+/* Minimal Static Abstract Styling */
+.abstract-text {
+    font-style: italic;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: #555;
+    margin: 1.8rem 0 2.2rem 0;
+    padding: 0 0 0 1.2rem;
+    border-left: 2px solid var(--border-color);
+}
+
+[data-theme="dark"] .abstract-text {
+    color: #aaa;
+}
+
+/* TLDR Split-Row Top Navigation Bar */
+.tldr-nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.tldr-nav-back,
+.tldr-nav-paper {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.tldr-nav-back:hover,
+.tldr-nav-paper:hover {
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .tldr-nav-row {
+    border-bottom-color: #323235;
+}
+
+/* Walkthrough-specific layout and styles (TLDR) */
+.tldr-post .intro {
+    border-bottom: none !important;
+    margin-bottom: 2rem !important;
+    padding-bottom: 0 !important;
+}
+
+.tldr-post .intro h1 {
+    font-size: 1.85rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+}
+
+.tldr-post .intro .date {
+    color: #777 !important;
+    margin-top: 0.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+.tldr-post .intro .desc {
+    font-size: 1.02rem !important;
+    color: #555 !important;
+    font-style: italic !important;
+    margin-top: 0.6rem !important;
+    line-height: 1.5 !important;
+}
+
+.tldr-post .abstract-text {
+    font-size: 0.95rem;
+    background: #f6f6f7;
+    padding: 1.1rem 1.4rem;
+    border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
+    margin: 2.2rem 0;
+    color: #333;
+    font-style: normal;
+}
+
+/* Dark mode overrides */
+:root[data-theme="dark"] .tldr-post .intro .date {
+    color: #888 !important;
+}
+
+:root[data-theme="dark"] .tldr-post .intro .desc {
+    color: #98989d !important;
+}
+
+:root[data-theme="dark"] .tldr-post .abstract-text {
+    background: #1c1c1e;
+    color: #ceced2;
+}
+
+
+
+
+
