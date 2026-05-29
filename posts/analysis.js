@@ -28,6 +28,18 @@
     'function','functions','space','paper','model','models','training','data',
     'work','works','working','approach','need','needs','point','points',
     'prove','proof','proofs','proven','shown','where','there','here','that',
+    // LaTeX & Math markup commands/symbols to ignore in keywords
+    'mathrm', 'mathcal', 'frac', 'sqrt', 'lambda', 'qquad', 'infty', 'mathbb', 'cdot',
+    'tilde', 'kappa', 'approx', 'sum', 'log', 'exp', 'sin', 'cos', 'tan', 'omega',
+    'theta', 'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'iota', 'mu',
+    'nu', 'xi', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'psi', 'chi', 'left', 'right',
+    'begin', 'end', 'vert', 'bigg', 'align', 'times', 'equation', 'plus', 'minus', 'equal',
+    'equals', 'integral', 'differential', 'derivative', 'partial', 'gradient', 'hessian',
+    'matrix', 'vector', 'scalar', 'tensor', 'norm', 'norms', 'probability', 'distribution',
+    'every', 'number', 'numbers', 'value', 'values', 'set', 'sets', 'time', 'step', 'steps',
+    'many', 'much', 'also', 'rather', 'like', 'well', 'find', 'gives', 'give', 'take',
+    'taken', 'taking', 'make', 'made', 'making', 'come', 'came', 'coming', 'go', 'went',
+    'going', 'good', 'bad', 'easy', 'hard', 'simple', 'complex', 'general', 'special'
   ]);
 
   // ── SVG helpers ───────────────────────────────────────────────────────────────
@@ -132,7 +144,7 @@
   // about as much as metadata instead of being mostly decorative.
 
   function buildFeatures(posts, bodies) {
-    const W_TAG = 2, W_DESC = 1.45, W_BODY = 1.35;
+    const W_TAG = 1.8, W_DESC = 1.45, W_BODY = 1.0;
 
     // Tag one-hot, L2-normalized per post
     const tagVecs = posts.map(p => {
@@ -255,6 +267,7 @@
       const ci    = [Math.floor(Math.random() * n)];
       taken.add(ci[0]);
       while (ci.length < k) {
+        const oldLength = ci.length;
         const d     = pts.map((p, i) => taken.has(i) ? 0 : Math.min(...ci.map(c => dist2(p, pts[c]))));
         const total = d.reduce((s, x) => s + x, 0);
         let r = Math.random() * total;
@@ -262,8 +275,9 @@
           r -= d[i];
           if (r <= 0 && !taken.has(i)) { ci.push(i); taken.add(i); break; }
         }
-        if (ci.length < run + 2)
+        if (ci.length === oldLength) {
           for (let i = 0; i < n; i++) if (!taken.has(i)) { ci.push(i); taken.add(i); break; }
+        }
       }
       const cents  = ci.map(i => [...pts[i]]);
       const labels = new Array(n).fill(0);
@@ -374,20 +388,31 @@
 
   // ── Cluster keyword labels ────────────────────────────────────────────────────
 
-  function clusterKeywords(posts, labels) {
+  function clusterKeywords(posts, labels, texts) {
     const k = Math.max(...labels) + 1;
     const TAG_FALLBACK = null; // use tag name directly
 
     // Uni+bigram token set and bag per post
     function postTokenSet(i) {
-      const words = tokenize(`${posts[i].title} ${posts[i].desc}`);
-      const bi    = words.slice(0, -1).map((w, j) => w + '_' + words[j + 1]);
-      return new Set([...words, ...bi]);
+      const titleWords = tokenize(`${posts[i].title} ${posts[i].desc}`);
+      const titleBi    = titleWords.slice(0, -1).map((w, j) => w + '_' + titleWords[j + 1]);
+      const body = (texts && texts[i]) ? stripMdtx(texts[i]) : '';
+      const bodyWords = tokenize(body);
+      const bodyBi    = bodyWords.slice(0, -1).map((w, j) => w + '_' + bodyWords[j + 1]);
+      return new Set([...titleWords, ...titleBi, ...bodyWords, ...bodyBi]);
     }
     function postTokenBag(i) {
-      const words = tokenize(`${posts[i].title} ${posts[i].desc}`);
-      const bi    = words.slice(0, -1).map((w, j) => w + '_' + words[j + 1]);
-      return [...words, ...bi];
+      const titleWords = tokenize(`${posts[i].title} ${posts[i].desc}`);
+      const titleBi    = titleWords.slice(0, -1).map((w, j) => w + '_' + titleWords[j + 1]);
+      const body = (texts && texts[i]) ? stripMdtx(texts[i]) : '';
+      const bodyWords = tokenize(body);
+      const bodyBi    = bodyWords.slice(0, -1).map((w, j) => w + '_' + bodyWords[j + 1]);
+      const bag = [];
+      for (let r = 0; r < 10; r++) {
+        bag.push(...titleWords, ...titleBi);
+      }
+      bag.push(...bodyWords, ...bodyBi);
+      return bag;
     }
 
     const clusterIdxs = Array.from({ length: k }, (_, c) =>
@@ -427,9 +452,11 @@
       return Object.entries(freq)
         .filter(([t]) => (wdf[t] ?? 0) >= minSupport)
         .map(([t, tf]) => {
+          const coverage = wdf[t] / idxs.length;
           const isBigram = t.includes('_');
           const tfidf = tf * Math.log((k + 1) / df[t]);
-          return [t, isBigram ? tfidf * BIGRAM_BIAS : tfidf];
+          const baseScore = isBigram ? tfidf * BIGRAM_BIAS : tfidf;
+          return [t, baseScore * coverage];
         })
         .sort((a, b) => b[1] - a[1]);
     });
@@ -443,16 +470,25 @@
       .sort((a, b) => b[1] - a[1])
       .map(([c]) => c);
 
+    const KEYWORD_SCORE_THRESHOLD = 0.0035;
+
     for (const c of order) {
       const idxs = clusterIdxs[c];
       if (!idxs.length) { assigned[c] = 'misc'; continue; }
 
-      const top = allCandidates[c].find(([t]) => !used.has(t))?.[0];
+      const bestCandidate = allCandidates[c][0];
+      const hasStrongKeyword = bestCandidate && bestCandidate[1] >= KEYWORD_SCORE_THRESHOLD;
+      const top = hasStrongKeyword ? allCandidates[c].find(([t]) => !used.has(t))?.[0] : null;
+
       if (top) { assigned[c] = top.replace(/_/g, ' '); used.add(top); continue; }
 
       // Fallback to dominant tag
       const tagFreq = {};
-      for (const i of idxs) for (const t of posts[i].tags) tagFreq[t] = (tagFreq[t] ?? 0) + 1;
+      for (const i of idxs) {
+        for (const t of posts[i].tags) {
+          tagFreq[t] = (tagFreq[t] ?? 0) + 1;
+        }
+      }
       const topTag = Object.entries(tagFreq).sort((a, b) => b[1] - a[1])[0]?.[0];
       assigned[c] = (topTag ?? 'misc').toLowerCase();
     }
@@ -775,12 +811,12 @@
 
   // ── Render: Constellation ─────────────────────────────────────────────────────
 
-  function renderConstellation(svgContainer, tooltipEl, posts, embed2d, labels) {
+  function renderConstellation(svgContainer, tooltipEl, posts, embed2d, labels, texts) {
     const opacities = dateOpacities(posts);
     const radii     = normLengths(posts);
     const scaled    = repulse(applyGravity(scaleCoords(jitterClusters(embed2d, labels)), labels, radii, opacities));
     const edges     = clusterMSTs(scaled, labels);
-    const words     = clusterKeywords(posts, labels);
+    const words     = clusterKeywords(posts, labels, texts);
     const k         = Math.max(...labels) + 1;
 
     const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', style: 'display:block' });
@@ -1548,7 +1584,7 @@
     });
 
     // Render constellation
-    renderConstellation(svgEl, tooltipEl, posts, embed2d, labels);
+    renderConstellation(svgEl, tooltipEl, posts, embed2d, labels, texts);
 
     // Constellation caption
     const lnk = 'text-decoration:none;color:#bbb';
