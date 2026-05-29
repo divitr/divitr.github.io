@@ -1,0 +1,10 @@
+req: math;
+
+title: SPN5 — An Evolving Sparse LPN Stream Cipher;
+date: May 21, 2026;
+desc: A rough note on SPN5 in spin-cipher and a proof sketch reducing its security to sparse LPN;
+tags: math, misc;
+emoji: 🔐;
+visibility: hidden;
+
+TODO is a reduction to LPN (check Desktop/misc/spn5 for reference.)

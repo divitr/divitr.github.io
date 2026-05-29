@@ -2,7 +2,7 @@
   'use strict';
 
   // 1. Immediate theme application (avoids flash of light mode on dark systems)
-  const saved = localStorage.getItem('theme');
+  const saved = sessionStorage.getItem('theme');
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   
   if (saved === 'dark' || (!saved && systemDark)) {
@@ -66,8 +66,17 @@
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
       
       document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
+      sessionStorage.setItem('theme', newTheme);
       updateIcon();
+    });
+
+    // Listen for system theme changes (only if no manual toggle override exists)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+      if (!sessionStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        updateIcon();
+      }
     });
   });
 })();
