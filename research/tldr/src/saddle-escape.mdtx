@@ -1,0 +1,215 @@
+req: math, stats;
+title: A Theory of Saddle Escape in Deep Nonlinear Networks;
+date: May 04, 2026;
+desc: Analyzing training dynamics in small-initialization deep nonlinear neural networks;
+emoji: 🐎;
+paper_link: https://arxiv.org/abs/2605.01288;
+visibility: visible;
+
+Training deep networks from small initialization has a characteristic pattern: long plateaus where the loss barely moves, then sharp drops as new features are learned. This "saddle-to-saddle" structure is well understood for linear networks, where an exact conservation law makes the training flow tractable. For nonlinear activations, the conservation law that underlies much of the deep linear network literature breaks, and it isn't clear what should replace it, or what controls how long each plateau lasts. In this work, we identify the right replacement: an exact identity governing the imbalance between adjacent layer norms, valid for any smooth activation and any differentiable loss. The identity is used to determine that escape time depends not on the total depth, but only on the number of bottleneck layers.[^grq]
+
+image:
+src: research/tldr/saddle-escape/saddle-to-saddle.png;
+alt: Saddle-to-saddle training dynamics;
+caption: Saddle-to-saddle training dynamics (image from [learningmechanics.pub](https://learningmechanics.pub/openquestions/stepwise-learning/)).
+width: 95%;
+end image;
+
+main-results:
+- We derive an exact identity for the imbalance {\Delta_l = \|W_{l+1}\|_F^2 - \|W_l\|_F^2} that holds for any smooth activation and differentiable loss, and use it to classify activations into four universality classes.
+- We show that on the permutation-symmetric manifold, the full matrix flow reduces to a scalar ODE, giving escape time {\tau_\star = \Theta(\varepsilon^{-(r-2)})} controlled by the number of bottleneck layers {r}, not total depth {L}.
+- We show the same {r-2} exponent is recovered under He-normal initialization via a signal energy bootstrap argument.
+end main-results;
+
+## Background
+
+### Linear Networks
+
+A lot of the existing theory for training dynamics in deep networks is built on the *deep linear network* model: an {L}-layer network with no activation function, just a chain of matrix multiplications {\hat y = W_L \cdots W_1 x}. Despite their simplicity, deep linear networks exhibit nontrivial dynamics under gradient flow, and many features of deep learning (e.g. saddle-to-saddle structure, low-rank bias, progressive feature learning) appear here in analytically tractable form ref@saxe2014exactsolutionsnonlineardynamics.
+
+The main object is the imbalance of the weight matrix norms between adjacent layers:
+{
+    \Delta_l \doteq \|W_{l+1}\|_F^2 - \|W_l\|_F^2.
+}
+For linear networks, the imbalance is exactly conserved along gradient flow: {\dot\Delta_l = 0} for all {l} and all {t}. This is because the linear activation satisfies Euler's homogeneity identity exactly: {z \cdot \sigma'(z) = \sigma(z)} for {\sigma(z) = z}.[^linear_euler] So the functional {\varphi_\sigma(z) \doteq z\sigma'(z) - \sigma(z)} vanishes identically. This conservation reduces the full high-dimensional matrix flow to a much simpler scalar system, and it is the foundation of most deep linear network analyses.
+
+### The Problem with Nonlinear Activations
+
+For a general nonlinear activation {\sigma}, {\varphi_\sigma \not\equiv 0}: the imbalance is no longer conserved and starts to drift. A natural question to ask here is by how much, and what exactly controls the rate?
+
+The answer depends on the Taylor expansion of {\varphi_\sigma} near zero.[^taylor_exp] Writing {\varphi_\sigma(z) = \sum_{k \geq 1} c_k z^k}, the leading nonzero term has some order {q}. For tanh: {\sigma(z) \approx z - z^3/3}, so {\varphi_{\tanh}(z) = z\,\mathrm{sech}^2(z) - \tanh(z) \approx -\tfrac{2}{3}z^3}, giving {q = 3}. For a quadratic activation {\sigma(z) = z + \alpha z^2}, one gets {\varphi_\sigma(z) = \alpha z^2}, so {q = 2}.
+
+Near the saddle, pre-activations (the value passed into the activation) are small (order {\varepsilon}), so {\varphi_\sigma(z) \approx c_q z^q} is tiny -- the drift is slow and the dynamics look almost linear. The order {q} governs exactly how slow, and therefore governs the escape time. To make this precise, we will need the imbalance identity.
+
+## Imbalance Identity
+
+Having identified {\varphi_\sigma} as the right object to track, we can now state our main technical tool. Consider an {L}-layer network {\hat y = W_L \sigma(W_{L-1} \cdots \sigma(W_1 x) \cdots)} with pre-activations {z_l \doteq W_l \sigma(z_{l-1})} and population loss {\mathcal{L}}.
+
+theorem[imbalance-identity][Imbalance Identity]:
+For any smooth activation {\sigma} and any differentiable loss {\mathcal{L}},
+{
+    \frac{d\Delta_l}{dt} = 2\,\mathbb{E}\!\left[\bigl\langle W_{l+1}^\top \nabla_{z_{l+1}} \mathcal{L},\; \varphi_\sigma(z_l) \bigr\rangle\right].
+}
+end theorem;
+
+Two things to notice. First, the identity is *exact*. Second, the right-hand side is a correlation between the upstream gradient at layer {l+1} and {\varphi_\sigma} applied to the pre-activations at layer {l}. When {\varphi_\sigma \equiv 0} (the linear case), the right-hand side vanishes and we recover exact conservation. When {\varphi_\sigma \not\equiv 0}, the drift rate is controlled by how large {\varphi_\sigma(z_l)} is -- and near the saddle, where {z_l = O(\varepsilon)}, this is {O(\varepsilon^q)}.
+
+### Activation Classes
+
+The order {q} of the first nonlinear term in {\varphi_\sigma} classifies activations into four universality classes:
+
+list[u]:
+ - **Class A** ({\varphi_\sigma \equiv 0}): Linear activations and ReLU. The imbalance is exactly conserved; the nonlinear network behaves like a linear one at leading order.[^relu_class_a]
+ - **Class B** (first term odd, order {q}): tanh, GELU, and other odd-symmetric activations. For tanh, {\varphi_{\tanh}(z) \approx -\tfrac{2}{3}z^3}, so {q=3}.
+ - **Class C** (first term even, order {q}): activations with a nonzero quadratic term in {\varphi_\sigma}. The drift is faster than Class B for the same {\varepsilon}.
+ - **Class D** (constant offset, {c_0 \neq 0}): sigmoid and other activations with nonzero mean. The constant term in {\varphi_\sigma} dominates near the origin, and the dynamics are qualitatively different.
+end list;
+
+Two activations in the same class with the same {q} exhibit the same escape time up to a computable prefactor {K^{(\sigma)}}; after rescaling by {K^{(\sigma)}}, their escape curves collapse.[^universality] Here, escape time means the time the loss escapes the first saddle, i.e. the time the first plateau ends.
+
+image-row:
+caption: Raw escape time {t_\mathrm{esc}} vs {\varepsilon} for Class B (tanh, erf, sin) and Class C (GELU, Swish) activations (left), and after rescaling by {K^{(\sigma)}} (right). Class B curves collapse onto a single master curve; Class C deviates by {O(\gamma_C \varepsilon)}.
+image:
+src: research/tldr/saddle-escape/universality_before.png;
+alt: Raw escape time vs epsilon for Class B and Class C activations;
+width: 95%;
+end image;
+
+image:
+src: research/tldr/saddle-escape/universality_after.png;
+alt: Escape time vs epsilon after rescaling by K^sigma;
+width: 95%;
+end image;
+end image-row;
+
+## Symmetric Manifold Ansatz
+
+The imbalance identity tells us exactly how the matrix flow drifts. But to actually solve for the escape time, we need to reduce the full {NL}-dimensional matrix gradient flow to something tractable. The way we do this is to restrict to the *permutation-symmetric submanifold*: the set of configurations where every weight matrix {W_l} has identical rows.[^sym_manifold_def]
+
+On this submanifold, the forward pass collapses completely. Each layer just multiplies a scalar by the shared row magnitude, then applies {\sigma} pointwise. So the entire network output is a composition of scalar multiplications and univariate activations -- an {L}-dimensional system in the row magnitudes {y_1, \ldots, y_L} rather than a system in the full {NL} weight entries.
+
+This reduction is exact and has two key properties:
+
+list[u]:
+ - **Flow-invariant**: if you initialize on the symmetric submanifold, gradient flow keeps you there for all time. The gradient at any point on the submanifold points back into the submanifold.
+ - **Imbalance identity closes**: on the submanifold, the identity {d\Delta_l/dt = 2\,\mathbb{E}[\langle W_{l+1}^\top \nabla_{z_{l+1}} \mathcal{L}, \varphi_\sigma(z_l)\rangle]} becomes a scalar equation in {y_l}. Combined with an approximate balance law[^balance_law] that keeps the {y_l} close to each other near the saddle, the full {L}-dimensional system reduces to a single scalar ODE.
+end list;
+
+The scalar ODE is what makes the escape time calculable exactly.
+
+image-row:
+caption: The scalar reduction is exact on the manifold: gradient descent on the full {NL}-parameter network (dots) matches the scalar ODE prediction (solid lines) precisely.
+image:
+src: research/tldr/saddle-escape/scalar_red_mani_1.png;
+alt: Scalar reduction on the symmetric manifold, example 1;
+width: 95%;
+end image;
+
+image:
+src: research/tldr/saddle-escape/scalar_red_mani_2.png;
+alt: Scalar reduction on the symmetric manifold, example 2;
+width: 95%;
+end image;
+end image-row;
+
+## Critical-Depth Law
+
+With the scalar reduction in hand, we can now compute the escape time exactly. Suppose {r} of the {L} layers initialize at scale {\varepsilon \to 0^+} (call this the bottleneck) and the remaining {L - r} layers initialize at scale {\Theta(1)}. By symmetry, all {r} bottleneck layers have the same scalar magnitude {y(t)}.
+
+The gradient driving each bottleneck layer is the product of the signals through all the *other* bottleneck layers, so it scales as {y^{r-1}}. The {L-r} full-size layers contribute {O(1)} factors and only affect the prefactor. The scalar ODE for the shared bottleneck magnitude is therefore
+{
+    \dot y \sim y^{r-1}.
+}
+Starting from {y(0) = \varepsilon} and integrating until {y \sim 1}:
+{
+    \tau_\star \asymp \int_\varepsilon^1 y^{-(r-1)}\,dy.
+}
+This integral has three regimes depending on {r}:
+
+theorem[critical-depth][Critical-Depth Escape Law]:
+As {\varepsilon \to 0^+}, the escape time satisfies
+{
+    \tau_\star = \begin{cases} \Theta(1) & r = 1 \\ \Theta(\log(1/\varepsilon)) & r = 2 \\ \Theta(\varepsilon^{-(r-2)}) & r \geq 3. \end{cases}
+}
+end theorem;
+
+The {-(r-2)} exponent has a pretty neat interpretation: one power of {\varepsilon} is consumed because each layer's gradient is {y^{r-1}} rather than {y^r} (the layer itself doesn't appear in its own gradient), and a second is absorbed by the integral. Total depth {L} drops out entirely -- the {O(1)} layers set the prefactor but not the exponent. The threshold at {r=2} is special: it is the minimal bottleneck for which the escape time diverges as {\varepsilon \to 0}.[^resonance]
+
+## Off-Manifold
+
+The scalar reduction is satisfying, but it raises an obvious concern: real networks don't initialize on the symmetric manifold. Does the same escape time law hold under a generic initialization like He-normal?
+
+The answer is yes, but the argument works differently. Rather than reducing to a scalar system via the ansatz, we use a single scalar quantity that can be defined for any weight configuration: the *signal energy*[^sig_en]
+{
+    \gamma(W) \doteq \mathbb{E}[f \cdot g],
+}
+where {f} and {g} are specific functions of the network's input-output map.[^signal_energy_def] Near the saddle, {\gamma} is small (order {\varepsilon^{2r}}). As training progresses, {\gamma} grows, and escape corresponds to {\gamma} reaching an {O(1)} threshold.
+
+The key is that {\gamma} satisfies a differential inequality of the form
+{
+    \dot\gamma \gtrsim \gamma^{1 - 1/r},
+}
+which can be integrated directly: starting from {\gamma(0) \asymp \varepsilon^{2r}}, the time to reach {\gamma \asymp 1} is {\tau_\star \asymp \varepsilon^{-(r-2)}}. The same exponent as on the manifold, with no ansatz required.
+
+The proof works in two stages. First, a bootstrap interval {[0, \tau_0]} is identified where the operator norms of the weight matrices remain controlled, so the signal energy inequality holds. Second, a filtered composition argument shows that the gradient mass at each layer is dominated by the product structure {\prod_{m \neq l} \|W_m\|_F}, which is what drives the {\gamma^{1-1/r}} growth. Together, these give the same {-(r-2)} exponent that emerges from the symmetric manifold. The symmetric manifold is preserved by the flow but is not attracting (generic initializations drift away from it) yet the escape time exponent is robust to this drift.
+
+image:
+src: research/tldr/saddle-escape/off_manifold.png;
+caption: The {\Theta\big(\varepsilon^{-(r-2)}\big)} scaling persists at He-init.
+width: 95%;
+end image;
+
+## A No-Go Theorem
+
+The single-mode theory is great and all, but a natural next step is to extend it to *multi-mode* teachers: networks that must learn several features in sequence, escaping a chain of saddles one at a time. The tool to try is the *row-moment hierarchy*; a system of equations tracking the moments of the row distributions of each {W_l}, generalizing the scalar {y_l} to multi-mode settings.
+
+This doesn't work, and not for a fixable reason.[^nogo]
+
+theorem[no-go][No-Closure of the Row-Moment Hierarchy]:
+The row-moment hierarchy does not admit finite closure. No finite set of moments satisfies a closed ODE system under the gradient flow for a multi-mode teacher.
+end theorem;
+
+This is a hard impossibility: you can't get a finite-dimensional reduction by tracking any fixed set of moments. Any complete theory of successive saddle-escape times requires fundamentally different machinery.
+
+The second obstruction is geometric. In the single-mode case, the symmetric manifold is flow-invariant, which is what makes the scalar reduction valid. For multi-mode teachers, the analogous structure is the *block-aligned ansatz*. Unlike the single-mode case, this ansatz is **not** flow-invariant: linearizing the gradient flow around stage-{k} saddles reveals positive eigenvalues in the off-block directions whenever the mixed loop gain exceeds one.[^control_theory] Generic initializations drift away from the block structure, and the reduction breaks.
+
+[^grq]: A nonlinear analog of the "get rich quick" phenomenon of ref@kunin2024richquickexactsolutions.
+[^linear_euler]: This is quite easy to verify yourself, and will be the basis of the rest of the paper.
+[^taylor_exp]: This is just the first instance of using the physicist's toolkit; a number of the ideas and techniques in the paper are inspired by physics.
+[^relu_class_a]: ReLU is linear almost everywhere, so we just group it in with linear.
+[^universality]: Specifically, {K^{(\sigma)} = \beta_1 h_\sigma \alpha^{L-1}/\sqrt{N}}, where {\beta_1} is the leading Taylor coefficient of {\sigma}, {h_\sigma} is the leading coefficient of {\varphi_\sigma}, and {\alpha} is the linear coefficient of {\sigma}.
+[^sym_manifold_def]: Formally, each {W_l = y_l \mathbf{1}^\top v_l^\top} for a shared direction {v_l} and scalar {y_l}; the "identical rows" condition means all rows of {W_l} are the same vector.
+[^balance_law]: Near the saddle, all bottleneck layers initialize at the same scale {\varepsilon}, and the imbalance identity implies the imbalances drift slowly -- at rate {O(\varepsilon^{L+2})} for Class B. So the {y_l} stay approximately equal throughout the escape, justifying the scalar reduction.
+[^resonance]: At the special depth {L = q+1} (e.g. {L=4} for tanh where {q=3}), two scales in the normal form align and the leading-order terms don't dominate cleanly, producing an extra {\log(1/\varepsilon)} correction on top of the power law. We don't discuss it much in the paper since there's already a lot going on, but perhaps an interesting avenue for future work! (or maybe not since it's a measure zero event)
+[^sig_en]: Yet another physics-y style thing.
+[^signal_energy_def]: Concretely, {f = \mathbb{E}[\hat y \cdot x^\top]} captures the network's input-output correlation and {g} is a related quantity from the loss gradient. The product {\gamma = \mathbb{E}[fg]} measures how much useful signal is flowing through the network end-to-end.
+[^nogo]: This is a [no-go theorem](https://en.wikipedia.org/wiki/No-go_theorem), similar to those given to prove the existence of quantum mechanics, e.g. Bell's Thoerem or "Not in our Stars" (from one of Andrew Charman's QM exams).
+[^control_theory]: This is actually inspired largely by a discussion we had in one of my classes, which is summed up really nicely in ref@rechtblog.
+
+bibliography:
+@misc{saxe2014exactsolutionsnonlineardynamics,
+      title={Exact solutions to the nonlinear dynamics of learning in deep linear neural networks},
+      author={Andrew M. Saxe and James L. McClelland and Surya Ganguli},
+      year={2014},
+      eprint={1312.6120},
+      archivePrefix={arXiv},
+      primaryClass={cs.NE},
+      url={https://arxiv.org/abs/1312.6120},
+}
+
+@misc{kunin2024richquickexactsolutions,
+      title={Get rich quick: exact solutions reveal how unbalanced initializations promote rapid feature learning}, 
+      author={Daniel Kunin and Allan Raventós and Clémentine Dominé and Feng Chen and David Klindt and Andrew Saxe and Surya Ganguli},
+      year={2024},
+      eprint={2406.06158},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2406.06158}, 
+}
+
+@misc{rechtblog,
+    title={There are none},
+    author={Ben Recht},
+    year={2020},
+    url={https://archives.argmin.net/2020/07/14/there-are-none/}}
+end bibliography;

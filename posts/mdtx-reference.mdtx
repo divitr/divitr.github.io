@@ -282,7 +282,7 @@ end table;
 
 The second `---` above draws a line between Bob and Carol's rows. Any number of `---` separators can appear in the body.
 
-Cells fully support inline math `{...}`, **bold**, *italic*, `code`, and links. Display math blocks inside cells are not supported.
+Cells fully support inline math `{..}.`, **bold**, *italic*, `code`, and links. Display math blocks inside cells are not supported.
 
 ## Example Boxes
 
@@ -382,6 +382,63 @@ Here's a statement that needs a citation[^lee].
 
 [^lee]: This is the footnote content that appears at the bottom of the page.
 
+## Citations and Bibliography
+
+MDTX supports academic BibTeX citations and automatically generates a structured **References** section at the bottom of the page.
+
+### In-Text Citations
+Use the following prefixes in your text to create inline links to your references:
+- **Single Citation**: `ref@key` which renders as `[KeyYear]` (e.g. `[Knu84]`).
+- **Multiple Citations**: `refs@key1, key2` which renders as a list of links, e.g., `[Knu84, Riv78]`.
+
+Example:
+```mdtx
+This result is based on the work of ref@Knuth84. For further reading, see refs@Knuth84, Rivest78.
+```
+
+### Defining the Bibliography
+There are two ways to define the BibTeX entries for your document:
+
+#### Option 1: External BibTeX File
+Add a `bib` key in your metadata block pointing to a `.bib` file located in the same directory:
+```
+bib: references.bib;
+```
+
+#### Option 2: Embedded Bibliography
+Add a `bibliography:` block at the very end of your `.mdtx` file:
+```mdtx
+bibliography:
+@article{Knuth84,
+  author = {Donald E. Knuth},
+  title = {Literate Programming},
+  journal = {The Computer Journal},
+  volume = {27},
+  number = {2},
+  pages = {97--111},
+  year = {1984},
+  publisher = {Oxford University Press},
+  doi = {10.1093/comjnl/27.2.97}
+}
+
+@book{Rivest78,
+  author = {R. L. Rivest and A. Shamir and L. Adleman},
+  title = {A Method for Obtaining Digital Signatures and Public-Key Cryptosystems},
+  publisher = {MIT},
+  year = {1978}
+}
+end bibliography
+```
+
+The compiler will automatically extract the bibliography block, parse the fields, resolve collisions (e.g., `Knu84a` vs `Knu84b`), generate short-author formats, and append a beautifully rendered and linked "References" section at the end of the post.
+
+#### Supported Extra Fields
+You can include specific fields in your BibTeX entries to render clickable badges for online resources:
+- **`arxiv`**: Renders an `[arXiv]` link to the paper.
+- **`pdf`**: Renders a `[PDF]` link.
+- **`doi`**: Renders a `[DOI]` link.
+- **`url`**: Renders a `[Link]` badge if no PDF link is specified.
+
 ## Comments
 
 Single-line comments use `//`:
@@ -454,7 +511,7 @@ The MDTX compiler processes files in the following order:
 
 ### Math Formatting
 
-- Use `{...}` for inline math
+- Use `{..}.` for inline math
 - Use block notation for display math
 - Leverage the physics package for common commands
 

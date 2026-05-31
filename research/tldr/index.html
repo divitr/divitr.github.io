@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TL;DRs</title>
+    <script src="/theme.js"></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/posts/posts.css">
+    <style>
+        .blog-posts h3 { display: flex; align-items: baseline; gap: 0.5rem; }
+        .post-arxiv { font-size: 0.88rem; font-weight: normal; margin-left: auto; flex-shrink: 0; }
+        .blog-post-item .post-date { min-width: unset; font-size: 1.1rem; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/research">Research</a>
+            <a href="/misc">Misc.</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>TL;DRs</h1>
+        <p>These are (hopefully) more accessible writeups of my research, primarily aimed at readers comfortable with math and ML but not theory (or who don't want to read the entire paper).</p>
+        <p>I started writing these mostly to get better at explaining things without defaulting to heavy math; to that end, the writeups here are intended to convey just the main results and intuition. If you read one of these and want more detail, the paper is always linked.</p>
+        <p>A full list of work is at <a href="/research">/research</a>.</p>
+
+        <section class="blog-posts">
+            <div class="blog-post-item" data-emoji="🐎">
+                <span class="post-date">🐎</span>
+                <div class="post-content">
+                    <h3><a href="/research/tldr/saddle-escape/">A Theory of Saddle Escape in Deep Nonlinear Networks</a> <span class="post-arxiv">[<a href="https://arxiv.org/abs/2605.01288" target="_blank" rel="noopener noreferrer">arXiv</a>]</span></h3>
+                    <p class="post-description">Analyzing training dynamics in small-initialization deep nonlinear neural networks.</p>
+                </div>
+            </div>
+            <div class="blog-post-item" data-emoji="🔇">
+                <span class="post-date">🔇</span>
+                <div class="post-content">
+                    <h3><a href="/research/tldr/rb-dsm/">Rao-Blackwellized Score Matching on Manifolds</a> <span class="post-arxiv">[<a href="https://arxiv.org/abs/2605.25567" target="_blank" rel="noopener noreferrer">arXiv</a>]</span></h3>
+                    <p class="post-description">Figuring out what denoising score matching actually learns when data is drawn from a low-dimensional structure in a high-dimensional space.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

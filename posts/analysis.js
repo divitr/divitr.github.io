@@ -87,6 +87,7 @@
 
   function stripMdtx(raw) {
     return raw
+      .replace(/bibliography:[\s\S]*?end bibliography;?/g, '')
       .replace(/^(req|title|date|desc|tags|emoji|visibility):.*/mg, '')
       .replace(/\{[^}]{0,300}\}/g, ' ')
       .replace(/^(#+|list\[.*?\]|end\s+\w+[\s;]*|example:|content:|image:).*/mg, '')

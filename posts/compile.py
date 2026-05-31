@@ -282,17 +282,396 @@ class MDTXCompiler:
                 parts[i] = re.sub(r'\[\^([^\]]+)\]', r, parts[i])
         return ''.join(parts)
 
-    def footnotes_html(self, fns: Dict[str,str], footnote_numbers: Dict[str, int]) -> str:
+    def footnotes_html(self, fns: Dict[str,str], footnote_numbers: Dict[str, int], bib_entries: dict = None, alpha_keys: dict = None) -> str:
         if not fns:
             return ""
         parts = ['<div class="footnotes">','<ol>']
         for label, t in sorted(fns.items(), key=lambda item: footnote_numbers[item[0]]):
             number = footnote_numbers[label]
             processed_text = t.strip()
-            processed_text = self.replace_inline_math(processed_text)
             processed_text = self.apply_emphasis(processed_text)
+            processed_text = self.process_inline_code(processed_text)
+            if bib_entries:
+                processed_text = self.process_citations(processed_text, bib_entries, alpha_keys)
+            processed_text = self.replace_inline_math(processed_text)
             parts.append(f'<li id="fn{number}">{processed_text} <a href="#fnref{number}" class="footnote-backref" aria-label="Back to reference">↩</a></li>')
         parts.append('</ol></div>')
+        return "\n".join(parts)
+
+    def extract_bibliography(self, text: str) -> Tuple[str, str]:
+        """Extracts the bibliography block from the text if it exists."""
+        bib_match = re.search(r'bibliography:\s*(.*?)\s*end bibliography;?', text, re.DOTALL)
+        if bib_match:
+            bib_content = bib_match.group(1)
+            # Remove the bibliography block from the text
+            clean_text = text[:bib_match.start()] + text[bib_match.end():]
+            return bib_content, clean_text
+        return "", text
+
+    def _clean_latex_accents(self, text: str) -> str:
+        """Converts LaTeX character accents and capitalization braces to Unicode."""
+        # Clean capitalization-preservation braces around individual letters: {H} -> H, {T} -> T
+        text = re.sub(r'\{([A-Za-z])\}', r'\1', text)
+        
+        accents = {
+            '`': {'a': 'à', 'e': 'è', 'i': 'ì', 'o': 'ò', 'u': 'ù', 'A': 'À', 'E': 'È', 'I': 'Ì', 'O': 'Ò', 'U': 'Ù'},
+            "'": {'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú', 'y': 'ý', 'A': 'Á', 'E': 'É', 'I': 'Í', 'O': 'Ó', 'U': 'Ú', 'Y': 'Ý'},
+            '^': {'a': 'â', 'e': 'ê', 'i': 'î', 'o': 'ô', 'u': 'û', 'A': 'Â', 'E': 'È', 'I': 'Î', 'O': 'Ô', 'U': 'Û'},
+            '~': {'a': 'ã', 'o': 'õ', 'n': 'ñ', 'A': 'Ã', 'O': 'Õ', 'N': 'Ñ'},
+            '"': {'a': 'ä', 'e': 'ë', 'i': 'ï', 'o': 'ö', 'u': 'ü', 'y': 'ÿ', 'A': 'Ä', 'E': 'Ë', 'I': 'Ï', 'O': 'Ö', 'U': 'Ü'},
+            'H': {'o': 'ő', 'u': 'ű', 'O': 'Ő', 'U': 'Ű'},
+            'c': {'c': 'ç', 'C': 'Ç'},
+        }
+        
+        def repl_braced(m):
+            cmd, char = m.group(1), m.group(2)
+            if cmd in accents and char in accents[cmd]:
+                return accents[cmd][char]
+            return m.group(0)
+            
+        # Matches {\"a} or {\~a}
+        text = re.sub(r'\{\\([`\'"~^Hc])([a-zA-Z])\}', repl_braced, text)
+        # Matches \"{a}
+        text = re.sub(r'\\([`\'"~^Hc])\{([a-zA-Z])\}', repl_braced, text)
+        # Matches \"a
+        text = re.sub(r'\\([`\'"~^Hc])([a-zA-Z])', repl_braced, text)
+        
+        return text
+
+    def parse_bibtex(self, bib_text: str) -> Dict[str, Dict[str, str]]:
+        """Parses BibTeX content into a structured dictionary."""
+        entries = {}
+        pos = 0
+        n = len(bib_text)
+        while True:
+            pos = bib_text.find('@', pos)
+            if pos == -1:
+                break
+            
+            entry_type_match = re.match(r'@([a-zA-Z0-9_]+)\s*\{', bib_text[pos:])
+            if not entry_type_match:
+                pos += 1
+                continue
+            
+            entry_type = entry_type_match.group(1).lower()
+            if entry_type in ('comment', 'preamble'):
+                pos += len(entry_type_match.group(0))
+                continue
+                
+            start_brace = pos + entry_type_match.end() - 1
+            
+            # Find matching closing brace
+            brace_depth = 0
+            end_pos = -1
+            for i in range(start_brace, n):
+                if bib_text[i] == '{':
+                    brace_depth += 1
+                elif bib_text[i] == '}':
+                    brace_depth -= 1
+                    if brace_depth == 0:
+                        end_pos = i
+                        break
+            
+            if end_pos == -1:
+                pos += 1
+                continue
+                
+            entry_content = bib_text[start_brace+1 : end_pos].strip()
+            pos = end_pos + 1
+            
+            first_comma = entry_content.find(',')
+            if first_comma == -1:
+                key = entry_content.strip()
+                fields_str = ""
+            else:
+                key = entry_content[:first_comma].strip()
+                fields_str = entry_content[first_comma+1:].strip()
+                
+            fields = {'type': entry_type}
+            
+            # Scan fields key-value pairs
+            f_pos = 0
+            f_len = len(fields_str)
+            while f_pos < f_len:
+                field_match = re.match(r'\s*([a-zA-Z0-9_\-]+)\s*=\s*', fields_str[f_pos:])
+                if not field_match:
+                    f_pos += 1
+                    continue
+                
+                field_name = field_match.group(1).lower()
+                val_start = f_pos + field_match.end()
+                
+                if val_start >= f_len:
+                    break
+                    
+                val_char = fields_str[val_start]
+                val_end = -1
+                if val_char == '{':
+                    v_depth = 0
+                    for j in range(val_start, f_len):
+                        if fields_str[j] == '{':
+                            v_depth += 1
+                        elif fields_str[j] == '}':
+                            v_depth -= 1
+                            if v_depth == 0:
+                                val_end = j
+                                break
+                    if val_end != -1:
+                        val_val = fields_str[val_start+1 : val_end]
+                        f_pos = val_end + 1
+                    else:
+                        val_val = fields_str[val_start+1:]
+                        f_pos = f_len
+                elif val_char == '"':
+                    val_end = fields_str.find('"', val_start + 1)
+                    if val_end != -1:
+                        val_val = fields_str[val_start+1 : val_end]
+                        f_pos = val_end + 1
+                    else:
+                        val_val = fields_str[val_start+1:]
+                        f_pos = f_len
+                else:
+                    comma_pos = fields_str.find(',', val_start)
+                    if comma_pos != -1:
+                        val_val = fields_str[val_start:comma_pos].strip()
+                        f_pos = comma_pos + 1
+                    else:
+                        val_val = fields_str[val_start:].strip()
+                        f_pos = f_len
+                        
+                val_val = re.sub(r'\s+', ' ', val_val).strip()
+                while len(val_val) >= 2 and val_val[0] == '{' and val_val[-1] == '}':
+                    val_val = val_val[1:-1].strip()
+                
+                val_val = self._clean_latex_accents(val_val)
+                fields[field_name] = val_val
+                
+            entries[key] = fields
+        return entries
+
+    def generate_alpha_key(self, entry: Dict[str, str]) -> str:
+        """Generates an alpha-style key from author and year fields."""
+        authors_str = entry.get('author', '').strip()
+        year_str = entry.get('year', '').strip()
+        
+        year_suffix = ""
+        if year_str:
+            digits = re.sub(r'\D', '', year_str)
+            if len(digits) >= 2:
+                year_suffix = digits[-2:]
+            else:
+                year_suffix = digits
+                
+        if not authors_str:
+            return "Unknown" + year_suffix
+            
+        authors = re.split(r'\s+[aA][nN][dD]\s+', authors_str)
+        
+        last_names = []
+        for auth in authors:
+            auth = auth.strip()
+            if ',' in auth:
+                last = auth.split(',', 1)[0].strip()
+            else:
+                parts = auth.split()
+                last = parts[-1].strip() if parts else auth
+                
+            last = re.sub(r'[^a-zA-Z]', '', last)
+            last_names.append(last)
+            
+        num_authors = len(last_names)
+        if num_authors == 1:
+            prefix = last_names[0][:3]
+        elif num_authors == 2:
+            prefix = (last_names[0][:1] if last_names[0] else "") + (last_names[1][:1] if last_names[1] else "")
+        elif num_authors == 3:
+            prefix = "".join(l[:1] for l in last_names[:3] if l)
+        else:
+            prefix = "".join(l[:1] for l in last_names[:3] if l) + "+"
+            
+        return prefix + year_suffix
+
+    def format_authors_short(self, authors_str: str) -> str:
+        """Formats author names list into clean reading representation."""
+        if not authors_str:
+            return ""
+        authors = re.split(r'\s+[aA][nN][dD]\s+', authors_str)
+        cleaned_authors = []
+        for auth in authors:
+            auth = auth.strip()
+            if ',' in auth:
+                parts = auth.split(',', 1)
+                auth = parts[1].strip() + ' ' + parts[0].strip()
+            cleaned_authors.append(auth)
+            
+        if len(cleaned_authors) == 1:
+            return cleaned_authors[0]
+        elif len(cleaned_authors) == 2:
+            return f"{cleaned_authors[0]} and {cleaned_authors[1]}"
+        elif len(cleaned_authors) == 3:
+            return f"{cleaned_authors[0]}, {cleaned_authors[1]}, and {cleaned_authors[2]}"
+        else:
+            return f"{cleaned_authors[0]} et al."
+
+    def process_citations(self, text: str, bib_entries: dict, alpha_keys: dict) -> str:
+        """Processes in-text citations like ref@Knuth84 or refs@Knuth84,Rivest78."""
+        citation_instances = {}
+        
+        # Match refs@ followed by multiple comma-separated keys
+        pattern_multiple = re.compile(r'\brefs@([\w\-]+(?:\s*,\s*[\w\-]+)*)', re.IGNORECASE)
+        # Match ref@ followed by a single key (no commas allowed)
+        pattern_single = re.compile(r'\bref@([\w\-]+)', re.IGNORECASE)
+        
+        def repl_multiple(match):
+            raw_keys = match.group(1)
+            keys = [k.strip() for k in raw_keys.split(',')]
+            
+            # If none of the keys exist in the bibliography entries, keep the original text
+            if not any(k in bib_entries for k in keys):
+                return match.group(0)
+            
+            links = []
+            for key in keys:
+                if key in bib_entries:
+                    entry = bib_entries[key]
+                    alpha = alpha_keys.get(key, key)
+                    
+                    count = citation_instances.get(key, 0) + 1
+                    citation_instances[key] = count
+                    instance_id = f"cite-ref-{key}-{count}"
+                    
+                    title = entry.get('title', '').replace('"', '&quot;')
+                    authors_display = self.format_authors_short(entry.get('author', '')).replace('"', '&quot;')
+                    year = entry.get('year', '').replace('"', '&quot;')
+                    
+                    link_html = (
+                        f'<a href="#cite-{key}" id="{instance_id}" class="citation-ref" '
+                        f'data-title="{title}" data-authors="{authors_display}" data-year="{year}">'
+                        f'{alpha}</a>'
+                    )
+                    links.append(link_html)
+                else:
+                    # Fallback for keys that were not found in the bibliography
+                    links.append(key)
+            
+            return f"[{', '.join(links)}]"
+            
+        def repl_single(match):
+            key = match.group(1)
+            if key in bib_entries:
+                entry = bib_entries[key]
+                alpha = alpha_keys.get(key, key)
+                
+                count = citation_instances.get(key, 0) + 1
+                citation_instances[key] = count
+                instance_id = f"cite-ref-{key}-{count}"
+                
+                title = entry.get('title', '').replace('"', '&quot;')
+                authors_display = self.format_authors_short(entry.get('author', '')).replace('"', '&quot;')
+                year = entry.get('year', '').replace('"', '&quot;')
+                
+                return (
+                    f'[<a href="#cite-{key}" id="{instance_id}" class="citation-ref" '
+                    f'data-title="{title}" data-authors="{authors_display}" data-year="{year}">'
+                    f'{alpha}</a>]'
+                )
+            return match.group(0)
+            
+        parts = re.split(r'(<code>[\s\S]*?</code>|<pre[\s\S]*?</pre>|<[^>]*>)', text)
+        for i in range(len(parts)):
+            if not parts[i].startswith('<'):
+                parts[i] = pattern_multiple.sub(repl_multiple, parts[i])
+                parts[i] = pattern_single.sub(repl_single, parts[i])
+        return ''.join(parts)
+
+    def format_bibliography_entry(self, entry: dict) -> str:
+        """Formats a bibliography dictionary into a clean citation string."""
+        authors = self.format_authors_short(entry.get('author', ''))
+        title = entry.get('title', '').strip()
+        journal = entry.get('journal', '').strip()
+        booktitle = entry.get('booktitle', '').strip()
+        year = entry.get('year', '').strip()
+        volume = entry.get('volume', '').strip()
+        number = entry.get('number', '').strip()
+        pages = entry.get('pages', '').strip()
+        publisher = entry.get('publisher', '').strip()
+        
+        parts = []
+        if authors:
+            parts.append(f"{authors}.")
+            
+        entry_type = entry.get('type', 'article').lower()
+        if entry_type in ('article', 'inproceedings', 'phdthesis', 'mastersthesis', 'unpublished'):
+            if title:
+                parts.append(f'"{title}".')
+            if journal:
+                parts.append(f'<em>{journal}</em>')
+            elif booktitle:
+                parts.append(f'in <em>{booktitle}</em>')
+        else:
+            if title:
+                parts.append(f'<em>{title}</em>.')
+            if publisher:
+                parts.append(publisher)
+                
+        details = []
+        if volume:
+            details.append(f"Vol. {volume}")
+        if number:
+            details.append(f"No. {number}")
+        if pages:
+            pages_clean = pages.replace('--', '–')
+            details.append(f"pp. {pages_clean}")
+            
+        if details:
+            parts.append(", ".join(details))
+            
+        if year:
+            parts.append(f"{year}.")
+            
+        res = " ".join(parts)
+        res = re.sub(r'\.\s*\.', '.', res)
+        return res
+
+    def bibliography_html(self, bib_entries: dict, alpha_keys: dict) -> str:
+        """Generates the References section HTML list."""
+        if not bib_entries:
+            return ""
+            
+        parts = ['<div class="references">', '<h2>References</h2>', '<ul>']
+        sorted_entries = sorted(bib_entries.items(), key=lambda item: alpha_keys.get(item[0], item[0]))
+        
+        for key, entry in sorted_entries:
+            alpha = alpha_keys.get(key, key)
+            ref_text = self.format_bibliography_entry(entry)
+            ref_text = self.replace_inline_math(ref_text)
+            ref_text = self.apply_emphasis(ref_text)
+            
+            badges = []
+            if 'pdf' in entry:
+                badges.append(f' [<a href="{entry["pdf"]}" target="_blank">PDF</a>]')
+            if 'arxiv' in entry:
+                arxiv_id = entry['arxiv']
+                arxiv_url = arxiv_id if arxiv_id.startswith('http') else f"https://arxiv.org/abs/{arxiv_id}"
+                badges.append(f' [<a href="{arxiv_url}" target="_blank">arXiv</a>]')
+            if 'doi' in entry:
+                doi_id = entry['doi']
+                doi_url = doi_id if doi_id.startswith('http') else f"https://doi.org/{doi_id}"
+                badges.append(f' [<a href="{doi_url}" target="_blank">DOI</a>]')
+            if 'url' in entry and 'pdf' not in entry:
+                badges.append(f' [<a href="{entry["url"]}" target="_blank">link</a>]')
+                
+            badges_html = "".join(badges)
+            backlink_html = f' <a href="#cite-ref-{key}-1" class="ref-backref" aria-label="Back to reference">↩</a>'
+            
+            parts.append(
+                f'<li id="cite-{key}">'
+                f'<span class="ref-key">[{alpha}]</span>'
+                f'<span class="ref-text">{ref_text}{badges_html}{backlink_html}</span>'
+                f'</li>'
+            )
+            
+        parts.append('</ul></div>')
         return "\n".join(parts)
 
     def process_code(self, text: str) -> str:
@@ -314,7 +693,20 @@ class MDTXCompiler:
 
     def process_image_row(self, text: str) -> str:
         def repl(m):
-            inner = self.process_image(m.group(1))
+            block = m.group(1)
+            caption = ''
+            for line in block.splitlines():
+                l = line.strip()
+                if l.startswith('caption:'):
+                    caption = l.split(':', 1)[1].strip().rstrip(';')
+                    break
+            block_no_caption = '\n'.join(
+                l for l in block.splitlines() if not l.strip().startswith('caption:')
+            )
+            inner = self.process_image(block_no_caption)
+            caption_html = f'<figcaption>{caption}</figcaption>' if caption else ''
+            if caption:
+                return f'<figure class="mdtx-row-figure"><div class="mdtx-image-row">{inner}</div>{caption_html}</figure>'
             return f'<div class="mdtx-image-row">{inner}</div>'
         return re.sub(r'image-row:\s*\n(.*?)\nend image-row;?', repl, text, flags=re.DOTALL)
 
@@ -1007,6 +1399,13 @@ class MDTXCompiler:
 
         return pattern.sub(repl, text)
 
+    def process_main_results(self, text: str) -> str:
+        def repl(m):
+            items = [l.strip()[1:].strip() for l in m.group(1).splitlines() if l.strip().startswith('-')]
+            lis = ''.join(f'<li>{item}</li>' for item in items)
+            return f'<div class="main-results"><strong>Main results.</strong><ul>{lis}</ul></div>'
+        return re.sub(r'main-results:\s*\n(.*?)\nend main-results;?', repl, text, flags=re.DOTALL)
+
     def process_headings(self, text: str) -> str:
         out = []
         for L in text.splitlines():
@@ -1314,12 +1713,52 @@ class MDTXCompiler:
         reqs, body = self.process_requires(raw)
         meta, body = self.parse_metadata(body)
         
+        # Extract bibliography block
+        bib_content, body = self.extract_bibliography(body)
+        
         # Honor visibility flag when compiling single files; default visible
         visibility = meta.get('visibility', 'visible').strip().lower()
         if visibility not in ('visible', 'hidden'):
             visibility = 'visible'
         fns,  body = self.extract_footnotes(body)
         footnote_numbers = self.build_footnote_numbers(body, fns)
+        
+        # Parse bibliography entries
+        bib_entries = {}
+        if 'bib' in meta:
+            bib_file = self.source_dir / meta['bib']
+            if bib_file.exists():
+                try:
+                    ext_content = bib_file.read_text(encoding='utf8')
+                    bib_entries.update(self.parse_bibtex(ext_content))
+                except Exception as e:
+                    print(f"Warning: Failed to read external bibliography {meta['bib']}: {e}")
+            else:
+                print(f"Warning: Bibliography file {meta['bib']} not found in {self.source_dir}")
+        if bib_content:
+            try:
+                bib_entries.update(self.parse_bibtex(bib_content))
+            except Exception as e:
+                print(f"Warning: Failed to parse embedded bibliography: {e}")
+                
+        # Resolve alpha keys and handle collisions
+        alpha_keys = {}
+        if bib_entries:
+            temp_alpha_groups = {}
+            for key, entry in bib_entries.items():
+                base_key = self.generate_alpha_key(entry)
+                if base_key not in temp_alpha_groups:
+                    temp_alpha_groups[base_key] = []
+                temp_alpha_groups[base_key].append(key)
+                
+            for base_key, keys in temp_alpha_groups.items():
+                if len(keys) == 1:
+                    alpha_keys[keys[0]] = base_key
+                else:
+                    sorted_keys = sorted(keys)
+                    for idx, key in enumerate(sorted_keys):
+                        suffix = chr(ord('a') + idx)
+                        alpha_keys[key] = f"{base_key}{suffix}"
         
         # ←── minimal fix: strip any leftover 'desc:' or 'tags:' lines 
         body = re.sub(r'(?m)^(?:desc|tags):.*\n', '', body)
@@ -1332,6 +1771,13 @@ class MDTXCompiler:
             desc_html = f'            <p class="desc">{self.apply_emphasis(desc_processed)}</p>\n'
         else:
             desc_html = ""
+
+        paper_link = meta.get('paper_link', '').strip()
+        if paper_link and desc_html:
+            label = 'arXiv' if 'arxiv' in paper_link.lower() else 'paper'
+            link_tag = f' <a class="tldr-paper-link" href="{paper_link}" target="_blank" rel="noopener noreferrer">[{label}]</a>'
+            desc_html = desc_html.replace('</p>\n', f'{link_tag}</p>\n', 1)
+        paper_link_html = ''
 
         # Process emphasis and inline code first
         body = self.apply_emphasis(body)
@@ -1352,11 +1798,16 @@ class MDTXCompiler:
         body = self.process_headings(body)
 
 
+        # Process citations
+        if bib_entries:
+            body = self.process_citations(body, bib_entries, alpha_keys)
+
         # Process footnotes
         body = self.replace_footrefs(body, fns, footnote_numbers)
         
         # Process abstract
         body = self.process_abstract(body)
+        body = self.process_main_results(body)
         
         # Process paragraphs last (after all other blocks are processed)
         body = self.process_paragraphs(body)
@@ -1368,10 +1819,16 @@ class MDTXCompiler:
         body = self.replace_inline_math(body)
 
         # append footnotes (restore URLs and math here since fn_html is built after body processing)
-        fn_html = self.footnotes_html(fns, footnote_numbers)
+        fn_html = self.footnotes_html(fns, footnote_numbers, bib_entries, alpha_keys)
         if fn_html:
             fn_html = self.restore_urls_as_html(fn_html, url_map)
             body += "\n" + fn_html
+
+        # append bibliography
+        bib_html = self.bibliography_html(bib_entries, alpha_keys)
+        if bib_html:
+            bib_html = self.restore_urls_as_html(bib_html, url_map)
+            body += "\n" + bib_html
 
         head_reqs = ""  # \require{} directives not needed with KaTeX pre-rendering
         title_raw = meta.get('title','Untitled')
@@ -1405,31 +1862,27 @@ class MDTXCompiler:
         output_dir.mkdir(exist_ok=True)
         output_file = output_dir / "index.html"
 
-        # Determine main wrapper class based on post type
-        main_class = "blog-post tldr-post" if is_tldr else "blog-post"
-        
         # Navigation header customization
         if is_tldr:
-            header_html = ""
+            header_html = """    <header>
+        <div class="monogram"><a href="/">DR</a></div>
+        <nav>
+            <a href="/research/tldr">TL;DRs</a>
+        </nav>
+    </header>"""
         else:
-            header_html = f"""    <header>
+            header_html = """    <header>
         <div class="monogram"><a href="/">DR</a></div>
         <nav>
             <a href="/posts">Posts</a>
         </nav>
     </header>"""
 
+        # Determine main wrapper class based on post type
+        main_class = "blog-post tldr-post" if is_tldr else "blog-post"
+
         # Pre-title labels for TLDR pages
         tldr_header_pre = ""
-        if is_tldr:
-            arxiv_id = meta.get('arxiv', '').strip()
-            pdf_link = meta.get('pdf', '').strip()
-            paper_url = f"https://arxiv.org/abs/{arxiv_id}" if arxiv_id else pdf_link
-            
-            tldr_header_pre = f"""<div class="tldr-nav-row">
-                <a href="/research/#paper-{path.stem}" class="tldr-nav-back">\\(\\longleftarrow\\) back to research</a>
-                <a href="{paper_url}" target="_blank" rel="noopener noreferrer" class="tldr-nav-paper">paper</a>
-            </div>\n            """
 
         html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1451,7 +1904,7 @@ class MDTXCompiler:
         <section class="intro">
             {tldr_header_pre}<h1>{title}</h1>
             {tags_html}
-{date_html}{desc_html}        </section>
+{date_html}{desc_html}{paper_link_html}        </section>
 
 {body}
     </main>
@@ -1465,6 +1918,7 @@ class MDTXCompiler:
     <script src="/posts/toc-generator.js"></script>
     <script src="/posts/footnote-sidebar.js"></script>
     <script src="/posts/collapsible-proofs.js"></script>
+    <script src="/posts/citations.js"></script>
 </body>
 </html>"""
 

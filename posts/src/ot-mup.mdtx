@@ -42,7 +42,7 @@ Then {\mu}P is the unique scaling (within power-law learning-rate scalings, modu
     \max_s \mathcal{A}_T(s) \quad \text{subject to} \quad \mathcal{D}_T(s) = 0
 }
 
-This is a constrained criticality problem: maximize total dissipation (cumulative transport) subject to stability.}
+This is a constrained criticality problem: maximize total dissipation (cumulative transport) subject to stability.
 end example;
 
 *This is not meant to be a new theorem about {\mu}P. I just thought it was interesting to consider a geometric "selection principle": among all width-transferable scalings, pick the one with maximal non-degenerate Wasserstein transport. This reframes {\mu}P as a critical-mobility point selected by a constrained variational problem, which is (maybe?) portable to other parameter spaces and metrics.*
@@ -244,7 +244,7 @@ content: {In mean-field form, the critical mobility is {\eta \asymp n} for neuro
     f_n(x) = \frac{1}{\sqrt{n}} \sum_{i=1}^n \tilde{a}_i \sigma(\cdot)
 }
 
-which is the standard {\frac{1}{\sqrt{n}}} form. Under this change of variables, the gradient flow time variable rescales by a factor {\sqrt{n}} (equivalently, learning rates rescale by {\sqrt{n}}). Thus the critical mobility {\eta \asymp n} in mean-field gauge corresponds to {\eta \asymp \sqrt{n}} in the standard {\mu}P gauge.}
+which is the standard {\frac{1}{\sqrt{n}}} form. Under this change of variables, the gradient flow time variable rescales by a factor {\sqrt{n}} (equivalently, learning rates rescale by {\sqrt{n}}). Thus the critical mobility {\eta \asymp n} in mean-field gauge corresponds to {\eta \asymp \sqrt{n}} in the standard {\mu}P gauge}.
 end example;
 
 ## Deep Networks: Layerwise Transport
@@ -369,5 +369,5 @@ We've shown that {\mu}P emerges naturally from an Optimal Transport perspective:
 
 example:
 title: The OT Characterization of {\mu}P;
-content: {Among all parameterizations that achieve width-transferability, {\mu}P is the unique one that maximizes the total Wasserstein transport distance traveled by neuron measures across all layers. This ensures maximal feature learning while maintaining stable, transferable training dynamics. The key insight is that {\mu}P corresponds to the critical mobility where kinetic energy is {O(1)}: too small and particles freeze (NTK), too large and dynamics explode.}
+content: {Among all parameterizations that achieve width-transferability, {\mu}P is the unique one that maximizes the total Wasserstein transport distance traveled by neuron measures across all layers. This ensures maximal feature learning while maintaining stable, transferable training dynamics. The key insight is that {\mu}P corresponds to the critical mobility where kinetic energy is {O(1)}: too small and particles freeze (NTK), too large and dynamics explode}.
 end example;
