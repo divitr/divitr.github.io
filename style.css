@@ -12,6 +12,7 @@ html {
 .katex { font-size: 1em !important; }
 
 body {
+    position: relative;
     font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
     font-size: 1.05rem;
     line-height: 1.65;
@@ -433,6 +434,14 @@ a:hover {
     color: var(--primary-color);
 }
 
+.paper-tldr {
+    font-size: 0.95rem;
+    color: #666;
+    margin-top: 0.5rem;
+    margin-bottom: 0.2rem;
+    line-height: 1.5;
+}
+
 .paper-venue {
     font-size: 0.9rem;
     color: #666;
@@ -445,6 +454,7 @@ a:hover {
 }
 
 @media (min-width: 600px) {
+    .paper-tldr,
     .paper-authors, 
     .paper-venue, 
     .paper-links,
@@ -598,6 +608,7 @@ a:hover {
     
     /* Muted academic metadata text - raised for better contrast */
     .contact-label, 
+    .paper-tldr,
     .paper-venue, 
     .paper-abstract, 
     .paper-meta, 

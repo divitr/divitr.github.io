@@ -183,7 +183,7 @@ The second obstruction is geometric. In the single-mode case, the symmetric mani
 [^resonance]: At the special depth {L = q+1} (e.g. {L=4} for tanh where {q=3}), two scales in the normal form align and the leading-order terms don't dominate cleanly, producing an extra {\log(1/\varepsilon)} correction on top of the power law. We don't discuss it much in the paper since there's already a lot going on, but perhaps an interesting avenue for future work! (or maybe not since it's a measure zero event)
 [^sig_en]: Yet another physics-y style thing.
 [^signal_energy_def]: Concretely, {f = \mathbb{E}[\hat y \cdot x^\top]} captures the network's input-output correlation and {g} is a related quantity from the loss gradient. The product {\gamma = \mathbb{E}[fg]} measures how much useful signal is flowing through the network end-to-end.
-[^nogo]: This is a [no-go theorem](https://en.wikipedia.org/wiki/No-go_theorem), similar to those given to prove the existence of quantum mechanics, e.g. Bell's Thoerem or "Not in our Stars" (from one of Andrew Charman's QM exams).
+[^nogo]: This is a [no-go theorem](https://en.wikipedia.org/wiki/No-go_theorem), similar to those given to prove the existence of quantum mechanics, e.g. Bell's Theorem or "Not in our Stars" (from one of Andrew Charman's QM exams).
 [^control_theory]: This is actually inspired largely by a discussion we had in one of my classes, which is summed up really nicely in ref@rechtblog.
 
 bibliography:

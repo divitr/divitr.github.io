@@ -37,27 +37,30 @@
             <h2>Papers</h2>
             <div class="paper-item">
                 <div class="paper-content">
+                    <div class="paper-title">Majority-of-Three is Optimal</div>
+                    <div class="paper-authors"><span class="me">Divit Rawal</span>, <a
+                            href="https://sites.google.com/view/nikitazhivotovskiy/" target="_blank"
+                            rel="noopener noreferrer">Nikita Zhivotovskiy</a></div>
+                    <div class="paper-venue"><em>Preprint.</em> [<a href="https://arxiv.org/abs/2606.13614" target="_blank" rel="noopener noreferrer">arXiv</a>]</div>
+                    <div class="paper-tldr">We prove that a majority vote of three independent ERMs is an optimal PAC learner, resolving the conjecture of <a href="https://arxiv.org/abs/2403.08831" target="_blank" rel="noopener noreferrer">Aden-Ali et al.</a> (<a href="/research/tldr/mot/">more</a>)</div>
+                </div>
+            </div>
+            <div class="paper-item">
+                <div class="paper-content">
                     <div class="paper-title">A Theory of Saddle Escape in Deep Nonlinear Networks</div>
                     <div class="paper-authors"><span class="me">Divit Rawal</span>, <a
                             href="https://scholar.google.com/citations?user=DZ9-LmkAAAAJ&hl=en" target="_blank"
                             rel="noopener noreferrer">Michael R. DeWeese</a></div>
-                    <div class="paper-venue"><em>Preprint. Under review.</em></div>
-                    <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2605.01288">abstract</a>] / [<a
-                            href="https://arxiv.org/abs/2605.01288" target="_blank" rel="noopener noreferrer">arXiv</a>]<!-- / [<a href="/research/tldr/saddle-escape/">tldr</a>]-->
-                    </div>
-                    <div class="paper-abstract" id="abstract-2605.01288" data-loaded="1">In deep networks with small initialization, training exhibits long plateaus separated by sharp feature-acquisition transitions. Whereas shallow nonlinear networks and deep linear networks are well studied, extending these analyses to deep nonlinear networks remains challenging. We derive an exact identity for the imbalance of Frobenius norms of layer weight matrices that holds for any smooth activation and any differentiable loss and use this to classify activation functions into four universality classes. On the permutation-symmetric submanifold, the identity combines with an approximate balance law to reduce the full matrix flow to a scalar ODE, giving a critical-depth escape time law \(\tau_\star = \Theta(\varepsilon^{-(r-2)})\) governed by the number \(r\) of layers at the bottleneck scale rather than the total depth \(L\). We find that this same \(r-2\) exponent is recovered under He-normal initialization with \(r\) bottleneck layers rescaled by \(\varepsilon\), where the symmetry manifold is preserved by the flow but not attracting. We find close agreement between our theory and numerical simulations.</div>
+                    <div class="paper-venue"><em>Preprint. Under review.</em> [<a href="https://arxiv.org/abs/2605.01288" target="_blank" rel="noopener noreferrer">arXiv</a>]</div>
+                    <div class="paper-tldr">We derive the analog conservation law of balanced initialization in deep linear networks for nonlinear networks and use this to predict training dynamics for small-init networks. (<a href="/research/tldr/saddle-escape/">more</a>)</div>
                 </div>
             </div>
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">Rao-Blackwellized Score Matching on Manifolds</div>
                     <div class="paper-authors"><span class="me">Divit Rawal</span></div>
-                    <div class="paper-venue"><em>ICML 2026, Workshop on Structured Probabilistic Inference and Generative Modeling.</em></div>
-                    <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="rbsm-manifolds">abstract</a>] / [<a href="https://arxiv.org/abs/2605.25567" target="_blank" rel="noopener noreferrer">arXiv</a>]<!-- / [<a href="/research/tldr/rb-dsm/">tldr</a>]-->
-                    </div>
-                    <div class="paper-abstract" id="abstract-rbsm-manifolds" data-loaded="1">We study denoising score matching (DSM) when the latent distribution is supported on a smooth embedded manifold \(M \subset \mathbb{R}^D\). Under ambient Gaussian corruption, the tangent denoising target contains a singular normal-fiber noise channel whose variance diverges as \(d/\sigma^2\) as \(\sigma\to 0^+\). We show that conditioning on the nearest-point projection \(\pi(X)\) canonically removes this singularity: the resulting conditional expectation is the unique \(L^2\)-optimal Rao-Blackwellized predictor of the tangent DSM target among all estimators depending only on the projected observation \(\pi(X)\). We then compute the small-noise expansion of this canonical target and show that it equals the intrinsic Riemannian score up to an explicit order-\(\sigma^2\) correction that decomposes into an intrinsic Tweedie term and an extrinsic curvature term involving the Weingarten and Ricci operators. In the flat case, the construction reduces exactly to ordinary lower-dimensional Gaussian DSM, while on \(S^d\) the extrinsic correction simplifies to the scalar factor \((1-d/2)\nabla_M \log q\); this extrinsic \(\sigma^2\) correction cancels identically on \(S^2\), though the intrinsic Tweedie term remains.</div>
+                    <div class="paper-venue"><em>ICML 2026, Workshop on Structured Probabilistic Inference and Generative Modeling.</em> [<a href="https://arxiv.org/abs/2605.25567" target="_blank" rel="noopener noreferrer">arXiv</a>]</div>
+                    <div class="paper-tldr">We show that denoising score matching when the latent law is supported on a manifold recovers the intrinsic Riemannian score up to a computable geometric correction. (<a href="/research/tldr/rb-dsm/">more</a>)</div>
                 </div>
             </div>
             <div class="paper-item">
@@ -66,26 +69,20 @@
                     <div class="paper-authors"><span class="me">Divit Rawal</span>, <a
                             href="https://scholar.google.com/citations?user=SOB-2hQAAAAJ&hl=en" target="_blank"
                             rel="noopener noreferrer">Sriram Vishwanath</a></div>
-                    <div class="paper-venue"><em>Preprint.</em></div>
-                    <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2601.20047">abstract</a>] / [<a href="https://arxiv.org/abs/2601.20047" target="_blank" rel="noopener noreferrer">arXiv</a>]
-                    </div>
-                    <div class="paper-abstract" id="abstract-2601.20047" data-loaded="1">We prove an exponential separation in sample complexity between Euclidean and hyperbolic representations for learning on hierarchical data under standard Lipschitz regularization. For depth-\(R\) hierarchies with branching factor \(m\), we first establish a geometric obstruction for Euclidean space: any bounded-radius embedding forces volumetric collapse, mapping exponentially many tree-distant points to nearby locations. This necessitates Lipschitz constants scaling as \(\exp(\Omega(R))\) to realize even simple hierarchical targets, yielding exponential sample complexity under capacity control. We then show this obstruction vanishes in hyperbolic space: constant-distortion hyperbolic embeddings admit \(O(1)\)-Lipschitz realizability, enabling learning with \(n = O(mR \log m)\) samples. A matching \(\Omega(mR \log m)\) lower bound via Fano's inequality establishes that hyperbolic representations achieve the information-theoretic optimum. We also show a geometry-independent bottleneck: any rank-\(k\) prediction space captures only \(O(k)\) canonical hierarchical contrasts.</div>
+                    <div class="paper-venue"><em>Preprint.</em> [<a href="https://arxiv.org/abs/2601.20047" target="_blank" rel="noopener noreferrer">arXiv</a>]</div>
+                    <div class="paper-tldr">We prove that hierarchical data is optimally embedded in hyperbolic space.</div>
                 </div>
             </div>
             <div class="paper-item">
                 <div class="paper-content">
                     <div class="paper-title">ALPHANSO: Open-Source Modeling of (\(\alpha\),n) Neutron Source Terms</div>
                     <div class="paper-authors"><span class="me">Divit Rawal</span>, <a href="https://scholar.google.com/citations?user=cEJ85HAAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">Anthony J. Nelson</a>, <a href="https://scholar.google.com/citations?user=HPl2x1sAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">William Zywiec</a>, <a href="https://scholar.google.com/citations?user=nBmy5uIAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">Daniel Siefman</a></div>
-                    <div class="paper-venue"><em>Nuclear Instruments and Methods in Physics Research Section A.</em></div>
+                    <div class="paper-venue"><em>Nuclear Instruments and Methods in Physics Research Section A.</em> [<a href="https://doi.org/10.1016/j.nima.2026.171713" target="_blank" rel="noopener noreferrer">doi</a>] / [<a href="https://github.com/alphanso-org/alphanso" target="_blank" rel="noopener noreferrer">GitHub</a>]</div>
                     <div class="paper-venue"><em>American Nuclear Society Student Conference</em>, 2026. [<a href="/assets/ans_poster.pdf" target="_blank" rel="noopener noreferrer">poster</a>]</div>
                     <div class="paper-award">&#9492; <span class="award-label">Best Paper: Mathematics, Computation, and AI Applications.</span></div>
                     <div class="paper-venue"><em>Institute of Nuclear Materials Management Annual Meeting, 2026.</em></div>
                     <div class="paper-venue"><em>Invited talks at LBNL, LLNL, UT Knoxville.</em></div>
-                    <div class="paper-links">
-                        [<a href="#" class="abstract-toggle" data-arxiv-id="2603.17719">abstract</a>] / [<a href="https://doi.org/10.1016/j.nima.2026.171713" target="_blank" rel="noopener noreferrer">doi</a>] / [<a href="https://github.com/alphanso-org/alphanso" target="_blank" rel="noopener noreferrer">GitHub</a>]
-                    </div>
-                    <div class="paper-abstract" id="abstract-2603.17719" data-loaded="1">Applications ranging from nuclear safeguards to dark matter detection require accurate predictions of neutron yields and energy spectra produced by (\(\alpha\),n) reactions. Legacy tools like SOURCES-4C remain widely used despite significant limitations, including outdated nuclear data, missing target nuclides, and restricted accessibility. Here, we present ALPHANSO, an open-source Python package for calculating (\(\alpha\),n) neutron source terms. ALPHANSO incorporates modern nuclear data libraries and formats covering all naturally occurring target nuclides and provides a transparent, modular framework for updating or extending the data as new evaluations are released. Comparison with an updated version of SOURCES-4A, NeuCBOT, and experimental measurements across a range of elements and materials shows that ALPHANSO reproduces neutron yields and spectra in good agreement with experimental data and state-of-the-art (\(\alpha\),n) calculations. These results demonstrate that ALPHANSO is a reliable, accessible, and modern alternative to legacy (\(\alpha\),n) source term codes such as SOURCES-4C. Its open-source design and modular data handling make it readily extensible to future evaluated nuclear data and low-background applications.</div>
+                    <div class="paper-tldr">A code for computing (\(\alpha\),n) neutron source terms.</div>
                 </div>
             </div>
         </section>
@@ -144,16 +141,6 @@
         -->
 
     </main>
-<script>
-document.querySelectorAll('.abstract-toggle').forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const box = document.getElementById('abstract-' + this.dataset.arxivId);
-        const open = box.classList.toggle('open');
-        this.textContent = open ? 'hide abstract' : 'abstract';
-    });
-});
-</script>
 </body>
 
 </html>

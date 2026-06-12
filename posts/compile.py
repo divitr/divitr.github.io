@@ -173,7 +173,7 @@ class MDTXCompiler:
     def parse_metadata(self, text: str) -> Tuple[Dict[str,str], str]:
         """
         Pull out all the lines up to the first empty line as metadata,
-        split that on ';' into key:value pairs, then return (meta, body).
+        parse key:value pairs, then return (meta, body).
         """
         # split into metadata block and the rest
         parts = text.split('\n\n', 1)
@@ -181,13 +181,16 @@ class MDTXCompiler:
         body       = parts[1] if len(parts) > 1 else ''
         
         meta = {}
-        for entry in meta_block.split(';'):
-            entry = entry.strip()
-            if not entry:
+        for line in meta_block.splitlines():
+            line = line.strip()
+            if not line:
                 continue
-            if ':' not in entry:
+            # Strip trailing semicolon if present
+            if line.endswith(';'):
+                line = line[:-1].strip()
+            if ':' not in line:
                 continue
-            k, v = entry.split(':', 1)
+            k, v = line.split(':', 1)
             meta[k.strip()] = v.strip()
         
         # Ensure emoji is captured if present
@@ -1494,8 +1497,111 @@ class MDTXCompiler:
         return text
 
     def update_research_index(self):
-        """Update research/index.html to automatically insert or remove TLDR links based on metadata."""
-        pass
+        """Update research/tldr/index.html to automatically insert or remove TLDR links based on metadata."""
+        mdtx_files = list(self.source_dir.glob("*.mdtx"))
+        tldrs = []
+        
+        for mdtx_file in mdtx_files:
+            try:
+                raw = mdtx_file.read_text(encoding='utf8')
+                raw = self.remove_comments(raw)
+                _, body = self.process_requires(raw)
+                meta, _ = self.parse_metadata(body)
+                
+                # Visibility gate: default visible, hide if explicitly set to hidden
+                visibility = meta.get('visibility', 'visible').strip().lower()
+                if visibility == 'hidden':
+                    continue
+                
+                # Skip files that don't have required fields
+                if not meta.get('title') or not meta.get('desc'):
+                    continue
+                
+                tldrs.append({
+                    'filename': mdtx_file.stem,
+                    'title': meta.get('title', 'Untitled'),
+                    'date': meta.get('date', ''),
+                    'desc': meta.get('desc', ''),
+                    'emoji': meta.get('emoji', '📄'),
+                    'paper_link': meta.get('paper_link', '')
+                })
+            except Exception as e:
+                print(f"Warning: Could not parse {mdtx_file.name}: {e}")
+                continue
+        
+        # Sort TL;DRs by date
+        from datetime import datetime
+        import re
+        
+        def sort_key(tldr):
+            date_str = tldr['date'].strip()
+            if date_str == '[In Progress]':
+                return datetime(1800, 1, 1)
+            
+            patterns = [
+                r'(\w+) (\d+), (\d+)',        # "Sep 13, 2025"
+                r'(\w+)\.? (\d+), (\d+)',     # "Aug. 23, 2025"
+                r'(\w+) (\d+) (\d+)'          # "Jan 19 2025"
+            ]
+            
+            month_map = {
+                'Jan': 1, 'January': 1, 'Feb': 2, 'February': 2, 'Mar': 3, 'March': 3,
+                'Apr': 4, 'April': 4, 'May': 5, 'Jun': 6, 'June': 6, 'Jul': 7, 'July': 7,
+                'Aug': 8, 'August': 8, 'Sep': 9, 'September': 9, 'Oct': 10, 'October': 10,
+                'Nov': 11, 'November': 11, 'Dec': 12, 'December': 12
+            }
+            
+            for pattern in patterns:
+                match = re.match(pattern, date_str)
+                if match:
+                    try:
+                        month_str, day_str, year_str = match.groups()
+                        month = month_map.get(month_str, 1)
+                        day = int(day_str)
+                        year = int(year_str)
+                        return datetime(year, month, day)
+                    except (ValueError, KeyError):
+                        continue
+            return datetime(1900, 1, 1)
+            
+        tldrs.sort(key=sort_key, reverse=True)
+        
+        tldrs_html = []
+        for tldr in tldrs:
+            # Process title and desc for inline math
+            title_processed = self.replace_inline_math(tldr['title'])
+            desc_processed = self.replace_inline_math(tldr['desc']) if tldr.get('desc') else ''
+            
+            # Generate paper link HTML if exists
+            paper_html = ''
+            if tldr.get('paper_link'):
+                label = 'arXiv' if 'arxiv.org' in tldr['paper_link'].lower() else 'paper'
+                paper_html = f' <span class="post-arxiv">[<a href="{tldr["paper_link"]}" target="_blank" rel="noopener noreferrer">{label}</a>]</span>'
+            
+            tldrs_html.append(f'''            <div class="blog-post-item" data-emoji="{tldr['emoji']}">
+                <span class="post-date">{tldr['emoji']}</span>
+                <div class="post-content">
+                    <h3><a href="/research/tldr/{tldr['filename']}/">{title_processed}</a>{paper_html}</h3>
+                    <p class="post-description">{desc_processed}</p>
+                </div>
+            </div>''')
+            
+        tldrs_section = self.prerender_math('\n'.join(tldrs_html))
+        
+        index_path = self.root_dir / "index.html"
+        if index_path.exists():
+            current_content = index_path.read_text(encoding='utf8')
+            
+            # Match: blog-posts section, then any blog-post-items, up to </section>
+            pattern = r'(<section class="blog-posts">)\s*(?:<div class="blog-post-item".*?</div>\s*)*(?=\s*</section>)'
+            def replacement(m):
+                return m.group(1) + '\n' + tldrs_section + '\n        '
+                
+            new_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
+            index_path.write_text(new_content, encoding='utf8')
+            print(f"Updated TL;DR index with {len(tldrs)} writeups")
+        else:
+            print(f"Warning: TL;DR index not found at {index_path}")
 
     def generate_blog_index(self):
         """Generate the blog index page from all MDTX files"""
@@ -1883,6 +1989,7 @@ class MDTXCompiler:
 
         # Pre-title labels for TLDR pages
         tldr_header_pre = ""
+        tldr_note_html = '            <p class="tldr-series-note" style="opacity: 0.6; font-size: 0.75em; margin-top: 1rem;">(Part of a <a href="/research/tldr/">series</a> of short writeups covering recent work.)</p>\n' if is_tldr else ""
 
         html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1904,7 +2011,7 @@ class MDTXCompiler:
         <section class="intro">
             {tldr_header_pre}<h1>{title}</h1>
             {tags_html}
-{date_html}{desc_html}{paper_link_html}        </section>
+{date_html}{desc_html}{paper_link_html}{tldr_note_html}        </section>
 
 {body}
     </main>

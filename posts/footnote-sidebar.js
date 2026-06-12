@@ -116,8 +116,9 @@
         const blogPost = document.querySelector('.blog-post');
         if (!blogPost) return;
 
+        const bodyRect = document.body.getBoundingClientRect();
         const blogPostRect = blogPost.getBoundingClientRect();
-        const leftPos = blogPostRect.right + window.scrollX + SIDENOTE_MARGIN;
+        const leftPos = blogPostRect.right - bodyRect.left + SIDENOTE_MARGIN;
 
         const items = data.map(({ footnoteNumber, ref, content }) => {
             const el = document.createElement('aside');
@@ -126,7 +127,9 @@
             document.body.appendChild(el);
 
             const refRect = ref.getBoundingClientRect();
-            const naturalTop = refRect.top + window.scrollY;
+            const currentBodyRect = document.body.getBoundingClientRect();
+            // Align to body coordinate system, shifting up by 4px.
+            const naturalTop = refRect.top - currentBodyRect.top - 4;
 
             return { el, naturalTop, ref };
         });
@@ -287,13 +290,6 @@
 
         applyMode(false);
 
-        // Reposition once fonts have settled (KaTeX fonts load async via CSS)
-        requestAnimationFrame(() => {
-            if (currentMode === 'sidebar') {
-                createSidenotes(footnoteData);
-            }
-        });
-
         window.addEventListener('resize', () => {
             const newMode = isSidebarMode() ? 'sidebar' : 'bottom';
             if (newMode !== currentMode) {
@@ -304,9 +300,21 @@
         });
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+    // Wait until everything is fully loaded before initializing sidenotes
+    // to prevent alignment bugs caused by asynchronous layout shifts (e.g. KaTeX fonts).
+    if (document.readyState === 'complete') {
+        if (document.fonts) {
+            document.fonts.ready.then(init);
+        } else {
+            init();
+        }
     } else {
-        init();
+        window.addEventListener('load', () => {
+            if (document.fonts) {
+                document.fonts.ready.then(init);
+            } else {
+                init();
+            }
+        });
     }
 })();
