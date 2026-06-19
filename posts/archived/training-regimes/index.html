@@ -139,7 +139,7 @@
             <p>Training a neural net can be broken down into two processes: feedforward inference and backpropogating update. When training, we want to ensure that these processes are well-behaved i.e. feedforward outputs should move in the right direction in finite time and backpropagation should update the hidden representations that allow optimization to proceed stably (without stalling or exploding). To control these processes, we observe a single degree of freedom: richness, defined as the size of the updates to the hidden representations.</p>
             <div class="example-box">
                 <strong class="example-box-title">The Richness Scale</strong>
-                <img style="width: 100%; border-radius: 5px" src="imgs/richness_scale.png" />
+                <img loading="lazy" decoding="async" style="width: 100%; border-radius: 5px" src="imgs/richness_scale.png" />
                 <small class="example-box-description">Source: [arXiv:2404.19719].</small>
             </div>
         </section>
@@ -207,7 +207,7 @@
             </div>
             <div class="example-box">
                 <strong class="example-box-title">Neural Net with NTC, UUC, and MAX Constraints</strong>
-                <img style="width: 100%; border-radius: 5px" src="imgs/roadmap_diagram.png" />
+                <img loading="lazy" decoding="async" style="width: 100%; border-radius: 5px" src="imgs/roadmap_diagram.png" />
                 <p>Note that the NTC is a single constraint that applies only to the last layer, the UUC provides one constraint per layer, and the MAX provides one constraint per layer (trivially satsified in the read-in layer).</p>
                 <small class="example-box-description">Source: [arXiv:2404.19719].</small>
             </div>
@@ -263,13 +263,13 @@
             </p>
             <div class="example-box">
                 <strong class="example-box-title">Passthrough Matches Layer Contribution</strong>
-                <img style="width: 100%; border-radius: 5px" src="imgs/passthrough_layer_contribution.png" />
+                <img loading="lazy" decoding="async" style="width: 100%; border-radius: 5px" src="imgs/passthrough_layer_contribution.png" />
                 <small class="example-box-description">Source: [arXiv:2404.19719].</small>
             </div>
             <p>From \(\text{Eqn. 11}\) and \(\text{Eqn. 12}\), all the constraints have determined the scaling of the initial hyperparameters in terms of a single degree of freedom: \(\norm{\Delta h}\).</p>
             <div class="example-box">
                 <strong class="example-box-title">Choosing \(g_\ell, \sigma_\ell\) based on \(\norm{h_\ell}\)</strong>
-                <img style="width: 100%; border-radius: 5px" src="imgs/table_1.png" />
+                <img loading="lazy" decoding="async" style="width: 100%; border-radius: 5px" src="imgs/table_1.png" />
                 <p>Note that \(n_1, n_2\) are abbreviated as \(n\).</p>
                 <small class="example-box-description">Source: [arXiv:2404.19719].</small>
             </div>
@@ -325,7 +325,7 @@
             <p>To change the size of the update, changing either the learning rate or the size of the gradient signal are equivalent.</p>
             <div class="example-box">
                 <strong class="example-box-title">The Richness Transformation and Gauge Freedom</strong>
-                <img style="width: 100%; border-radius: 5px" src="imgs/gauge_freedom.png" />
+                <img loading="lazy" decoding="async" style="width: 100%; border-radius: 5px" src="imgs/gauge_freedom.png" />
                 <p>Recall this uses the old definition of \(\gamma\) (the same one used in the equations above).</p>
                 <small class="example-box-description">Source: [arXiv:2404.19719].</small>
             </div>

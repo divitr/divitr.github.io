@@ -736,7 +736,7 @@ class MDTXCompiler:
                     break
 
             inner_style = f' style="width:{width}"' if width else ''
-            img_html = f'<img src="{src}" alt="{alt}">'
+            img_html = f'<img loading="lazy" decoding="async" src="{src}" alt="{alt}">'
             caption_html = f'<figcaption>{caption}</figcaption>' if caption else ''
             return (
                 f'<figure class="mdtx-figure">'

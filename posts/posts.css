@@ -536,6 +536,17 @@ footer a:hover {
     border-radius: 6px;
 }
 
+:root[data-theme="dark"] .blog-post figure.mdtx-figure img,
+:root[data-theme="dark"] .blog-post .image-grid img {
+    opacity: 0.9;
+    transition: opacity 0.25s ease;
+}
+
+:root[data-theme="dark"] .blog-post figure.mdtx-figure img:hover,
+:root[data-theme="dark"] .blog-post .image-grid img:hover {
+    opacity: 1;
+}
+
 .blog-post figure.mdtx-figure figcaption {
     margin-top: 0.55rem;
     max-width: 100%;
@@ -1314,5 +1325,4 @@ a.tldr-paper-link {
 a.tldr-paper-link:hover {
     color: var(--primary-color);
 }
-
 

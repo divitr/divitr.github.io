@@ -505,6 +505,13 @@ a:hover {
     font-weight: 600;
 }
 
+.paper-key-note {
+    font-size: 0.82rem;
+    color: #777;
+    margin: -0.45rem 0 0.75rem;
+    line-height: 1.4;
+}
+
 .paper-meta {
     font-size: 0.9rem;
     color: #666;
@@ -612,6 +619,7 @@ a:hover {
     .paper-venue, 
     .paper-abstract, 
     .paper-meta, 
+    .paper-key-note,
     .paper-award, 
     .contributions-note {
         color: #a8a8ad !important;
