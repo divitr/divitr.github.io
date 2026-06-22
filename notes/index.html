@@ -19,6 +19,7 @@
     </header>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
             const input = document.getElementById('notes-filter');
             const noResults = document.getElementById('notes-no-results');
             const sections = document.querySelectorAll('.notes-section:not(#courses)');
@@ -94,7 +95,7 @@
                 coursesSection.querySelectorAll('.expand-hint').forEach(h => {
                     if (h !== hideHint) h.textContent = ' (click to collapse)';
                 });
-                coursesSection.scrollIntoView({ behavior: 'smooth' });
+                coursesSection.scrollIntoView({ behavior: scrollBehavior });
             });
         });
     </script>

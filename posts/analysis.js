@@ -1437,7 +1437,7 @@
     if (oldSvg) oldSvg.remove();
     svgContainer.insertBefore(root, svgContainer.firstChild);
 
-    if (animate && animatedSegments.length) {
+    if (animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches && animatedSegments.length) {
       const easeFade = t => t * t * (3 - 2 * t);
       let totalAnimatedLength = 0;
       for (const seg of animatedSegments) {

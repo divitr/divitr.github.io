@@ -1,4 +1,6 @@
 function initTOC() {
+    const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+
     // Return a clone with KaTeX MathML subtrees removed so that textContent
     // gives only the visible characters (no TeX annotation duplication).
     function strippedClone(element) {
@@ -177,7 +179,7 @@ function initTOC() {
         if (!a) return;
         e.preventDefault();
         const target = document.getElementById(a.getAttribute('href').slice(1));
-        if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: 'smooth' });
+        if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: scrollBehavior });
     });
     
     const h2Elements = document.querySelectorAll('h2');

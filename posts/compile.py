@@ -2018,7 +2018,7 @@ class MDTXCompiler:
 
     <footer class="footer">
         <div class="last-updated">
-            <p>Compiled {compile_time} | <a href="../src/{path.name}" target="_blank">source</a></p>
+            <p>compiled {compile_time} | <a href="../src/{path.name}" target="_blank">source</a></p>
         </div>
     </footer>
 

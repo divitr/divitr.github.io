@@ -102,7 +102,7 @@ With the one-step contraction established, the rest of the proof writes itself. 
 We land on the exact same optimal moment bound, which immediately yields the conjectured {O\left(\frac{d + \log(1/\delta)}{n}\right)} high-probability rate via Markov's inequality.
 
 
-[^pac]: PAC means "probably approximately correct", i.e. our model achieves error {\leq \varepsilon} with probability {\geq \delta}.
+[^pac]: PAC means "probably approximately correct", i.e. our model achieves error {\leq \varepsilon} with probability {\geq 1-\delta}.
 [^high-prob]: This seems like a pretty trivial distinction, but these are actually very very different and being optimal in expectation does not guarantee that an algorithm will be optimal in high probability; see ref@Ishaq2022TheOne-InclusionGraphAlgorithmisnotAlwaysOptimal for example.
 [^erm]: Empirical Risk Minimization is exactly what it sounds like: just minimize the risk on your train set.
 [^bagging]: For those who have studied a bit of statistics, this should remind you of bagging (bootstrap aggregating)!

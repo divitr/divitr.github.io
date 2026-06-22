@@ -626,6 +626,15 @@ footer a:hover {
     line-height: 1.4;
 }
 
+.footnotes a:not(.footnote-backref) {
+    color: #777;
+    text-decoration: underline;
+}
+
+.footnotes a:not(.footnote-backref):hover {
+    color: var(--primary-color);
+}
+
 .footnotes .footnote-backref {
     text-decoration: none;
     color: #999;
@@ -684,6 +693,12 @@ sup a:hover {
     color: #999;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .footnote-sidenote.highlighted {
+        transform: none;
+    }
+}
+
 /* Footnote tooltip on hover */
 .footnote-tooltip {
     position: fixed;
@@ -707,7 +722,7 @@ sup a:hover {
 }
 
 .footnote-tooltip a {
-    color: var(--primary-color);
+    color: #777;
     text-decoration: underline;
 }
 
@@ -725,6 +740,11 @@ sup a {
 
 sup a:hover {
     background: #faf9f6;
+}
+
+/* Reciprocal highlight when the corresponding footnote is hovered. */
+sup a.footnote-reference-highlighted {
+    font-weight: 600;
 }
 
 /* Responsive design for mobile */
@@ -902,6 +922,21 @@ sup a:hover {
         border-color: #323235 !important;
         color: #a8a8ad !important;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .footnotes a:not(.footnote-backref),
+    .footnote-tooltip a {
+        color: #86868b !important;
+    }
+
+    .footnotes a:not(.footnote-backref):hover,
+    .footnote-tooltip a:hover {
+        color: #b2b2b7 !important;
+    }
+
+    /* Keep inline footnote-reference hover feedback compatible with dark mode. */
+    sup a:hover {
+        background: rgba(226, 226, 229, 0.12) !important;
     }
     
     .footnote-sidenote .sidenote-number {
@@ -1150,7 +1185,7 @@ sup a:hover {
 }
 
 .references a:not(.ref-backref) {
-    color: var(--primary-color);
+    color: #777;
     text-decoration: underline;
 }
 .references a:not(.ref-backref):hover {
@@ -1265,10 +1300,10 @@ sup a:hover {
     color: #ceced2;
 }
 :root[data-theme="dark"] .references a:not(.ref-backref) {
-    color: var(--primary-color);
+    color: #86868b;
 }
 :root[data-theme="dark"] .references a:not(.ref-backref):hover {
-    color: var(--primary-color);
+    color: #b2b2b7;
 }
 :root[data-theme="dark"] .references .ref-backref {
     color: #888;
@@ -1325,4 +1360,3 @@ a.tldr-paper-link {
 a.tldr-paper-link:hover {
     color: var(--primary-color);
 }
-

@@ -8,6 +8,21 @@ html {
     scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 
 .katex { font-size: 1em !important; }
 
@@ -132,6 +147,19 @@ a:hover {
     padding: 1.5rem 0;
     text-align: center;
     line-height: 1.8;
+    color: #777;
+}
+
+.footer a {
+    color: #777;
+}
+
+.footer a:visited {
+    color: #777;
+}
+
+.footer a:hover {
+    color: var(--primary-color);
 }
 
 .footer .separator {
@@ -209,6 +237,15 @@ a:hover {
     background-color: var(--background-color);
     border-top: 1px solid #eee;
     margin-top: 2rem;
+}
+
+.last-updated a,
+.last-updated a:visited {
+    color: #777777aa;
+}
+
+.last-updated a:hover {
+    color: #777;
 }
 
 .news-controls {
@@ -612,6 +649,15 @@ a:hover {
     .last-updated {
         border-color: #323235 !important; /* Slightly brighter, more defined borders */
     }
+
+    .last-updated a,
+    .last-updated a:visited {
+        color: #86868b !important;
+    }
+
+    .last-updated a:hover {
+        color: #a8a8ad !important;
+    }
     
     /* Muted academic metadata text - raised for better contrast */
     .contact-label, 
@@ -635,6 +681,19 @@ a:hover {
     
     .footer .separator {
         color: #323235 !important;
+    }
+
+    .footer {
+        color: #86868b !important;
+    }
+
+    .footer a,
+    .footer a:visited {
+        color: #86868b !important;
+    }
+
+    .footer a:hover {
+        color: #b2b2b7 !important;
     }
     
     .expand-hint, 

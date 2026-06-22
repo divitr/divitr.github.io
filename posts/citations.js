@@ -3,6 +3,7 @@
 
     let lastClickedCitationId = null;
     let hoverTooltip = null;
+    const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
     function getCitationData() {
         const citationLinks = document.querySelectorAll('.citation-ref');
@@ -74,7 +75,7 @@
                 if (targetEl) {
                     lastClickedCitationId = link.id;
                     
-                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetEl.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
                     
                     targetEl.classList.remove('ref-highlight');
                     void targetEl.offsetWidth; // Force reflow
@@ -91,7 +92,7 @@
                 if (lastClickedCitationId) {
                     const sourceEl = document.getElementById(lastClickedCitationId);
                     if (sourceEl) {
-                        sourceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        sourceEl.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
                         sourceEl.classList.remove('ref-highlight');
                         void sourceEl.offsetWidth; // Force reflow
                         sourceEl.classList.add('ref-highlight');
@@ -103,7 +104,7 @@
                 if (href) {
                     const sourceEl = document.querySelector(href);
                     if (sourceEl) {
-                        sourceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        sourceEl.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
                         sourceEl.classList.remove('ref-highlight');
                         void sourceEl.offsetWidth; // Force reflow
                         sourceEl.classList.add('ref-highlight');

@@ -1,11 +1,8 @@
-On the One-Inclusion Graph Algorithm and the Majority of Three Conjecture
+req: math, stats;
 
-
-soem notes
-
-
-has somethign to do with homeomorphically irreducible graphs
-
-oig and six vertex model
-
-choose weights according to distance in input space, i.e. consistency/Lipschitzity
+title: Random Walks on One-Inclusion Graphs;
+date: Jun 19, 2026;
+desc: todo;
+tags: stats, ml, math;
+emoji: 🚶;
+visibility: hidden;

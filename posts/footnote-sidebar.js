@@ -5,6 +5,7 @@
     const SIDENOTE_WIDTH = 220;
     const SIDENOTE_MARGIN = 24;
     const MIN_GAP = 8;
+    const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
     let sidenotes = [];
     let sidenoteItems = [];
@@ -15,6 +16,8 @@
     let footnoteData = [];
     let backToTopBtn = null;
     let scrollListener = null;
+    let layoutRefreshQueued = false;
+    let layoutObserver = null;
 
     // Back-to-top button — only for tall pages (>2.5 viewports) in sidebar mode.
     const SCROLL_SHOW_PX = () => window.innerHeight;   // show after 1 full viewport scrolled
@@ -60,7 +63,7 @@
         backToTopBtn = document.createElement('button');
         backToTopBtn.id = 'back-to-top';
         backToTopBtn.textContent = 'back to top';
-        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: scrollBehavior }));
         document.body.appendChild(backToTopBtn);
 
         scrollListener = () => {
@@ -104,7 +107,7 @@
             const backref = content.querySelector('.footnote-backref');
             if (backref) backref.remove();
 
-            data.push({ footnoteNumber, ref, content });
+            data.push({ footnoteNumber, ref, content, item });
         });
 
         return data;
@@ -120,7 +123,10 @@
         const blogPostRect = blogPost.getBoundingClientRect();
         const leftPos = blogPostRect.right - bodyRect.left + SIDENOTE_MARGIN;
 
-        const items = data.map(({ footnoteNumber, ref, content }) => {
+        const items = data.map(({ footnoteNumber, ref, content, item }) => {
+            item.onmouseenter = null;
+            item.onmouseleave = null;
+
             const el = document.createElement('aside');
             el.className = 'footnote-sidenote';
             el.innerHTML = `<span class="sidenote-number">${footnoteNumber}.</span> ${content.innerHTML}`;
@@ -150,14 +156,17 @@
             el.style.top = `${placedTop}px`;
             el.style.left = `${leftPos}px`;
 
-            ref.addEventListener('mouseenter', () => {
+            ref.onmouseenter = () => {
                 el.classList.add('highlighted');
                 applyHoverPositions(idx);
-            });
-            ref.addEventListener('mouseleave', () => {
+            };
+            ref.onmouseleave = () => {
                 el.classList.remove('highlighted');
                 restorePlacedPositions();
-            });
+            };
+
+            el.onmouseenter = () => ref.classList.add('footnote-reference-highlighted');
+            el.onmouseleave = () => ref.classList.remove('footnote-reference-highlighted');
         });
 
         sidenotes     = items.map(i => i.el);
@@ -231,8 +240,8 @@
         document.body.appendChild(tooltip);
         hoverTooltip = tooltip;
 
-        data.forEach(({ ref, content }) => {
-            ref.addEventListener('mouseenter', () => {
+        data.forEach(({ ref, content, item }) => {
+            ref.onmouseenter = () => {
                 tooltip.innerHTML = content.innerHTML.trim();
                 tooltip.classList.add('visible');
 
@@ -249,11 +258,14 @@
                 };
 
                 position();
-            });
+            };
 
-            ref.addEventListener('mouseleave', () => {
+            ref.onmouseleave = () => {
                 tooltip.classList.remove('visible');
-            });
+            };
+
+            item.onmouseenter = () => ref.classList.add('footnote-reference-highlighted');
+            item.onmouseleave = () => ref.classList.remove('footnote-reference-highlighted');
         });
     }
 
@@ -290,6 +302,14 @@
 
         applyMode(false);
 
+        // Capture any later layout shift, including lazy images or asynchronous
+        // math rendering, and keep the sidebar anchors in their final position.
+        const blogPost = document.querySelector('.blog-post');
+        if (blogPost && 'ResizeObserver' in window && !layoutObserver) {
+            layoutObserver = new ResizeObserver(queueSidebarLayoutRefresh);
+            layoutObserver.observe(blogPost);
+        }
+
         window.addEventListener('resize', () => {
             const newMode = isSidebarMode() ? 'sidebar' : 'bottom';
             if (newMode !== currentMode) {
@@ -300,21 +320,46 @@
         });
     }
 
-    // Wait until everything is fully loaded before initializing sidenotes
-    // to prevent alignment bugs caused by asynchronous layout shifts (e.g. KaTeX fonts).
-    if (document.readyState === 'complete') {
-        if (document.fonts) {
-            document.fonts.ready.then(init);
-        } else {
-            init();
-        }
-    } else {
-        window.addEventListener('load', () => {
-            if (document.fonts) {
-                document.fonts.ready.then(init);
-            } else {
-                init();
-            }
+    function queueSidebarLayoutRefresh() {
+        if (layoutRefreshQueued) return;
+        layoutRefreshQueued = true;
+
+        requestAnimationFrame(() => {
+            layoutRefreshQueued = false;
+            if (currentMode === 'sidebar') createSidenotes(footnoteData);
         });
+    }
+
+    function nextFrame() {
+        return new Promise(resolve => requestAnimationFrame(resolve));
+    }
+
+    async function waitForInitialRender() {
+        // KaTeX is server-rendered, but its webfonts can still change metrics.
+        // MathJax pages expose a startup promise once their typesetting is complete.
+        if (document.fonts) await document.fonts.ready;
+        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+            await window.MathJax.startup.promise;
+        }
+
+        // Give the browser two paint cycles after assets and math settle before
+        // measuring footnote-reference positions.
+        await nextFrame();
+        await nextFrame();
+        init();
+    }
+
+    // Lazy images can load after the initial page load and shift a sidenote's anchor.
+    // Recalculate after each such shift without waiting for offscreen images indefinitely.
+    document.addEventListener('load', event => {
+        if (event.target instanceof HTMLImageElement) queueSidebarLayoutRefresh();
+    }, true);
+
+    // Wait until everything initially requested by the page is loaded before
+    // positioning footnotes, then wait for font and math rendering above.
+    if (document.readyState === 'complete') {
+        waitForInitialRender();
+    } else {
+        window.addEventListener('load', waitForInitialRender, { once: true });
     }
 })();
