@@ -5,7 +5,7 @@ desc: Proving the Majority-of-Three Conjecture;
 emoji: 3️⃣;
 paper_link: https://arxiv.org/abs/2606.13614;
 
-For quite a while, a major goal in statistical learning theory was determining the optimal error rate for a PAC[^pac]. This was solved in 2016 by Hanneke ref@Steve2016TheOptimalSampleComplexityofPACLearning, who provided the first algorithm to reach the optimal error rate. However, his algorithm was rather complicated and the analysis quite involved, so a new line of work emerged with the goal of determining the simplest optimal PAC learner. The [majority-of-three learner](https://arxiv.org/abs/2403.08831) was proposed in 2024 ref@AAHLZ24 and proven to be optimal in expectation. However, it was not proven to be optimal in high probability[^high-prob]. In particular, there was an extra {\log\log} factor in the original paper that was conjectured to be an artifact of their analysis. In this short note, we provide a better analysis and prove that the algorithm is in fact an optimal PAC learner.
+For quite a while, a major goal in statistical learning theory was determining the optimal error rate for a PAC[^pac] learner. This was solved in 2016 by Hanneke ref@Steve2016TheOptimalSampleComplexityofPACLearning, who provided the first algorithm to reach the optimal error rate. However, his algorithm was rather complicated and the analysis quite involved, so a new line of work emerged with the goal of determining the simplest optimal PAC learner. The [majority-of-three learner](https://arxiv.org/abs/2403.08831) was proposed in 2024 ref@AAHLZ24 and proven to be optimal in expectation. However, it was not proven to be optimal in high probability[^high-prob]. In particular, there was an extra {\log\log} factor in the original paper that was conjectured to be an artifact of their analysis. In this short note, we provide a better analysis and prove that the algorithm is in fact an optimal PAC learner.
 
 **[NOTE]** The argument given in the note is actually a simplified version discovered (partially) by an LLM! The original argument (which will also be discussed here) was fully human-generated, upon reviewing it, we experimented with LLMs and found that given hints they were able to streamline the proof. (Interestingly, LLMs were not able to complete the proof of the conjecture on their own, they required the original proof as scaffolding, but were helpful in compressing the proof to the minimal necessary steps.) This is discussed a bit more in Appendix A of the note. My original proof is outlined in Appendix B, or the full version is available [here](https://divitr.github.io/assets/mot.pdf).
 
@@ -50,13 +50,13 @@ To bound the overlap, we study its {q}-th moments. We show that the {q}-th momen
 
 We write this inclusion probability as {p_X}, and factor it using the chain rule (of conditional probabilities, not calculus):
 {
-  p_X = \prod_{\ell=1}^q q_{X_{<\ell}}(x_\ell).
+  p_X = \prod_{\ell=1}^q q_{X_{\lt \ell}}(x_\ell).
 }
-Here, {q_{X_{<\ell}}(x_\ell)} is the *conditional* probability that the ERM contains {x_\ell}, given that it already contains all the previous points in the tuple.
+Here, {q_{X_{\lt \ell}}(x_\ell)} is the *conditional* probability that the ERM contains {x_\ell}, given that it already contains all the previous points in the tuple.
 
 ### Dyadic Scales
 
-Conditioning on the prefix {X_{<\ell}} changes the distribution of the ERM. To handle this, we categorize the points into a "dyadic profile." For each point {x_\ell}, we look at its conditional inclusion probability and assign it to a dyadic bucket {k_\ell}, where {2^{-k_\ell-1} < q_{X_{<\ell}}(x_\ell) \le 2^{-k_\ell}}.
+Conditioning on the prefix {X_{\lt \ell}} changes the distribution of the ERM. To handle this, we categorize the points into a "dyadic profile." For each point {x_\ell}, we look at its conditional inclusion probability and assign it to a dyadic bucket {k_\ell}, where {2^{-k_\ell-1} \lt q_{X_{\lt \ell}}(x_\ell) \le 2^{-k_\ell}}.
 
 Dyadic buckets allow us to invoke classical VC dimension bounds; specifically the {\varepsilon}-net theorem ref@Wel12 and Sauer's lemma on each level set. We prove a structural lemma showing that the probability mass of the {k}-th dyadic level decays exponentially: roughly {\approx 2^{-k}}. Importantly, the VC dimension penalty only costs a {d(k+1)} factor, meaning the anchor points don't blow up the complexity.
 
@@ -80,7 +80,7 @@ Instead of manually partitioning the space into dyadic buckets, we define a weig
 {
   M_k = \mathbb{E}_{X_{1:k}}\left[ p_k(X_{1:k})^2 \left( 64(d+q) + \log\frac{e}{p_k(X_{1:k})} \right)^{q-k} \right].
 }
-Note the endpoints. When {k = q}, the rarity penalty disappears (since the exponent {q-k} is 0), and {M_q} is exactly our target overlap moment {R_q}.When {k = 0}, the probability {p_0 = 1}, and {M_0} is just a deterministic constant roughly equal to {(64(d+q))^q}. In some sense, the functional defined above interpolates between the two.
+Note the endpoints. When {k = q}, the rarity penalty disappears (since the exponent {q-k} is 0), and {M_q} is exactly our target overlap moment {R_q}. When {k = 0}, the probability {p_0 = 1}, and {M_0} is just a deterministic constant roughly equal to {(64(d+q))^q}. In some sense, the functional defined above interpolates between the two.
 
 To connect {M_k} to {M_{k-1}}, we need to integrate out the last point, {x_k}. The way we do this is via a uniform tail bound on the conditional inclusion probability: if we fix a prefix {z}, what is the probability that the ERM includes a new random test point?
 
@@ -105,8 +105,8 @@ We land on the exact same optimal moment bound, which immediately yields the con
 [^pac]: PAC means "probably approximately correct", i.e. our model achieves error {\leq \varepsilon} with probability {\geq 1-\delta}.
 [^high-prob]: This seems like a pretty trivial distinction, but these are actually very very different and being optimal in expectation does not guarantee that an algorithm will be optimal in high probability; see ref@Ishaq2022TheOne-InclusionGraphAlgorithmisnotAlwaysOptimal for example.
 [^erm]: Empirical Risk Minimization is exactly what it sounds like: just minimize the risk on your train set.
-[^bagging]: For those who have studied a bit of statistics, this should remind you of bagging (bootstrap aggregating)!
-[^realizable]: Realizable means that the hypothesis class of our learner actually contains the true function {f^\star}.
+[^bagging]: This is reminiscent of bagging, though here the three learners are trained on disjoint sample splits rather than bootstrap resamples.
+[^realizable]: Realizable means that the hypothesis class of our learner actually contains the true function {f^\star}. Dealing with agnostic (non-realizable) PAC learning is a whole other deal; hopefully the subject of future work!
 [^vc_dim]: VC dimension is a measure of how "expressive" a learner or hypothesis class is; it basically just tells us how complex of a function a hypothesis class can express.
 
 bibliography:

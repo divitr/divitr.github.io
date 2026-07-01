@@ -1,0 +1,12 @@
+req: math, stats, ml;
+title: Minimax Rates for Hyperbolic Hierarchical Learning;
+date: January 31, 2026;
+desc: Why negative curvature is statistically useful for hierarchical data;
+emoji: 🌳;
+paper_link: https://arxiv.org/abs/2601.20047;
+visibility: hidden;
+
+TODO
+
+bibliography:
+end bibliography
