@@ -621,6 +621,12 @@ a:hover {
     color: var(--primary-color);
 }
 
+.author-order-note {
+    font-size: 0.86em;
+    color: #777;
+    font-style: italic;
+}
+
 :root[data-theme="dark"] {
     --primary-color: #ceced2;     /* Softer cream-silver paper (much less harsh) */
     --background-color: #151516;  /* Deep, premium warm-charcoal matte */
@@ -666,6 +672,7 @@ a:hover {
     .paper-abstract, 
     .paper-meta, 
     .paper-key-note,
+    .author-order-note,
     .paper-award, 
     .contributions-note {
         color: #a8a8ad !important;
