@@ -7,6 +7,8 @@ paper_link: https://arxiv.org/abs/2605.25567;
 
 A lot of modern machine learning assumes the *[manifold hypothesis](https://en.wikipedia.org/wiki/Manifold_hypothesis)*: the assumption that the data we care about has some structure to it (formally, this means that it lies on or near some manifold). Under the manifold hypothesis, score matching (a widely used method for learning a data distribution) is fundamentally ill-posed. As a result, practitioners use a variant known as denoising score matching, which resolves the ill-posedness problem, but doesn't necessarily guarantee that we learn the right data distribution. In this work, we examine what exactly is learned by denoising score matching.
 
+Someone also made an Instagram reel of one of those AI voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
+
 main-results:
 - We show that the tangent DSM target has a fundamental singularity on manifolds: the normal-fiber noise variance diverges as {d/\sigma^2} as {\sigma \to 0^+}.
 - We show that conditioning on the nearest-point projection {\pi(X)} canonically removes this singularity, giving the unique {L^2}-optimal Rao-Blackwellized predictor of the tangent denoising target.
@@ -27,9 +29,16 @@ But under the manifold hypothesis the ambient score doesn't exist at all ({q} ha
     T_\sigma \doteq \frac{1}{\sigma^2} P_{T_{\pi(X)} M}(Z - X) \in T_{\pi(X)} M.
 }
 
-This leaves a few questions open: what is {T_\sigma} actually estimating? Does it converge to the intrinsic Riemannian score {\nabla_M \log q}? Does it even have a sensible variance as {\sigma \to 0^+}?
+image:
+src: research/tldr/rb-dsm/hero_diagram.png;
+alt: Diagram of noisy observations in a normal fiber over z, with scattered tangent DSM targets averaged into the Rao-Blackwellized target;
+width: 80%;
+caption: Observations {X_i} in the normal fiber over {z} share {\pi(X)=z}; their raw tangent targets {T_{\sigma,i}} scatter within {T_zM} with variance {d/\sigma^2}, which Rao-Blackwellization averages into {r_\sigma(z)}.
+end image;
 
-In order to answer these, we'll need to set up a bit of differential geometry.
+This leaves a few questions open: *What is {T_\sigma} actually estimating? Does it converge to the intrinsic Riemannian score {\nabla_M \log q}? Does it even have a sensible variance as {\sigma \to 0^+}?*
+
+In order to answer these, we'll need to set up a bit of differential geometry. (The differential geometry stuff may require more of a math background, feel free to skip it: the gist of the paper is understandable without grinding through the geometry.)
 
 ### Differential Geometry
 
@@ -48,7 +57,7 @@ where {(n_\alpha)} is any orthonormal basis of {N_z M}. The takeaway is that int
 
 ## Rao-Blackwellization and the Nearest-Point Projection
 
-Having established our machinery, we may now return to the question we really care about: what is {T_\sigma} actually estimating, and can we control its variance?
+Having established our machinery, we may now return to the question we really care about: What is {T_\sigma} actually estimating, and can we control its variance?
 
 The classical statistics move here is *Rao-Blackwellization*. The [Rao-Blackwell Theorem](https://stat210a.berkeley.edu/fall-2025/reader/unbiased-estimation.html#the-rao-blackwell-theorem) tells us that conditioning an unbiased estimator on a sufficient statistic can only reduce its variance. Intuitively, we keep the expected value, but integrate out the part of the noise that doesn't carry any signal. The natural thing to condition on in our setting is the nearest-point projection {\pi(X) \in M}. It captures the manifold-valued summary of the noisy observation -- "where on {M} did {Z} likely come from" -- and discards the normal offset, which by construction carries no information about {Z}. Formally, among all fiber-collapsing summaries {S(X)} -- statistics depending on {X} only through {\pi(X)}, i.e. {\sigma(S) \subseteq \sigma(\pi(X))} -- the projection {\pi(X)} is the finest. Anything coarser throws away information that {\pi(X)} retains.
 
@@ -62,7 +71,7 @@ From the Pythagorean identity for {L^2} projections, we can show that among all 
 Thus, {r_\sigma} is the unique (up to null sets) {L^2}-optimal target in this class, and the excess risk of any coarser estimator decomposes into the irreducible "noise" part and a separable "estimator error" part. Intuitively, {r_\sigma} keeps all the signal-bearing information in {T_\sigma} and averages out the rest.
 
 ## Variance Collapse
-Okay, so we found the {L^2}-optimal target, now we want to know if it actually buys us anything quantitatively. The answer is a resounding yes.
+Okay, so we found the {L^2}-optimal target, now we want to know if it actually buys us anything quantitatively. We answer in the affirmative.
 
 The conditional variance of {T_\sigma} given {\pi(X)} is the irreducible portion that can't be removed by any fiber-collapsing summary, and we can write it down exactly:
 theorem[variance-collapse][Variance collapse under Rao-Blackwellization]:

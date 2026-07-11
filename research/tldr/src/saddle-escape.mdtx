@@ -155,6 +155,7 @@ The proof works in two stages. First, a bootstrap interval {[0, \tau_0]} is iden
 
 image:
 src: research/tldr/saddle-escape/off_manifold.png;
+alt: Off-manifold escape time scaling at He initialization;
 caption: The {\Theta\big(\varepsilon^{-(r-2)}\big)} scaling persists at He-init.
 width: 95%;
 end image;

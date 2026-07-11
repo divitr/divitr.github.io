@@ -229,6 +229,50 @@ a:hover {
     line-height: 1.5;
 }
 
+.selected-work {
+    margin-bottom: 0.5rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.2rem;
+}
+
+.section-note {
+    font-weight: normal;
+    color: #999;
+}
+
+.selected-work-items {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #eee;
+    padding-left: 0.9rem;
+    margin-left: 0.35rem;
+}
+
+.selected-work-item {
+    padding: 0.35rem 0;
+}
+
+.selected-work-content {
+    min-width: 0;
+}
+
+.selected-work-title {
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.selected-work-links {
+    font-size: 0.88em;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.selected-work-meta {
+    font-size: 0.86rem;
+    color: #777;
+    line-height: 1.45;
+}
+
 .last-updated {
     text-align: center;
     font-size: .75rem;
@@ -367,15 +411,6 @@ a:hover {
     color: #4a4a4a;
 }
 
-.expand-hint {
-    color: #999;
-    font-size: 0.85rem;
-    font-style: italic;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-}
-
 .nested-list {
     list-style: none;
     padding: 0;
@@ -471,14 +506,6 @@ a:hover {
     color: var(--primary-color);
 }
 
-.paper-tldr {
-    font-size: 0.95rem;
-    color: #666;
-    margin-top: 0.5rem;
-    margin-bottom: 0.2rem;
-    line-height: 1.5;
-}
-
 .paper-venue {
     font-size: 0.9rem;
     color: #666;
@@ -491,7 +518,6 @@ a:hover {
 }
 
 @media (min-width: 600px) {
-    .paper-tldr,
     .paper-authors, 
     .paper-venue, 
     .paper-links,
@@ -583,19 +609,6 @@ a:hover {
     content: ')';
 }
 
-.paper-award {
-    display: block;
-    font-size: 0.9rem;
-    font-style: italic;
-    color: #666;
-    padding-left: 1.75rem;
-    margin-bottom: 0.3rem;
-}
-
-.paper-award .award-label {
-    font-weight: 600;
-}
-
 /* Paper Author Styling - Added Jan 2026 */
 .paper-authors {
     font-size: 0.95rem;
@@ -649,6 +662,7 @@ a:hover {
     header, 
     .contact-item, 
     .news, 
+    .selected-work,
     .notes-item, 
     .papers-section, 
     .paper-item, 
@@ -667,13 +681,11 @@ a:hover {
     
     /* Muted academic metadata text - raised for better contrast */
     .contact-label, 
-    .paper-tldr,
     .paper-venue, 
     .paper-abstract, 
     .paper-meta, 
     .paper-key-note,
     .author-order-note,
-    .paper-award, 
     .contributions-note {
         color: #a8a8ad !important;
     }
@@ -684,6 +696,15 @@ a:hover {
     .paper-links a, 
     .notes-no-results {
         color: #86868b !important;
+    }
+
+    .section-note,
+    .selected-work-meta {
+        color: #a8a8ad !important;
+    }
+
+    .selected-work-items {
+        border-color: #323235;
     }
     
     .footer .separator {
@@ -703,7 +724,6 @@ a:hover {
         color: #b2b2b7 !important;
     }
     
-    .expand-hint, 
     .contribution-note {
         color: #98989d !important;
     }

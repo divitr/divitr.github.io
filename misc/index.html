@@ -15,30 +15,12 @@
                 const trigger = item.querySelector('.expand-trigger');
                 const nestedList = item.querySelector('.nested-list');
 
-                // Create hint element inline
-                const hint = document.createElement('span');
-                hint.className = 'expand-hint';
-                hint.textContent = ' (click to expand)';
-                hint.style.opacity = '0';
-                trigger.appendChild(hint);
-
-                // Show hint immediately on hover
-                trigger.addEventListener('mouseenter', function() {
-                    hint.style.opacity = '1';
-                });
-
-                trigger.addEventListener('mouseleave', function() {
-                    hint.style.opacity = '0';
-                });
-
                 // Click to expand/collapse
                 trigger.addEventListener('click', function() {
                     if (nestedList.style.display === 'none') {
                         nestedList.style.display = 'block';
-                        hint.textContent = ' (click to collapse)';
                     } else {
                         nestedList.style.display = 'none';
-                        hint.textContent = ' (click to expand)';
                     }
                 });
             });
@@ -58,16 +40,23 @@
     <main>
         <h1>Misc.</h1>
         <ul class="misc-list">
-            <li><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">foresight</a></li>
-            <li><a href="../assets/focaccia.jpg" rel="noopener noreferrer">focaccia</a></li>
             <li class="expandable-item">
-                <span class="expand-trigger">some software</span>
-                <ul class="nested-list" style="display: none;">
-                    <li class="nested-header"><a href="https://github.com/divitr/bibtexcopy" target="_blank" rel="noopener noreferrer">bibtexcopy</a></li>
-                    <li class="nested-header"><a href="https://github.com/divitr/assignment-tracker" target="_blank" rel="noopener noreferrer">assignment-tracker</a></li>
-                    <li class="nested-header"><a href="https://github.com/divitr/todo" target="_blank" rel="noopener noreferrer">todo</a></li>
+                <span class="expand-trigger">other pages</span>
+                <ul class="nested-list" style="display: block;">
+                    <li class="nested-header"><a href="/notes">some crib sheets and course notes</a></li>
+                    <li class="nested-header"><a href="/projects">some projects from coursework</a></li>
+                    <li class="nested-header"><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">prediction market for distributions over continuous outcomes</a></li>
                 </ul>
             </li>
+            <li class="expandable-item">
+                <span class="expand-trigger">some software</span>
+                <ul class="nested-list" style="display: block;">
+                    <li class="nested-header"><a href="https://github.com/divitr/bibtexcopy" target="_blank" rel="noopener noreferrer">chrome extension to copy bibtex to clipboard</a></li>
+                    <li class="nested-header"><a href="https://github.com/divitr/assignment-tracker" target="_blank" rel="noopener noreferrer">cli tool for tracking gradescope and canvas assignments</a></li>
+                    <li class="nested-header"><a href="https://github.com/divitr/todo" target="_blank" rel="noopener noreferrer">vibecoded todo app</a></li>
+                </ul>
+            </li>
+            <li><a href="../assets/focaccia.jpg" rel="noopener noreferrer">focaccia</a></li>
             <!-- <li class="expandable-item">
                 <span class="expand-trigger">some things I like</span>
                 <ul class="nested-list" style="display: none;">

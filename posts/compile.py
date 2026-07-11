@@ -242,6 +242,40 @@ class MDTXCompiler:
         # Inline code should stay on one line; do not let unmatched backticks bleed across paragraphs.
         return re.sub(r'`([^`\n]+)`', repl, text)
 
+    def apply_typography(self, text: str) -> str:
+        """Apply prose-level typography without touching code, math, or HTML tags."""
+        protected = {}
+        counter = 0
+
+        def protect(m):
+            nonlocal counter
+            key = f'__TYPOGRAPHY_PROTECTED_{counter}__'
+            protected[key] = m.group(0)
+            counter += 1
+            return key
+
+        protected_pattern = re.compile(
+            r'<pre[\s\S]*?</pre>'
+            r'|<code[\s\S]*?</code>'
+            r'|<script[\s\S]*?</script>'
+            r'|<style[\s\S]*?</style>'
+            r'|\\begin\{equation\}[\s\S]*?\\end\{equation\}'
+            r'|\\\([\s\S]*?\\\)',
+            re.IGNORECASE
+        )
+        text = protected_pattern.sub(protect, text)
+
+        parts = re.split(r'(<[^>]*>)', text)
+        for i, part in enumerate(parts):
+            if part.startswith('<'):
+                continue
+            parts[i] = re.sub(r'(?<!-)--(?!-)', '&mdash;', part)
+
+        text = ''.join(parts)
+        for key, value in protected.items():
+            text = text.replace(key, value)
+        return text
+
     def extract_footnotes(self, text: str) -> Tuple[Dict[str,str], str]:
         fns, out = {}, []
         for L in text.splitlines():
@@ -2029,6 +2063,7 @@ class MDTXCompiler:
 </body>
 </html>"""
 
+        html = self.apply_typography(html)
         html = self.prerender_math(html)
         output_file.write_text(html, encoding='utf8')
         print("Compiled →", path.name, "→", output_file.relative_to(self.root_dir))
