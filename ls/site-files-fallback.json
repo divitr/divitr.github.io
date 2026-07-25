@@ -1,0 +1,670 @@
+[
+  {
+    "path": "/assets/ans_poster.pdf",
+    "size": 3742876
+  },
+  {
+    "path": "/assets/bos.png",
+    "size": 688554
+  },
+  {
+    "path": "/assets/Divit_Rawal_CV.pdf",
+    "size": 93165
+  },
+  {
+    "path": "/assets/focaccia.jpg",
+    "size": 3436466
+  },
+  {
+    "path": "/assets/mot.pdf",
+    "size": 265600
+  },
+  {
+    "path": "/assets/rb-dsm_poster.pdf",
+    "size": 874728
+  },
+  {
+    "path": "/index.html",
+    "size": 6665
+  },
+  {
+    "path": "/ls/index.html",
+    "size": 1658
+  },
+  {
+    "path": "/ls/ls.css",
+    "size": 4351
+  },
+  {
+    "path": "/ls/ls.js",
+    "size": 10861
+  },
+  {
+    "path": "/misc/index.html",
+    "size": 4575
+  },
+  {
+    "path": "/notes/105.pdf",
+    "size": 18918142
+  },
+  {
+    "path": "/notes/110.pdf",
+    "size": 2117012
+  },
+  {
+    "path": "/notes/112.pdf",
+    "size": 3128380
+  },
+  {
+    "path": "/notes/113.pdf",
+    "size": 1303836
+  },
+  {
+    "path": "/notes/122.pdf",
+    "size": 4604709
+  },
+  {
+    "path": "/notes/126.pdf",
+    "size": 3593889
+  },
+  {
+    "path": "/notes/127.pdf",
+    "size": 7711324
+  },
+  {
+    "path": "/notes/128a.pdf",
+    "size": 742587
+  },
+  {
+    "path": "/notes/137a.pdf",
+    "size": 3246814
+  },
+  {
+    "path": "/notes/137b.pdf",
+    "size": 2720434
+  },
+  {
+    "path": "/notes/16a.pdf",
+    "size": 2643564
+  },
+  {
+    "path": "/notes/20.pdf",
+    "size": 776968
+  },
+  {
+    "path": "/notes/210a.pdf",
+    "size": 1346202
+  },
+  {
+    "path": "/notes/210b.pdf",
+    "size": 1016151
+  },
+  {
+    "path": "/notes/260.pdf",
+    "size": 932091
+  },
+  {
+    "path": "/notes/53.pdf",
+    "size": 986586
+  },
+  {
+    "path": "/notes/5a.pdf",
+    "size": 1675533
+  },
+  {
+    "path": "/notes/5b.pdf",
+    "size": 3790710
+  },
+  {
+    "path": "/notes/5c.pdf",
+    "size": 1301239
+  },
+  {
+    "path": "/notes/61b.pdf",
+    "size": 1912455
+  },
+  {
+    "path": "/notes/61c.pdf",
+    "size": 2580651
+  },
+  {
+    "path": "/notes/70.pdf",
+    "size": 2955316
+  },
+  {
+    "path": "/notes/89.pdf",
+    "size": 2097648
+  },
+  {
+    "path": "/notes/bio.pdf",
+    "size": 24357412
+  },
+  {
+    "path": "/notes/csa.pdf",
+    "size": 3659192
+  },
+  {
+    "path": "/notes/ibm.pdf",
+    "size": 22408816
+  },
+  {
+    "path": "/notes/index.html",
+    "size": 14182
+  },
+  {
+    "path": "/notes/ochem_naming.pdf",
+    "size": 94634
+  },
+  {
+    "path": "/notes/phys1.pdf",
+    "size": 3219498
+  },
+  {
+    "path": "/notes/rl.pdf",
+    "size": 17585814
+  },
+  {
+    "path": "/posts/alg-autoencoder/index.html",
+    "size": 51344
+  },
+  {
+    "path": "/posts/analysis.js",
+    "size": 80449
+  },
+  {
+    "path": "/posts/archived/alg-autoencoder/index.html",
+    "size": 10373
+  },
+  {
+    "path": "/posts/archived/analysis.js",
+    "size": 14439
+  },
+  {
+    "path": "/posts/archived/analysis/index.html",
+    "size": 7884
+  },
+  {
+    "path": "/posts/archived/blog_analysis.py",
+    "size": 12593
+  },
+  {
+    "path": "/posts/archived/category-theory/index.html",
+    "size": 17638
+  },
+  {
+    "path": "/posts/archived/compound_topics.csv",
+    "size": 395
+  },
+  {
+    "path": "/posts/archived/induction-heads/imgs/abalation.png",
+    "size": 239449
+  },
+  {
+    "path": "/posts/archived/induction-heads/imgs/icl_ability_layers.png",
+    "size": 131784
+  },
+  {
+    "path": "/posts/archived/induction-heads/imgs/induction_head_diagram.png",
+    "size": 54788
+  },
+  {
+    "path": "/posts/archived/induction-heads/imgs/loss_diverges.png",
+    "size": 131199
+  },
+  {
+    "path": "/posts/archived/induction-heads/imgs/pca_ortho.png",
+    "size": 142937
+  },
+  {
+    "path": "/posts/archived/induction-heads/imgs/per-token_loss_analysis.png",
+    "size": 71701
+  },
+  {
+    "path": "/posts/archived/induction-heads/index.html",
+    "size": 18039
+  },
+  {
+    "path": "/posts/archived/induction-heads/induction_heads_form.png",
+    "size": 150785
+  },
+  {
+    "path": "/posts/archived/measure-theory/index.html",
+    "size": 11547
+  },
+  {
+    "path": "/posts/archived/parse.py",
+    "size": 0
+  },
+  {
+    "path": "/posts/archived/pca_data.csv",
+    "size": 1194
+  },
+  {
+    "path": "/posts/archived/qm-primer/index.html",
+    "size": 19474
+  },
+  {
+    "path": "/posts/archived/slt-modern-ml/index.html",
+    "size": 10535
+  },
+  {
+    "path": "/posts/archived/term_mappings.csv",
+    "size": 1919
+  },
+  {
+    "path": "/posts/archived/topic_analysis.csv",
+    "size": 1310
+  },
+  {
+    "path": "/posts/archived/training-regimes/imgs/gauge_freedom.png",
+    "size": 523934
+  },
+  {
+    "path": "/posts/archived/training-regimes/imgs/passthrough_layer_contribution.png",
+    "size": 96440
+  },
+  {
+    "path": "/posts/archived/training-regimes/imgs/richness_scale.png",
+    "size": 376062
+  },
+  {
+    "path": "/posts/archived/training-regimes/imgs/roadmap_diagram.png",
+    "size": 605681
+  },
+  {
+    "path": "/posts/archived/training-regimes/imgs/table_1.png",
+    "size": 68363
+  },
+  {
+    "path": "/posts/archived/training-regimes/index.html",
+    "size": 23193
+  },
+  {
+    "path": "/posts/archived/visualizations.js",
+    "size": 989
+  },
+  {
+    "path": "/posts/archived/word_frequencies.csv",
+    "size": 785
+  },
+  {
+    "path": "/posts/auction-audits/index.html",
+    "size": 133249
+  },
+  {
+    "path": "/posts/cat-theor-ml/index.html",
+    "size": 138349
+  },
+  {
+    "path": "/posts/citations.js",
+    "size": 5049
+  },
+  {
+    "path": "/posts/collapsible-proofs.js",
+    "size": 456
+  },
+  {
+    "path": "/posts/compile.py",
+    "size": 90853
+  },
+  {
+    "path": "/posts/cookie-magic/index.html",
+    "size": 4417
+  },
+  {
+    "path": "/posts/cookie-magic/insomnia.JPEG",
+    "size": 283313
+  },
+  {
+    "path": "/posts/cookie-magic/screen.jpeg",
+    "size": 1673275
+  },
+  {
+    "path": "/posts/eigenlearning/index.html",
+    "size": 229150
+  },
+  {
+    "path": "/posts/everything-is-krr/index.html",
+    "size": 188844
+  },
+  {
+    "path": "/posts/fisher-tr-dyn/index.html",
+    "size": 365820
+  },
+  {
+    "path": "/posts/footnote-sidebar.js",
+    "size": 13607
+  },
+  {
+    "path": "/posts/hopfield-networks/10.png",
+    "size": 113510
+  },
+  {
+    "path": "/posts/hopfield-networks/20.png",
+    "size": 156776
+  },
+  {
+    "path": "/posts/hopfield-networks/30.png",
+    "size": 185821
+  },
+  {
+    "path": "/posts/hopfield-networks/40.png",
+    "size": 199366
+  },
+  {
+    "path": "/posts/hopfield-networks/hopfield_net.py",
+    "size": 3176
+  },
+  {
+    "path": "/posts/hopfield-networks/index.html",
+    "size": 47429
+  },
+  {
+    "path": "/posts/hopfield-networks/ising.png",
+    "size": 6495
+  },
+  {
+    "path": "/posts/ice/index.html",
+    "size": 212019
+  },
+  {
+    "path": "/posts/ice/six_types.svg",
+    "size": 16390
+  },
+  {
+    "path": "/posts/index.html",
+    "size": 17836
+  },
+  {
+    "path": "/posts/markov-heat/heat_diffusion.gif",
+    "size": 18274755
+  },
+  {
+    "path": "/posts/markov-heat/heat_diffusion.py",
+    "size": 5570
+  },
+  {
+    "path": "/posts/markov-heat/index.html",
+    "size": 183490
+  },
+  {
+    "path": "/posts/mdtx-reference.mdtx",
+    "size": 16615
+  },
+  {
+    "path": "/posts/ngki/index.html",
+    "size": 228773
+  },
+  {
+    "path": "/posts/ngki/phase_diagram.png",
+    "size": 943972
+  },
+  {
+    "path": "/posts/ngki/scaling_law.png",
+    "size": 167568
+  },
+  {
+    "path": "/posts/not-24/index.html",
+    "size": 1329402
+  },
+  {
+    "path": "/posts/ntk/index.html",
+    "size": 184059
+  },
+  {
+    "path": "/posts/ntk/ntk_evolution.png",
+    "size": 105066
+  },
+  {
+    "path": "/posts/ntk/ntk_visualization.py",
+    "size": 4140
+  },
+  {
+    "path": "/posts/ntk/requirements.txt",
+    "size": 59
+  },
+  {
+    "path": "/posts/ntk/word_frequencies.csv",
+    "size": 15
+  },
+  {
+    "path": "/posts/oig/index.html",
+    "size": 1667
+  },
+  {
+    "path": "/posts/ot-mup/index.html",
+    "size": 403096
+  },
+  {
+    "path": "/posts/package-lock.json",
+    "size": 1107
+  },
+  {
+    "path": "/posts/package.json",
+    "size": 126
+  },
+  {
+    "path": "/posts/posts.css",
+    "size": 27784
+  },
+  {
+    "path": "/posts/render_math.js",
+    "size": 847
+  },
+  {
+    "path": "/posts/rkhs/index.html",
+    "size": 259773
+  },
+  {
+    "path": "/posts/room-auctions/index.html",
+    "size": 92986
+  },
+  {
+    "path": "/posts/sigma-algebras/index.html",
+    "size": 29015
+  },
+  {
+    "path": "/posts/spn5/index.html",
+    "size": 1803
+  },
+  {
+    "path": "/posts/src/alg-autoencoder.mdtx",
+    "size": 7085
+  },
+  {
+    "path": "/posts/src/auction-audits.mdtx",
+    "size": 5610
+  },
+  {
+    "path": "/posts/src/cat-theor-ml.mdtx",
+    "size": 12711
+  },
+  {
+    "path": "/posts/src/cookie-magic.mdtx",
+    "size": 2721
+  },
+  {
+    "path": "/posts/src/eigenlearning.mdtx",
+    "size": 9201
+  },
+  {
+    "path": "/posts/src/everything-is-krr.mdtx",
+    "size": 9563
+  },
+  {
+    "path": "/posts/src/fisher-tr-dyn.mdtx",
+    "size": 28351
+  },
+  {
+    "path": "/posts/src/hopfield-networks.mdtx",
+    "size": 6741
+  },
+  {
+    "path": "/posts/src/ice.mdtx",
+    "size": 13966
+  },
+  {
+    "path": "/posts/src/markov-heat.mdtx",
+    "size": 8689
+  },
+  {
+    "path": "/posts/src/ngki.mdtx",
+    "size": 13060
+  },
+  {
+    "path": "/posts/src/not-24.mdtx",
+    "size": 42668
+  },
+  {
+    "path": "/posts/src/ntk.mdtx",
+    "size": 10121
+  },
+  {
+    "path": "/posts/src/oig.mdtx",
+    "size": 152
+  },
+  {
+    "path": "/posts/src/ot-mup.mdtx",
+    "size": 16739
+  },
+  {
+    "path": "/posts/src/rkhs.mdtx",
+    "size": 11706
+  },
+  {
+    "path": "/posts/src/room-auctions.mdtx",
+    "size": 12604
+  },
+  {
+    "path": "/posts/src/sigma-algebras.mdtx",
+    "size": 10919
+  },
+  {
+    "path": "/posts/src/spn5.mdtx",
+    "size": 303
+  },
+  {
+    "path": "/posts/toc-generator.js",
+    "size": 10480
+  },
+  {
+    "path": "/projects/260_Project.pdf",
+    "size": 2473567
+  },
+  {
+    "path": "/projects/281A_Poster.pdf",
+    "size": 1407182
+  },
+  {
+    "path": "/projects/281A_Project.pdf",
+    "size": 1402517
+  },
+  {
+    "path": "/projects/294_Project.pdf",
+    "size": 282548
+  },
+  {
+    "path": "/projects/index.html",
+    "size": 2867
+  },
+  {
+    "path": "/research/archive/rocs.png",
+    "size": 50036
+  },
+  {
+    "path": "/research/archive/uci_abstract.pdf",
+    "size": 467559
+  },
+  {
+    "path": "/research/archive/z_masses.png",
+    "size": 18775
+  },
+  {
+    "path": "/research/index.html",
+    "size": 11737
+  },
+  {
+    "path": "/research/tldr/hyperbolic/index.html",
+    "size": 1902
+  },
+  {
+    "path": "/research/tldr/index.html",
+    "size": 3379
+  },
+  {
+    "path": "/research/tldr/mot/index.html",
+    "size": 133645
+  },
+  {
+    "path": "/research/tldr/rb-dsm/hero_diagram.png",
+    "size": 40330
+  },
+  {
+    "path": "/research/tldr/rb-dsm/index.html",
+    "size": 251653
+  },
+  {
+    "path": "/research/tldr/rb-dsm/langevin_concentration.png",
+    "size": 160873
+  },
+  {
+    "path": "/research/tldr/rb-dsm/variance_collapse.png",
+    "size": 107313
+  },
+  {
+    "path": "/research/tldr/saddle-escape/index.html",
+    "size": 200183
+  },
+  {
+    "path": "/research/tldr/saddle-escape/off_manifold.png",
+    "size": 66113
+  },
+  {
+    "path": "/research/tldr/saddle-escape/saddle-to-saddle.png",
+    "size": 262314
+  },
+  {
+    "path": "/research/tldr/saddle-escape/scalar_red_mani_1.png",
+    "size": 43972
+  },
+  {
+    "path": "/research/tldr/saddle-escape/scalar_red_mani_2.png",
+    "size": 66582
+  },
+  {
+    "path": "/research/tldr/saddle-escape/universality_after.png",
+    "size": 53636
+  },
+  {
+    "path": "/research/tldr/saddle-escape/universality_before.png",
+    "size": 78988
+  },
+  {
+    "path": "/research/tldr/src/hyperbolic.mdtx",
+    "size": 298
+  },
+  {
+    "path": "/research/tldr/src/mot.mdtx",
+    "size": 11161
+  },
+  {
+    "path": "/research/tldr/src/rb-dsm.mdtx",
+    "size": 17816
+  },
+  {
+    "path": "/research/tldr/src/saddle-escape.mdtx",
+    "size": 17593
+  },
+  {
+    "path": "/scripts/build_ls.py",
+    "size": 2195
+  },
+  {
+    "path": "/style.css",
+    "size": 13470
+  },
+  {
+    "path": "/theme.js",
+    "size": 3874
+  }
+]

@@ -1,0 +1,256 @@
+:root {
+    --ls-line: #dedede;
+    --ls-muted: #888;
+    --ls-faint: #aaa;
+}
+
+:root[data-theme="dark"] {
+    --ls-line: #343437;
+    --ls-muted: #99999e;
+    --ls-faint: #6f6f74;
+}
+
+.ls-page {
+    max-width: 900px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9rem;
+}
+
+.ls-page main {
+    margin-top: 1rem;
+}
+
+.ls-page h1 {
+    margin: 0 0 1.5rem;
+    font: inherit;
+    font-weight: 600;
+}
+
+.ls-page h1 a {
+    text-decoration: none;
+}
+
+.ls-browser {
+    border-top: 1px solid var(--ls-line);
+}
+
+.ls-toolbar {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 2.7rem;
+    border-bottom: 1px solid var(--ls-line);
+    font-size: 0.78rem;
+}
+
+.ls-search {
+    display: flex;
+    flex: 1;
+    gap: 0.45rem;
+    align-items: center;
+    color: var(--ls-faint);
+}
+
+.ls-search input {
+    width: min(17rem, 100%);
+    padding: 0.5rem 0;
+    border: 0;
+    outline: 0;
+    color: var(--primary-color);
+    background: transparent;
+    font: inherit;
+}
+
+.ls-search input::placeholder {
+    color: var(--ls-faint);
+}
+
+.ls-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--ls-faint);
+}
+
+.ls-actions button {
+    padding: 0.55rem 0;
+    border: 0;
+    color: var(--ls-muted);
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.ls-actions button:hover,
+.ls-actions button:focus-visible {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.ls-status {
+    margin: 0;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--ls-line);
+    color: var(--ls-muted);
+    font-size: 0.72rem;
+}
+
+.ls-tree {
+    padding: 0.4rem 0;
+    line-height: 1.4;
+}
+
+.ls-tree ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ls-tree .tree-children {
+    position: relative;
+    margin-left: 1.05rem;
+}
+
+.ls-tree .tree-children::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0.7rem;
+    width: 1px;
+    background: var(--ls-line);
+    content: "";
+}
+
+.tree-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.4rem minmax(0, 1fr) auto;
+    gap: 0.2rem;
+    align-items: center;
+    min-height: 1.8rem;
+    padding: 0.12rem 0;
+}
+
+.tree-toggle,
+.tree-spacer {
+    position: relative;
+    z-index: 1;
+    display: inline-grid;
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0;
+    place-items: center;
+    align-self: center;
+    border: 0;
+    color: var(--ls-faint);
+    background: var(--background-color);
+    font: inherit;
+}
+
+.tree-toggle {
+    cursor: pointer;
+}
+
+.tree-toggle:hover,
+.tree-toggle:focus-visible {
+    color: var(--primary-color);
+}
+
+.tree-toggle span {
+    display: block;
+    width: 0.38rem;
+    height: 0.5rem;
+    background: currentColor;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    transform-origin: center;
+    transform: rotate(0deg);
+}
+
+.tree-toggle[aria-expanded="true"] span {
+    transform: rotate(90deg);
+}
+
+.tree-name {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--primary-color);
+    line-height: 1.4;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+a.tree-name:hover,
+a.tree-name:focus-visible {
+    text-decoration: underline;
+}
+
+.tree-dir > .tree-row > .tree-name {
+    font-weight: 600;
+}
+
+.tree-meta {
+    padding-left: 1rem;
+    color: var(--ls-faint);
+    font-size: 0.68rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.tree-children[hidden] {
+    display: none;
+}
+
+.ls-empty,
+.ls-error {
+    margin: 0;
+    padding: 2rem 0;
+    color: var(--ls-muted);
+    font-size: 0.8rem;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 560px) {
+    .ls-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.2rem 0;
+    }
+
+    .ls-search input {
+        width: 100%;
+    }
+
+    .ls-actions {
+        justify-content: flex-end;
+    }
+
+    .tree-row {
+        grid-template-columns: 1.4rem minmax(0, 1fr);
+    }
+
+    .tree-meta {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tree-toggle span {
+        transition: none;
+    }
+}

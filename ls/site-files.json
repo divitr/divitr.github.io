@@ -1,0 +1,16 @@
+---
+layout: null
+---
+[
+{% assign has_file = false %}
+{% for file in site.static_files %}
+{% if has_file %},{% endif %}
+{"path": {{ file.path | jsonify }}, "size": {{ file.size | default: 0 | jsonify }}}
+{% assign has_file = true %}
+{% endfor %}
+{% for page in site.pages %}
+{% if has_file %},{% endif %}
+{"path": {{ page.path | prepend: "/" | jsonify }}, "size": 0}
+{% assign has_file = true %}
+{% endfor %}
+]

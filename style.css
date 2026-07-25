@@ -491,7 +491,17 @@ a:hover {
 
 .paper-item {
     padding: 1.25rem 0;
+    border-bottom: 0;
+}
+
+.paper-item:last-child {
     border-bottom: 1px solid #eee;
+}
+
+.projects-page .papers-section,
+.projects-page .paper-item,
+.projects-page .paper-item:last-child {
+    border: 0;
 }
 
 .paper-content {

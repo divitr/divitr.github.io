@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>ls</title>
+    <script src="/theme.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/ls/ls.css">
+    <script src="/ls/ls.js" defer></script>
+</head>
+
+<body class="ls-page">
+    <main>
+        <h1 id="ls-title"><a href="/" aria-label="Home">~</a> nav of the whole site including unreachable directories and files (for my reference)</h1>
+
+        <section class="ls-browser" aria-label="Site file browser">
+            <div class="ls-toolbar">
+                <label class="ls-search">
+                    <span class="visually-hidden">Filter files and folders</span>
+                    <span aria-hidden="true">/</span>
+                    <input id="ls-filter" type="search" placeholder="filter paths" autocomplete="off" spellcheck="false">
+                </label>
+                <div class="ls-actions" aria-label="Tree controls">
+                    <button id="ls-expand" type="button">expand all</button>
+                    <span aria-hidden="true">·</span>
+                    <button id="ls-collapse" type="button">collapse all</button>
+                </div>
+            </div>
+
+            <p id="ls-status" class="ls-status" role="status" aria-live="polite">compiling tree…</p>
+            <div id="ls-tree" class="ls-tree" aria-label="divitr.github.io files"></div>
+            <p id="ls-empty" class="ls-empty" hidden>No matching paths.</p>
+        </section>
+    </main>
+</body>
+
+</html>
