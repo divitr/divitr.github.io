@@ -1,7 +1,7 @@
 req: math, stats;
 title: Rao-Blackwellized Score Matching on Manifolds;
 date: May 04, 2026;
-desc: Figuring out what denoising score matching actually learns when data is drawn from a low-dimensional structure in a high-dimensional space;
+desc: Figuring out what denoising score matching actually learns when high-dimensional data has structure;
 emoji: 🔇;
 paper_link: https://arxiv.org/abs/2605.25567;
 
@@ -12,8 +12,8 @@ Someone also made an Instagram reel of one of those AI voiceovers with Minecraft
 main-results:
 - We show that the tangent DSM target has a fundamental singularity on manifolds: the normal-fiber noise variance diverges as {d/\sigma^2} as {\sigma \to 0^+}.
 - We show that conditioning on the nearest-point projection {\pi(X)} canonically removes this singularity, giving the unique {L^2}-optimal Rao-Blackwellized predictor of the tangent denoising target.
-- We compute the small-noise expansion of this canonical target and show it equals {\nabla_M \log q} plus an explicit {\sigma^2} correction decomposing into an intrinsic Tweedie term and an extrinsic curvature term involving the Weingarten and Ricci operators.
-- On {S^d} the correction reduces to {(1-d/2)\nabla_M \log q}; on {S^2} the extrinsic term cancels exactly, though the Tweedie correction remains.
+- We compute the small-noise expansion of this canonical target and show it equals {\nabla_M \log q} plus an explicit {\sigma^2} correction decomposing into an intrinsic Tweedie term, an extrinsic curvature operator (Weingarten and Ricci) acting on the score, and an additive curvature-inhomogeneity drift built from the spatial variation of the second fundamental form.
+- On {S^d} the inhomogeneity drift vanishes (the round embedding is parallel) and the curvature operator reduces to {(1-d/2)\nabla_M \log q}; on {S^2} that term cancels too, leaving only the Tweedie correction.
 end main-results;
 
 ## Background
@@ -48,7 +48,7 @@ Differential geometry is concerned with differentiable manifolds: geometric stru
 
 At each {z \in M}, the ambient space splits as {\mathbb{R}^D = T_z M \oplus N_z M}, with orthogonal projections {P_{T_z M}} and {P_{N_z M}}. 
 
-**Second fundamental form, Weingarten operator, and mean curvature.** Consider traveling along {M} in some tangent direction {u}. The velocity vector can't stay constant in {\mathbb{R}^D}; the manifold is curving, so {u} must bend. The part of that bending that points normal to {M} is the second fundamental form: {II_z(u, v) \in N_z M}, a symmetric bilinear map on {T_z M \times T_z M}. It's a super clean object for measuring extrinsic curvature since it directly measures how tangent directions get pushed off the manifold. The Weingarten operator is the exact same information, just in the form of a linear map. For each normal direction {\nu \in N_z M}, define {W_\nu : T_z M \to T_z M} by {\langle W_\nu u, v \rangle = \langle II_z(u, v), \nu \rangle}. {W_\nu} acts on tangent vectors, so we can apply it directly to things like {\nabla_M \log q(z)} -- which is what shows up in the result. The mean curvature vector is the trace of {II}: {H(z) \doteq \sum_i II_z(e_i, e_i) \in N_z M} for any orthonormal basis {(e_i)} of {T_z M} (the sum is basis-independent). This points in the direction {M} is curving "on average."
+**Second fundamental form, Weingarten operator, and mean curvature.** Consider traveling along {M} in some tangent direction {u}. The velocity vector can't stay constant in {\mathbb{R}^D}; the manifold is curving, so {u} must bend. The part of that bending that points normal to {M} is the second fundamental form: {II_z(u, v) \in N_z M}, a symmetric bilinear map on {T_z M \times T_z M}. It's a super clean object for measuring extrinsic curvature since it directly measures how tangent directions get pushed off the manifold. The Weingarten operator is the exact same information, just in the form of a linear map. For each normal direction {\nu \in N_z M}, define {W_\nu : T_z M \to T_z M} by {\langle W_\nu u, v \rangle = \langle II_z(u, v), \nu \rangle}. {W_\nu} acts on tangent vectors, so we can apply it directly to things like {\nabla_M \log q(z)} -- which is what shows up in the result. The mean curvature vector is the trace of {II}: {H(z) \doteq \sum_i II_z(e_i, e_i) \in N_z M} for any orthonormal basis {(e_i)} of {T_z M} (the sum is basis-independent). This points in the direction {M} is curving "on average." The second fundamental form can also change from point to point; its covariant derivative {\nabla^\perp II} measures this variation, and an embedding with {\nabla^\perp II \equiv 0} is called *parallel* (spheres are the canonical example -- they curve the same way everywhere).
 
 **Ricci endomorphism.** Now, let us turn to intrinsic curvature; ignoring the embedding entirely. If we live on {M}, we can still measure curvature directly by noticing things like how geodesics[^geodesics] spread apart. The Ricci endomorphism {\mathrm{Ric}_z^\sharp : T_z M \to T_z M} packages this intrinsic curvature into a linear operator on the tangent space.[^ricci_endomorphism]
 
@@ -95,19 +95,20 @@ The {d/\sigma^2} floor isn't just a property of our particular estimator -- it's
 
 Now that we have a target with bounded variance, the natural next question is what it actually equals. Expanding {r_\sigma(z)} as a power series in {\sigma}:
 {
-    r_\sigma(z) = \nabla_M \log q(z) + \sigma^2 \bigl[b_q(z) + g_M^{\text{ext}}(z)\bigr] + o(\sigma^2),
+    r_\sigma(z) = \nabla_M \log q(z) + \sigma^2 \bigl[b_q(z) + g_M^{\text{ext}}(z) + g_M^{\text{inh}}(z)\bigr] + O(\sigma^4),
 }
 uniformly on {M}.
 
-The leading term is the intrinsic Riemannian score {\nabla_M \log q} -- exactly what fully-intrinsic methods regress against. So at leading order, ambient DSM (after the Rao-Blackwellization fix) recovers the right thing. The {\sigma^2} correction is more interesting. It splits into two distinct pieces:
+The leading term is the intrinsic Riemannian score {\nabla_M \log q} -- exactly what fully-intrinsic methods regress against. So at leading order, ambient DSM (after the Rao-Blackwellization fix) recovers the right thing. The {\sigma^2} correction is more interesting. It splits into three distinct pieces:
 
 list[o]:
 
  - The intrinsic Tweedie bias {b_q(z) = \frac{1}{2} \nabla_M\left(\Delta_M \log q + |\nabla_M \log q|^2\right)}. This is the manifold analog of the flat-Tweedie bias: it comes from Gaussian smoothing of the density and would appear even on a flat support. It depends on {q} but not on the embedding, and it's the same correction you'd get from intrinsic methods.
  - The extrinsic curvature term {g_M^{\text{ext}}(z) = \bigl(\tfrac{1}{2} W_{H(z)} - \mathrm{Ric}_z^\sharp\bigr)\nabla_M \log q(z)}. This piece matters for non-flat manifolds. It depends on the embedding of {M} in {\mathbb{R}^D} via the Weingarten and Ricci operators defined before. It's invisible to any method that corrupts {Z} by intrinsic Riemannian noise -- intrinsic noise never leaves the manifold, and thus never feels the embedding.
+ - The curvature-inhomogeneity drift {g_M^{\text{inh}}(z) = \tfrac{1}{2}\mathcal{C}_M(z)}, with {\mathcal{C}_M(z) \doteq \nabla_M \|II\|^2 - \tfrac{1}{2}\nabla_M\|H\|^2 + \sum_i W_{\nabla^\perp_{e_i} H}\, e_i}. Unlike the other two, this term is *additive* -- it doesn't act on the score at all. It's linear in {\nabla^\perp II}, the spatial variation of the second fundamental form, so it vanishes identically wherever the embedding is parallel (e.g. every {S^d}).
 end list;
 
-A nice property of {g_M^{\text{ext}}} is that the operator {\tfrac{1}{2} W_H - \mathrm{Ric}^\sharp} is purely geometric -- it depends only on how {M} sits in {\mathbb{R}^D}, not on {q}. So if we've trained a score model {\hat s(z) \approx \nabla_M \log q(z)}, we can apply this operator to our model's output and subtract {\sigma^2} times the result. The correction is fully post-hoc; you don't need to re-train, and you don't need to know {q}.[^retrain]
+A nice property of both geometric terms is that they are purely geometric -- the operator {\tfrac{1}{2} W_H - \mathrm{Ric}^\sharp} and the drift {\mathcal{C}_M} depend only on how {M} sits in {\mathbb{R}^D}, not on {q}. So if we've trained a score model {\hat s(z) \approx \nabla_M \log q(z)}, we can subtract {\sigma^2\bigl[(\tfrac{1}{2} W_H - \mathrm{Ric}^\sharp)\hat s(z) + \tfrac{1}{2}\mathcal{C}_M(z)\bigr]} from our estimate -- an operator applied to the model's output plus an additive drift. The correction is fully post-hoc; you don't need to re-train, and you don't need to know {q}.[^retrain]
 
 ## {S^2} Cancellation
 
@@ -124,7 +125,7 @@ list[u]:
  - {d \geq 4}: increasingly negative.
 end list;
 
-On {S^2}, the extrinsic curvature correction vanishes identically, and ambient DSM recovers the intrinsic score up to only the flat-Tweedie bias {b_q}. 
+On {S^2}, the inhomogeneity drift is already zero (the round sphere is parallel, so {g_{S^d}^{\text{inh}} \equiv 0} for all {d}), and the extrinsic curvature operator also cancels since {\alpha_2 = 0}. Both geometric terms vanish, and ambient DSM recovers the intrinsic score up to only the flat-Tweedie bias {b_q}.
 
 It's worth emphasizing that this is a coincidence specific to the round sphere, not a general 2-manifold property. The torus {T^2 \subset \mathbb{R}^3} is intrinsically flat ({\mathrm{Ric}^\sharp = 0}) but extrinsically curved, and the corresponding {g_{T^2}^{\text{ext}}} has coefficient {+1/2} -- a measurable embedding-only bias. Higher-dimensional spheres also show the bias clearly: on {S^6} and {S^{10}}, raw ambient DSM under-concentrates the equilibrium distribution by about 17% and 33% respectively, both removed by the post-hoc correction.
 
