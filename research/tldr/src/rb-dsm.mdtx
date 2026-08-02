@@ -7,14 +7,14 @@ paper_link: https://arxiv.org/abs/2605.25567;
 
 A lot of modern machine learning assumes the *[manifold hypothesis](https://en.wikipedia.org/wiki/Manifold_hypothesis)*: the assumption that the data we care about has some structure to it (formally, this means that it lies on or near some manifold). Under the manifold hypothesis, score matching (a widely used method for learning a data distribution) is fundamentally ill-posed. As a result, practitioners use a variant known as denoising score matching, which resolves the ill-posedness problem, but doesn't necessarily guarantee that we learn the right data distribution. In this work, we examine what exactly is learned by denoising score matching.
 
-Someone also made an Instagram reel of one of those AI voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
-
 main-results:
 - We show that the tangent DSM target has a fundamental singularity on manifolds: the normal-fiber noise variance diverges as {d/\sigma^2} as {\sigma \to 0^+}.
 - We show that conditioning on the nearest-point projection {\pi(X)} canonically removes this singularity, giving the unique {L^2}-optimal Rao-Blackwellized predictor of the tangent denoising target.
 - We compute the small-noise expansion of this canonical target and show it equals {\nabla_M \log q} plus an explicit {\sigma^2} correction decomposing into an intrinsic Tweedie term, an extrinsic curvature operator (Weingarten and Ricci) acting on the score, and an additive curvature-inhomogeneity drift built from the spatial variation of the second fundamental form.
 - On {S^d} the inhomogeneity drift vanishes (the round embedding is parallel) and the curvature operator reduces to {(1-d/2)\nabla_M \log q}; on {S^2} that term cancels too, leaving only the Tweedie correction.
 end main-results;
+
+Someone also made an Instagram reel of one of those AI voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
 
 ## Background
 

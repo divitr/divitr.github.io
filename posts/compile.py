@@ -2007,7 +2007,7 @@ class MDTXCompiler:
             header_html = """    <header>
         <div class="monogram"><a href="/">DR</a></div>
         <nav>
-            <a href="/research/tldr">TL;DRs</a>
+            <a href="/research/tldr">TLDRs</a>
         </nav>
     </header>"""
         else:

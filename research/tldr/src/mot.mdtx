@@ -1,18 +1,18 @@
 req: math, stats;
 title: Majority-of-Three is Optimal;
 date: June 1, 2026;
-desc: Proving the Majority-of-Three Conjecture;
+desc: A proof of the simplest optimal learner;
 emoji: 3️⃣;
 paper_link: https://arxiv.org/abs/2606.13614;
 
 For quite a while, a major goal in statistical learning theory was determining the optimal error rate for a PAC[^pac] learner. This was solved in 2016 by Hanneke ref@Steve2016TheOptimalSampleComplexityofPACLearning, who provided the first algorithm to reach the optimal error rate. However, his algorithm was rather complicated and the analysis quite involved, so a new line of work emerged with the goal of determining the simplest optimal PAC learner. The [majority-of-three learner](https://arxiv.org/abs/2403.08831) was proposed in 2024 ref@AAHLZ24 and proven to be optimal in expectation. However, it was not proven to be optimal in high probability[^high-prob]. In particular, there was an extra {\log\log} factor in the original paper that was conjectured to be an artifact of their analysis. In this short note, we provide a better analysis and prove that the algorithm is in fact an optimal PAC learner.
 
-**[NOTE]** The argument given in the note is actually a simplified version discovered (partially) by an LLM! The original argument (which will also be discussed here) was fully human-generated, upon reviewing it, we experimented with LLMs and found that given hints they were able to streamline the proof. (Interestingly, LLMs were not able to complete the proof of the conjecture on their own, they required the original proof as scaffolding, but were helpful in compressing the proof to the minimal necessary steps.) This is discussed a bit more in Appendix A of the note. My original proof is outlined in Appendix B, or the full version is available [here](https://divitr.github.io/assets/mot.pdf).
-
 main-results:
  - We prove that the Majority-of-Three algorithm achieves the optimal error rate {P(\mathcal{E}_{\text{Maj}}) \le \frac{C(d + \log(1/\delta))}{n}} with probability {1 - \delta}.
  - That's kinda it.
 end main-results;
+
+**[NOTE]** The argument given in the note is actually a simplified version discovered (partially) by an LLM! The original argument (which will also be discussed here) was fully human-generated, upon reviewing it, we experimented with LLMs and found that given hints they were able to streamline the proof. (Interestingly, LLMs were not able to complete the proof of the conjecture on their own, they required the original proof as scaffolding, but were helpful in compressing the proof to the minimal necessary steps.) This is discussed a bit more in Appendix A of the note. My original proof is outlined in Appendix B, or the full version is available [here](https://divitr.github.io/assets/mot.pdf).
 
 ## Background and Majority-of-Three Algorithm
 
