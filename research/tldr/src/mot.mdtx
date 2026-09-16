@@ -1,7 +1,7 @@
 req: math, stats;
 title: Majority-of-Three is Optimal;
 date: June 1, 2026;
-desc: A proof of the simplest optimal learner;
+desc: How simple can an optimal learner be?;
 emoji: 3️⃣;
 paper_link: https://arxiv.org/abs/2606.13614;
 

@@ -1,7 +1,7 @@
 req: math, stats;
 title: A Theory of Saddle Escape in Deep Nonlinear Networks;
 date: May 04, 2026;
-desc: Analyzing training dynamics in small-initialization deep nonlinear neural networks;
+desc: What happens when neural networks are initialized with small weights?;
 emoji: 🐎;
 paper_link: https://arxiv.org/abs/2605.01288;
 visibility: visible;

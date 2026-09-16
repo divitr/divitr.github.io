@@ -103,7 +103,6 @@
     <main>
         <h1>Notes</h1>
         <p>An incomplete collection of crib sheets and course notes for some courses at Berkeley.</p>
-        <p>A full course schedule may be found <a href="#courses">here</a>.</p>
         <input type="text" id="notes-filter" class="notes-filter" placeholder="search" autocomplete="off" spellcheck="false">
 
         <p class="notes-no-results" id="notes-no-results">no results.</p>
@@ -174,10 +173,22 @@
             </div>
         </section>
 
+        <p>A full course schedule may be found <a href="#courses">here</a>.</p>
+
         <section id="courses" class="notes-section" style="display: none;">
             <h2 style="margin-top: 2.5rem; margin-bottom: 1.5rem; font-size: 1.5rem;">Courses by Semester</h2>
             <p>(Non-technical courses omitted; 2XY course numbers are graduate-level.)</p>
             <ul class="misc-list" style="margin-left: 0;">
+                <li class="expandable-item">
+                    <span class="expand-trigger">Fa26</span>
+                    <ul class="nested-list" style="display: none;">
+                        <li class="nested-header">CS 271 &mdash; Randomness and Computation</li>
+                        <li class="nested-header">STAT 154 &mdash; Statistical Prediction and Machine Learning</li>
+                        <li class="nested-header">MATH 104 &mdash; Real Analysis</li>
+                        <li class="nested-header">CS 168 &mdash; Internet Architecture</li>
+                        <li class="nested-header">PHYSICS 111B &mdash; Advanced Experimentation Laboratory</li>
+                    </ul>
+                </li>
                 <li class="expandable-item">
                     <span class="expand-trigger">Sp26</span>
                     <ul class="nested-list" style="display: none;">

@@ -1,149 +1,156 @@
 req: math, stats;
 title: Rao-Blackwellized Score Matching on Manifolds;
 date: May 04, 2026;
-desc: Figuring out what denoising score matching actually learns when high-dimensional data has structure;
+desc: What do generative modeling techniques actually recover, and can we do it better?;
 emoji: 🔇;
 paper_link: https://arxiv.org/abs/2605.25567;
 
-A lot of modern machine learning assumes the *[manifold hypothesis](https://en.wikipedia.org/wiki/Manifold_hypothesis)*: the assumption that the data we care about has some structure to it (formally, this means that it lies on or near some manifold). Under the manifold hypothesis, score matching (a widely used method for learning a data distribution) is fundamentally ill-posed. As a result, practitioners use a variant known as denoising score matching, which resolves the ill-posedness problem, but doesn't necessarily guarantee that we learn the right data distribution. In this work, we examine what exactly is learned by denoising score matching.
+**[NOTE]** Apparently some account also made one of those AI generated reels of voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
 
-main-results:
-- We show that the tangent DSM target has a fundamental singularity on manifolds: the normal-fiber noise variance diverges as {d/\sigma^2} as {\sigma \to 0^+}.
-- We show that conditioning on the nearest-point projection {\pi(X)} canonically removes this singularity, giving the unique {L^2}-optimal Rao-Blackwellized predictor of the tangent denoising target.
-- We compute the small-noise expansion of this canonical target and show it equals {\nabla_M \log q} plus an explicit {\sigma^2} correction decomposing into an intrinsic Tweedie term, an extrinsic curvature operator (Weingarten and Ricci) acting on the score, and an additive curvature-inhomogeneity drift built from the spatial variation of the second fundamental form.
-- On {S^d} the inhomogeneity drift vanishes (the round embedding is parallel) and the curvature operator reduces to {(1-d/2)\nabla_M \log q}; on {S^2} that term cancels too, leaving only the Tweedie correction.
-end main-results;
+## Setup
 
-Someone also made an Instagram reel of one of those AI voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
-
-## Background
+Generally, the paradigm of generative modeling is as follows: given a dataset, can we find some way to generate new data that seems as if it was pulled from the original dataset? A common example of this is images; a generative modeling task here might be that one is given a set of 100 images of cats and after some "learning," is asked to generate a new image of a cat. More formally, what we usually want here is to approximate some kind of probability distribution given samples from that distribution, then generating new data is as simple as sampling from our distribution.
 
 ### Score Matching
 
-A lot of times, we want to learn a data distribution, but we can't because computing the partition function[^partition_fn] is intractable. So, instead of matching the distribution's values at every point in the domain, we instead match the gradient ref@hyvarinen2005estimation (this gets rid of our partition function problem because the partition function is independent of the coordinate {x}). This works fantastically for general data, but if we constrain our data to lie on some low dimensional structure, things fall apart rather quickly. Since the probability distribution is nonzero on the manifold, but zero right off the manifold, we have points at which the derivative does not exist and score matching is not well defined. To get around this, we add noise to the data so that it no longer lies exactly on the manifold.[^dsm_intuition_measures]
+At first glance, this is quite a difficult task. In particular, one of the main obstacles here is normalization. Recall that a probability distribution must always have total probability mass 1 over its entire domain (Kolmogorov's unit measure axiom). But, when we sample, we are only given relative weightings between regions of the domain (e.g. I might notice that a calico cat is roughly twice as likely as a black cat). This is easy to get around conceptually, we can just renormalize (in our cat example, if calico and black are the only allowed cat colors, it follows immediately that the probability of a given cat being calico is 2/3 and black 1/3), but this is often difficult to do in an efficient manner. This obviously presents a pretty big problem for our generative modeling task: if we can't normalize the distribution efficiently, we can't learn/sample from it efficiently!
 
-**Denoising score matching.** The practical way to do this is denoising score matching (DSM): we take a clean sample {Z \sim q} (here {q} is our data distribution defined on the manifold), corrupt it with Gaussian noise to get {X \doteq Z + \sigma\xi} for {\xi \sim \mathcal{N}(0, I_D)}, and train a network to regress against the denoising direction {(Z-X)/\sigma^2}. By Tweedie's formula ref@Efron2011, minimizing this regression loss recovers the score of the noisy density {q_\sigma = q * \phi_\sigma}, and as {\sigma \to 0^+}, this converges to the score of {q} itself. When {q} is a nice density on {\mathbb R^D}, we are done: DSM gives you the score up to a {\sigma^2} smoothing bias.
+So, to get around this, ref@hyvarinen2005estimation proposed the following paradigm: instead of approximating the distribution, just approximate its gradient (or its "score"). So now, instead of us learning some probability law {\tilde{\mathcal{P}}} so that {\tilde{\mathcal{P}} \approx \mathcal{P}} (here {\mathcal{P}} is the true probability distribution) for every {x} in our domain, instead, we want {\nabla_x \tilde{\mathcal{P}} \approx \nabla_x \mathcal{P}} for every {x}, where of course {\nabla_x} is the gradient with respect to {x}. This method, called score matching, gets rid of our earlier problem: since normalization must sum over all {x}, it drops out in the derivative and isn't something we need to worry about.
 
-But under the manifold hypothesis the ambient score doesn't exist at all ({q} has no density w.r.t. the Lebesgue measure), so there is nothing to take the gradient of. DSM at {\sigma > 0} is still a well-defined regression problem, it's just not clear what exactly it's estimating. To start thinking about this, it's helpful to split the denoising direction at each noisy point {X} into pieces along and orthogonal to the manifold (denoted {M} from here on out) at the nearest projection {\pi(X) \in M}. The normal piece is just {(\pi(X) - X)/\sigma^2}, a deterministic function of {X} -- so it contains no information about where {Z} actually came from on {M}. All the signal lives in the tangent piece:
+### Manifolds
+
+Okay so now we've got a handle on the score matching part of the title, now let us turn our attention to manifolds. Manifolds are a really tricky subject and the formal definition of them is quite nasty[^mit_notes], but intuitively, they're just a type of space that looks flat if you zoom in enough. A really good example here is Earth; Earth is a sphere, but to us, it seems flat since we are local enough. So now why do we care about manifolds? Well, manifolds tend to be really useful for representing structure.[^manifold_structure_comment] And generally, the data we care about has some kind of structure to it (e.g. in our cat example, a form of structure is that every cat has whiskers). This structure imposes constraints on our data, and oftentimes, we can represent this as our data living on some manifold (in fact, a pretty well known theory in machine learning is that the data we learn is drawn from a manifold, the aptly named [manifold hypothesis](https://en.wikipedia.org/wiki/Manifold_hypothesis)). So in these structured settings, we know that our data is drawn from a manifold, and thus, our probability law is defined as 0 off manifold. A concrete example is your computer screen. Your computer screen has only 2 dimensions (height and width), but every pixel technically exists in 3 dimensions. Because the pixels all exist on your computer screen, in the local coordinate system of the computer screen, we need only 2 dimensions to describe its position (height and width), but in the coordinate system of the room, we need 3 (height, width, and length; here we have fixed some reference point). But now, if I ask you to draw the distribution of where the pixels are located in the room, it makes no sense to assign any probability to the chair; a pixel can't exist there.
+
+A careful reader will have noticed an issue here: if our data lives on a manifold, and we take the gradient with respect to ambient coordinates, there are points at which the score is infinite. Indeed, returning to our computer example, we see this at the edge of the screen: on the screen, there is a nonzero probability of finding an on pixel, but immediately off of the screen, the probability is zero. So how do we deal with that? The standard method is just by corrupting the data -- we just add some noise to the data so it lies slightly off the manifold, and then we no longer have this issue (intuitively, you can think of this as almost smoothing a peak). The problem is, now we're not learning the true law, we're learning a corrupted surrogate!
+
+Thus, the natural question is *What exactly is this method learning*?
+
+### Rao-Blackwell Theorem
+
+So far, we know that score matching is a way of approximating a distribution by matching its derivatives and that manifolds are some type of mathematical way of representing structured data. Now, let's take a brief detour into statistics to study the Rao-Blackwell Theorem.
+
+Consider the following setup: we have a (possibly unfair) coin that lands heads with probability {p}. Given that we observe {n} flips of the coin, we wish to estimate {p}. Any rule that takes in these {n} observations and outputs a prediction {\hat{p}} is an *estimator*. There's two main desirable properties that we want from an estimator: 
+
+list[u]:
+ - *Unbiasedness*, i.e. it should be correct on average;
+ - *Low Variance*, i.e. it shouldn't vary wildly from one dataset to the next.
+end list;
+
+Getting unbiasedness is quite easy, and there's a number of rules that allow us to get an unbiased estimator. The harder part here is finding an estimator with low variance. 
+
+To illustrate this point, let's consider a deliberately bad rule. Write {X_i = 1} if flip {i} came up heads and {X_i = 0} otherwise, and consider {\hat{p}_{\text{bad}} \doteq X_1}: look at the first flip, report 1 if heads and 0 if tails, and throw the other {n-1} flips away. This is an unbiased estimator since the first flip is heads with probability {p}. However, its variance is quite large: it only outputs 0 or 1 and its variance is {p(1-p)} regardless of {n}.
+
+On the other hand, the natural estimator here is to count the heads and report the fraction. Writing {T \doteq X_1 + \cdots + X_n} for the number of heads, the sensible rule is {\hat{p} = T/n}, which is also unbiased but has variance {p(1-p)/n}. The main point of Rao-Blackwell is that the sensible rule can be constructed by "cleaning up" the bad rule.
+
+A full record of flips, say {HTTHT}, contains two separable pieces of information: *how many* heads there were, and *in what order* they arrived. The count obviously says something about {p}. The order is totally irrelevant: if I tell you 2 of 5 flips were heads, all {\binom{5}{2} = 10} arrangements are equally likely, regardless of what {p} is. So the ordering is pure noise as far as {p} is concerned. A summary like {T} that contains all the relevant information so that the remaining information is randomness whose distribution doesn't depend on the quantity we are estimating is called a sufficient statistic.
+
+Our bad estimator is contaminated by the irrelevant part: it asks which flip came *first*, so it inherits variance from the ordering. The fix is to average that dependence away. Freeze the count at {T = t}, look at every arrangement of flips consistent with it, and average {\hat{p}_{\text{bad}}} over all of them. By symmetry, each of the {n} positions is equally likely to hold one of the {t} heads, so
 {
-    T_\sigma \doteq \frac{1}{\sigma^2} P_{T_{\pi(X)} M}(Z - X) \in T_{\pi(X)} M.
+    \mathbb{E}\bigl[X_1 \mid T = t\bigr] = \frac{t}{n}.
 }
+Averaging our bad rule over all the irrelevant information (the permutations) gives back our good estimator.
+
+That's the Rao-Blackwell Theorem. Given an unbiased estimator {\delta(X)} and a sufficient statistic {T(X)}, define
+{
+    \delta^{\mathrm{RB}}(X) \doteq \mathbb{E}\bigl[\delta(X) \mid T(X)\bigr],
+}
+the average of {\delta} over all datasets sharing the same summary. Then {\delta^{\mathrm{RB}}} is still unbiased, and {\operatorname{Var}(\delta^{\mathrm{RB}}) \leq \operatorname{Var}(\delta)}, with equality exactly when {\delta} was already a function of {T} alone.[^sufficiency_why]
+
+Intuitively, it just says to find the part of your data that is pure noise with respect to the thing you want, and integrate it out.
+
+## Rao-Blackwellization on Manifolds
+
+Equipped with an understanding of the main ideas, we can now start to answer the question we posed.
+
+The first step is to identify our analog of a sufficient statistic here. Recalling that our probability law is defined only on the manifold, we really only care about points on the manifold. So, a natural sufficient statistic type thing to condition on here is the nearest point projection: the map {\pi} that sends every noisy point back to whichever point on the manifold it's closest to.
 
 image:
 src: research/tldr/rb-dsm/hero_diagram.png;
-alt: Diagram of noisy observations in a normal fiber over z, with scattered tangent DSM targets averaged into the Rao-Blackwellized target;
 width: 80%;
-caption: Observations {X_i} in the normal fiber over {z} share {\pi(X)=z}; their raw tangent targets {T_{\sigma,i}} scatter within {T_zM} with variance {d/\sigma^2}, which Rao-Blackwellization averages into {r_\sigma(z)}.
+caption: Projecting points back onto the manifold.
 end image;
 
-This leaves a few questions open: *What is {T_\sigma} actually estimating? Does it converge to the intrinsic Riemannian score {\nabla_M \log q}? Does it even have a sensible variance as {\sigma \to 0^+}?*
-
-In order to answer these, we'll need to set up a bit of differential geometry. (The differential geometry stuff may require more of a math background, feel free to skip it: the gist of the paper is understandable without grinding through the geometry.)
-
-### Differential Geometry
-
-Differential geometry is concerned with differentiable manifolds: geometric structures that, when we zoom in enough, look like regular flat (Euclidean) space.[^do_carmo] For example, a plane embedded in a three-dimensional space is a manifold. A plane is a special type of manifold since it doesn't have any curvature: most manifolds have two notions of curvature.
-
-**Curvature.** Extrinsic curvature tells us how {M} bends inside the ambient {\mathbb{R}^D}. Intrinsic curvature is inherent to {M} and requires no knowledge of the embedding in ambient space. Both end up as linear maps on the tangent space, so we may compare them directly.
-
-At each {z \in M}, the ambient space splits as {\mathbb{R}^D = T_z M \oplus N_z M}, with orthogonal projections {P_{T_z M}} and {P_{N_z M}}. 
-
-**Second fundamental form, Weingarten operator, and mean curvature.** Consider traveling along {M} in some tangent direction {u}. The velocity vector can't stay constant in {\mathbb{R}^D}; the manifold is curving, so {u} must bend. The part of that bending that points normal to {M} is the second fundamental form: {II_z(u, v) \in N_z M}, a symmetric bilinear map on {T_z M \times T_z M}. It's a super clean object for measuring extrinsic curvature since it directly measures how tangent directions get pushed off the manifold. The Weingarten operator is the exact same information, just in the form of a linear map. For each normal direction {\nu \in N_z M}, define {W_\nu : T_z M \to T_z M} by {\langle W_\nu u, v \rangle = \langle II_z(u, v), \nu \rangle}. {W_\nu} acts on tangent vectors, so we can apply it directly to things like {\nabla_M \log q(z)} -- which is what shows up in the result. The mean curvature vector is the trace of {II}: {H(z) \doteq \sum_i II_z(e_i, e_i) \in N_z M} for any orthonormal basis {(e_i)} of {T_z M} (the sum is basis-independent). This points in the direction {M} is curving "on average." The second fundamental form can also change from point to point; its covariant derivative {\nabla^\perp II} measures this variation, and an embedding with {\nabla^\perp II \equiv 0} is called *parallel* (spheres are the canonical example -- they curve the same way everywhere).
-
-**Ricci endomorphism.** Now, let us turn to intrinsic curvature; ignoring the embedding entirely. If we live on {M}, we can still measure curvature directly by noticing things like how geodesics[^geodesics] spread apart. The Ricci endomorphism {\mathrm{Ric}_z^\sharp : T_z M \to T_z M} packages this intrinsic curvature into a linear operator on the tangent space.[^ricci_endomorphism]
-
-**Gauss equation.** Intrinsic and extrinsic curvature are actually linked: the metric on {M} is induced from the ambient inner product. The exact relationship is given by the Gauss equation {\mathrm{Ric}_z^\sharp = W_{H(z)} - \sum_\alpha W_{n_\alpha}^2},
-where {(n_\alpha)} is any orthonormal basis of {N_z M}. The takeaway is that intrinsic curvature is determined by the embedding: it's the mean-curvature Weingarten minus a separate "sum of squared Weingartens" contribution.
-
-## Rao-Blackwellization and the Nearest-Point Projection
-
-Having established our machinery, we may now return to the question we really care about: What is {T_\sigma} actually estimating, and can we control its variance?
-
-The classical statistics move here is *Rao-Blackwellization*. The [Rao-Blackwell Theorem](https://stat210a.berkeley.edu/fall-2025/reader/unbiased-estimation.html#the-rao-blackwell-theorem) tells us that conditioning an unbiased estimator on a sufficient statistic can only reduce its variance. Intuitively, we keep the expected value, but integrate out the part of the noise that doesn't carry any signal. The natural thing to condition on in our setting is the nearest-point projection {\pi(X) \in M}. It captures the manifold-valued summary of the noisy observation -- "where on {M} did {Z} likely come from" -- and discards the normal offset, which by construction carries no information about {Z}. Formally, among all fiber-collapsing summaries {S(X)} -- statistics depending on {X} only through {\pi(X)}, i.e. {\sigma(S) \subseteq \sigma(\pi(X))} -- the projection {\pi(X)} is the finest. Anything coarser throws away information that {\pi(X)} retains.
-
-Define the Rao-Blackwellized tangent target:
-{r_\sigma(z) \doteq \mathbb{E}\bigl[T_\sigma \mid \pi(X) = z\bigr] \in T_z M}.
-From the Pythagorean identity for {L^2} projections, we can show that among all functions {h} of {\pi(X)}, the choice {h(\pi(X)) = r_\sigma(\pi(X))} minimizes the regression risk:
+In order to condition on anything, we must first define our estimator. In denoising score matching (score matching on our corrupted data), we take a clean sample {Z} from our data distribution {q} (which lives on the manifold {M}), corrupt it into {X \doteq Z + \sigma\xi} with a bit of Gaussian noise {\xi \sim \mathcal{N}(0, \sigma^2 I_D)}, and train a network to predict the direction that undoes the corruption, {(Z-X)/\sigma^2}. Observe that this direction splits into two pieces: the part pointing along the manifold, and the part pointing off of it. The off-manifold piece is {(\pi(X) - X)/\sigma^2}, which we can compute from {X} without knowing {Z}. All of the signal is in the tangent piece:
 {
-    \mathbb{E}|T_\sigma - h(\pi(X))|^2 = \mathbb{E}|T_\sigma - r_\sigma(\pi(X))|^2 + \mathbb{E}|r_\sigma(\pi(X)) - h(\pi(X))|^2.
+    T_\sigma \doteq \frac{1}{\sigma^2} P_{T_{\pi(X)} M}(Z - X) \in T_{\pi(X)} M,
 }
+where {P_{T_{\pi(X)}M}} keeps the component pointing along {M} at {\pi(X)}.
 
-Thus, {r_\sigma} is the unique (up to null sets) {L^2}-optimal target in this class, and the excess risk of any coarser estimator decomposes into the irreducible "noise" part and a separable "estimator error" part. Intuitively, {r_\sigma} keeps all the signal-bearing information in {T_\sigma} and averages out the rest.
+This is the exact same as our coin flipping example. Our observation {X} carries two kinds of information: roughly where on {M} we came from, and how far off {M} the noise shifted us. The second kind is irrelevant for what we want, just like the ordering of the flips was pure noise with respect to {p}. So, we just average over it. Define the Rao-Blackwellized target
+{
+    r_\sigma(z) \doteq \mathbb{E}\bigl[T_\sigma \mid \pi(X) = z\bigr],
+}
+the average of {T_\sigma} over every noisy point that projects back to the same {z}. Averaging over a fiber is our analog of averaging over the permutations.
 
-## Variance Collapse
-Okay, so we found the {L^2}-optimal target, now we want to know if it actually buys us anything quantitatively. We answer in the affirmative.
-
-The conditional variance of {T_\sigma} given {\pi(X)} is the irreducible portion that can't be removed by any fiber-collapsing summary, and we can write it down exactly:
-theorem[variance-collapse][Variance collapse under Rao-Blackwellization]:
-Uniformly in {z \in M},
-{\operatorname{Var}\bigl(T_\sigma \mid \pi(X) = z\bigr) = \frac{d}{\sigma^2} + O(1)}.
-Consequently {\operatorname{Var}(T_\sigma) = d/\sigma^2 + O(1)}, while {\operatorname{Var}(r_\sigma(\pi(X))) = O(1)}.
-end theorem;
-
-The intuition for the {d/\sigma^2} is pretty straightforward. Conditioned on {\pi(X) = z}, the latent {Z} is concentrated on {M} within a tangent ball of radius {\sim \sigma} around {z} (this is just the posterior of {Z} given {X}). So {Z - X} has typical tangent magnitude {\sim \sigma}, and dividing by {\sigma^2} gives a typical magnitude of {1/\sigma}. Squaring and summing over the {d} tangent dimensions gives {d/\sigma^2}. So, as we shrink the noise, the variance of {T_\sigma} *grows*, which is exactly the opposite of what we want from a regression target.
+In fact, we can immediately see that this reduces the variance, just as the Rao-Blackwell Theorem states. In the below image, {r_\sigma} is the Rao-Blackwellized target, while {T_\sigma} is the non-RBized target.
 
 image:
 src: research/tldr/rb-dsm/variance_collapse.png;
-alt: Second moment of raw denoising target vs Rao-Blackwellized target vs noise scale on S^2;
 width: 80%;
-caption: Second moment of {T_\sigma} (black, slope {-2} in {\log \sigma}, matching {d/\sigma^2} with {d=2}) versus the Rao-Blackwellized target {r_\sigma(\pi(X))} (blue, bounded at the theoretical {\mathbb{E}|\nabla_M \log q|^2}). Computed on {S^2} under vMF({\mu, \kappa=2}).
+caption: Rao-Blackwellization reduces variance.
 end image;
 
-The {d/\sigma^2} floor isn't just a property of our particular estimator -- it's an irreducible Bayes-risk floor for any fiber-collapsing summary. That is, for any statistic {S(X)} with {\sigma(S) \subseteq \sigma(\pi(X))}, the best possible {L^2} predictor of {T_\sigma} based on {S} has expected squared error at least {d/\sigma^2 + O(1)}. Coarsening {\pi(X)} doesn't help; only the projection itself achieves the floor exactly.
+The main benefit here is that we are able to estimate what we want with significantly less variance, and that becomes more important as the amount we corrupt our data by (represented by {\sigma}) gets smaller.
 
-## {\sigma^2} Correction
+## What Does DSM Learn?
 
-Now that we have a target with bounded variance, the natural next question is what it actually equals. Expanding {r_\sigma(z)} as a power series in {\sigma}:
+We now have a target that has low variance, but we still have not answered the question we posed earlier. Because we had to corrupt the data to make score matching well defined at all, we aren't learning the true law, we're learning some corrupted surrogate. So, what's the surrogate?
+
+One can show (via a *lot* of tedious math), that expanding {r_\sigma(z)} as a power series in the noise level {\sigma} gives
 {
-    r_\sigma(z) = \nabla_M \log q(z) + \sigma^2 \bigl[b_q(z) + g_M^{\text{ext}}(z) + g_M^{\text{inh}}(z)\bigr] + O(\sigma^4),
+    r_\sigma(z) = \nabla_M \log q(z) + \sigma^2\bigl[b_q(z) + g_M^{\text{ext}}(z) + g_M^{\text{inh}}(z)\bigr] + O(\sigma^4).
 }
-uniformly on {M}.
 
-The leading term is the intrinsic Riemannian score {\nabla_M \log q} -- exactly what fully-intrinsic methods regress against. So at leading order, ambient DSM (after the Rao-Blackwellization fix) recovers the right thing. The {\sigma^2} correction is more interesting. It splits into three distinct pieces:
+The first term is exactly what we want to see: {\nabla_M \log q} is the *intrinsic score*: the gradient of the log density taken along the manifold, which is what we wanted to learn. So at leading order, the naive ambient approach of corrupting with ordinary Gaussian noise and then cleaning up with Rao-Blackwellization recovers the right thing. All good there.
+
+Things get a bit messier with the {\sigma^2} term; in some sense, the "price" of corrupting the data. It splits neatly into three pieces, but before we break them down, we need to introduce a useful idea from differential geometry.
+
+**Curvature.** In differential geometry, there are two notions of curvature. *Extrinsic* curvature describes how {M} bends inside the ambient space it sits in. *Intrinsic* curvature is what one could measure while living on {M}, with no knowledge of the ambient space at all. These are quite different. For example, take a cylinder: it obviously bends in {\mathbb{R}^3}, so it has extrinsic curvature, but you can unroll it flat onto a table without stretching or tearing anything, so an ant living on it could never distinguish it from a plane. The cylinder is extrinsically curved and intrinsically flat. Alternatively, a sphere is neither intrinsically nor extrinsically flat (which is why you can't flatten an orange peel without tearing it[^orange]). It's the exact reason that every flat world map ends up distorting something.
+
+With that distinction in mind, let's characterize the three corrections.
 
 list[o]:
-
- - The intrinsic Tweedie bias {b_q(z) = \frac{1}{2} \nabla_M\left(\Delta_M \log q + |\nabla_M \log q|^2\right)}. This is the manifold analog of the flat-Tweedie bias: it comes from Gaussian smoothing of the density and would appear even on a flat support. It depends on {q} but not on the embedding, and it's the same correction you'd get from intrinsic methods.
- - The extrinsic curvature term {g_M^{\text{ext}}(z) = \bigl(\tfrac{1}{2} W_{H(z)} - \mathrm{Ric}_z^\sharp\bigr)\nabla_M \log q(z)}. This piece matters for non-flat manifolds. It depends on the embedding of {M} in {\mathbb{R}^D} via the Weingarten and Ricci operators defined before. It's invisible to any method that corrupts {Z} by intrinsic Riemannian noise -- intrinsic noise never leaves the manifold, and thus never feels the embedding.
- - The curvature-inhomogeneity drift {g_M^{\text{inh}}(z) = \tfrac{1}{2}\mathcal{C}_M(z)}, with {\mathcal{C}_M(z) \doteq \nabla_M \|II\|^2 - \tfrac{1}{2}\nabla_M\|H\|^2 + \sum_i W_{\nabla^\perp_{e_i} H}\, e_i}. Unlike the other two, this term is *additive* -- it doesn't act on the score at all. It's linear in {\nabla^\perp II}, the spatial variation of the second fundamental form, so it vanishes identically wherever the embedding is parallel (e.g. every {S^d}).
+ - **Tweedie bias** {b_q(z)}. This part actually has nothing to do with the manifold at all. Gaussian smoothing blurs the density a little bit, and that changes its score ref@Efron2011, so this is just a general correction independent of the manifold. It depends on {q}, but not on {M}.
+ - **Extrinsic curvature term** {g_M^{\text{ext}}(z)}. This is a linear operator built from ways of measuring both types of curvature and applied to the score.[^curvature_ops] This is the term that measures how the embedding of {M} in the ambient space affects our process.
+ - **Inhomogeneity drift** {g_M^{\text{inh}}(z)}. This term measures how much the curvature of {M} changes as you move around it, so it vanishes when the manifold curves the same way everywhere.[^parallel_embed] A canonical example is the sphere, since every point looks like every other.
 end list;
 
-A nice property of both geometric terms is that they are purely geometric -- the operator {\tfrac{1}{2} W_H - \mathrm{Ric}^\sharp} and the drift {\mathcal{C}_M} depend only on how {M} sits in {\mathbb{R}^D}, not on {q}. So if we've trained a score model {\hat s(z) \approx \nabla_M \log q(z)}, we can subtract {\sigma^2\bigl[(\tfrac{1}{2} W_H - \mathrm{Ric}^\sharp)\hat s(z) + \tfrac{1}{2}\mathcal{C}_M(z)\bigr]} from our estimate -- an operator applied to the model's output plus an additive drift. The correction is fully post-hoc; you don't need to re-train, and you don't need to know {q}.[^retrain]
+Both geometric terms depend only on {M}, on how the manifold sits inside the ambient space, and not on {q} at all. The data distribution enters only through the score, which is the thing we already trained a model to predict. So given a trained score model {\hat{s}(z) \approx \nabla_M \log q(z)}, we can simply subtract the bias off afterwards: apply the curvature operator to {\hat{s}(z)}, add the drift, scale by {\sigma^2}, subtract. No retraining, and no access to {q} required.[^correction_caveat]
 
-## {S^2} Cancellation
+## A Happy Coincidence on {S^2}
 
-On {S^d \subset \mathbb{R}^{d+1}}, {W_\nu = -\mathrm{Id}}, {H(z) = -dz}, {W_{H(z)} = d \mathrm{Id}}, and {\mathrm{Ric}^\sharp = (d-1) \mathrm{Id}}. Plugging in:
+Let's now restrict to spheres, a really good toy example. On {S^d} (the sphere in {d+1} dimensions), the curvature is the same in every direction at every point, and plugging the values in collapses the entire extrinsic operator down to a single scalar:
 {
-    g_{S^d}^{\text{ext}}(z) = \bigl(\tfrac{d}{2} - (d-1)\bigr) \mathrm{Id} \cdot \nabla_{S^d}\log q(z) = (1 - d/2) \nabla_{S^d}\log q(z).
+    g_{S^d}^{\text{ext}}(z) = \bigl(1 - \tfrac{d}{2}\bigr)\nabla_{S^d}\log q(z).
 }
-So on the sphere, the extrinsic correction is a scalar multiple of the intrinsic score, with coefficient {\alpha_d \doteq 1 - d/2}:
+The inhomogeneity drift is already zero, since a sphere curves identically everywhere. So on a sphere the entire geometric correction is one scalar {\alpha_d \doteq 1 - d/2} times the score:
 
 list[u]:
  - {d = 1}: {\alpha_1 = +1/2};
  - {d = 2}: {\alpha_2 = 0};
  - {d = 3}: {\alpha_3 = -1/2};
- - {d \geq 4}: increasingly negative.
+ - {d \geq 4}: you get the point.
 end list;
 
-On {S^2}, the inhomogeneity drift is already zero (the round sphere is parallel, so {g_{S^d}^{\text{inh}} \equiv 0} for all {d}), and the extrinsic curvature operator also cancels since {\alpha_2 = 0}. Both geometric terms vanish, and ambient DSM recovers the intrinsic score up to only the flat-Tweedie bias {b_q}.
+A neat result here is that at {d=2} the coefficient is exactly zero. On the round 2-sphere both geometric terms vanish, and ambient DSM recovers the intrinsic score up to only the flat Tweedie bias that every method pays anyway.
 
-It's worth emphasizing that this is a coincidence specific to the round sphere, not a general 2-manifold property. The torus {T^2 \subset \mathbb{R}^3} is intrinsically flat ({\mathrm{Ric}^\sharp = 0}) but extrinsically curved, and the corresponding {g_{T^2}^{\text{ext}}} has coefficient {+1/2} -- a measurable embedding-only bias. Higher-dimensional spheres also show the bias clearly: on {S^6} and {S^{10}}, raw ambient DSM under-concentrates the equilibrium distribution by about 17% and 33% respectively, both removed by the post-hoc correction.
+This is demonstrated in the top row of the below figure. The bottom row shows the sample complexity gain by using Rao-Blackwellization: at the same training set size, we achieve lower error.
 
 image:
-src: /research/tldr/rb-dsm/langevin_concentration.png;
-alt: Equilibrium density of z dot mu on S^2, S^6, S^10 under ambient DSM and RB+debias Langevin drifts;
+src: research/tldr/rb-dsm/langevin_concentration.png;
 width: 95%;
-caption: Top: equilibrium of Langevin dynamics on {S^d}, ambient DSM (orange) matches the truth (black) exactly on {S^2}, but under-concentrates on {S^6} and {S^{10}}. The post-hoc correction (blue) recovers the truth in all panels. Bottom: error of an MLP regressor trained with (blue) and without (orange) Rao-Blackwellization as a function of sample size.
+caption: Bias scales with dimension.
 end image;
 
-This explains a longstanding empirical observation: ambient diffusion models work surprisingly well on most test cases such as climate or weather data, which naturally live on {S^2}.
+Ambient diffusion models tend to work quite well on data that naturally lives on {S^2}, such as climate and weather data, even though the theory says the problem shouldn't be well posed there at all. The {\alpha_2 = 0} cancellation is why! On the 2-sphere specifically, everything happens to cancel out nicely.
 
-[^partition_fn]: The partition function is the normalization constant that ensures the probability distribution integrates to unity.
-[^dsm_intuition_measures]: To get some intuition for why this works, it's nice to consider a toy case: for a random variable {X} distributed uniformly between 0 and 1, the probability of the event {X=0.5} is exactly 0, but the probability of the event {X \in (.49, .51)} is nonzero. The idea here works similarly in principle.
-[^do_carmo]: Here, we just cover the absolute basics, but do Carmo ref@doCarmo1992 is a great reference.
-[^geodesics]: Geodesics are paths with zero acceleration.
-[^ricci_endomorphism]: Concretely, {\mathrm{Ric}^\sharp} is the metric-raised version of the Ricci tensor, which is itself a trace of the full Riemann curvature tensor. You can think of {\langle \mathrm{Ric}^\sharp u, u \rangle} as an average of sectional curvatures of all 2-planes containing {u}.
-[^retrain]: Strictly, you do need your score estimate to be reasonably accurate at the points where you're applying the correction. But you don't need access to {q} itself, which is the usual obstacle.
+[^mit_notes]: See e.g. [these notes](https://math.mit.edu/classes/18.952/spring2012/Chapter4-18.952.pdf) for an example of a very formal definition.
+[^manifold_structure_comment]: If you're interested in how exactly they are useful for representing structures, take a look at Lie theory: a good intro is in [these notes](https://www.cis.upenn.edu/~cis6100/cis610-23-sl4.pdf).
+[^sufficiency_why]: Conditioning on *any* summary keeps the estimator unbiased, but if the leftover randomness still depends on the quantity we're estimating, then so does the conditional expectation, and we end up with an "estimator" we can't actually compute without already knowing the answer.
+[^orange]: Maybe this isn't the most natural example, but it came to mind since I'm eating an orange as I write this; I'll go back and replace this with a better example if I think of one.
+[^curvature_ops]: For anyone who wants the actual objects: the operator is {\tfrac{1}{2} W_{H} - \mathrm{Ric}^\sharp}, built from the Weingarten map (which measures extrinsic curvature) and the Ricci endomorphism (which measures intrinsic curvature). Both are linear maps on the tangent space, which is what lets us compare them and apply them directly to the score. do Carmo ref@doCarmo1992 is a fantastic reference.
+[^parallel_embed]: Formally, this term is linear in {\nabla^\perp II}, the covariant derivative of the second fundamental form, and an embedding with {\nabla^\perp II \equiv 0} is called parallel.
+[^correction_caveat]: Strictly speaking, the score estimate does have to be reasonably accurate at the points where we apply the correction. But we never need access to {q} itself, which is usually the real obstacle.
 
 bibliography:
 @article{hyvarinen2005estimation,
