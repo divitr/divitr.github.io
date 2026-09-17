@@ -5,8 +5,6 @@ desc: What do generative modeling techniques actually recover, and can we do it 
 emoji: 🔇;
 paper_link: https://arxiv.org/abs/2605.25567;
 
-**[NOTE]** Apparently some account also made one of those AI generated reels of voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
-
 ## Setup
 
 Generally, the paradigm of generative modeling is as follows: given a dataset, can we find some way to generate new data that seems as if it was pulled from the original dataset? A common example of this is images; a generative modeling task here might be that one is given a set of 100 images of cats and after some "learning," is asked to generate a new image of a cat. More formally, what we usually want here is to approximate some kind of probability distribution given samples from that distribution, then generating new data is as simple as sampling from our distribution.
@@ -70,7 +68,7 @@ width: 80%;
 caption: Projecting points back onto the manifold.
 end image;
 
-In order to condition on anything, we must first define our estimator. In denoising score matching (score matching on our corrupted data), we take a clean sample {Z} from our data distribution {q} (which lives on the manifold {M}), corrupt it into {X \doteq Z + \sigma\xi} with a bit of Gaussian noise {\xi \sim \mathcal{N}(0, I_D)}, and train a network to predict the direction that undoes the corruption, {(Z-X)/\sigma^2}. Observe that this direction splits into two pieces: the part pointing along the manifold, and the part pointing off of it. The off-manifold piece is {(\pi(X) - X)/\sigma^2}, which we can compute from {X} without knowing {Z}. All of the signal is in the tangent piece:
+In order to condition on anything, we must first define our estimator. In denoising score matching (score matching on our corrupted data), we take a clean sample {Z} from our data distribution {q} (which lives on the manifold {M}), corrupt it into {X \doteq Z + \sigma\xi} with a bit of Gaussian noise {\xi \sim \mathcal{N}(0, I_D)}, and train a network to predict the direction that undoes the corruption, {(Z-X)/\sigma^2}. Observe that this direction splits into two pieces: the part pointing along the manifold, and the part pointing off of it. The off-manifold piece is, to leading order, {(\pi(X) - X)/\sigma^2}, which we can compute from {X} without knowing {Z}. All of the signal is in the tangent piece:
 {
     T_\sigma \doteq \frac{1}{\sigma^2} P_{T_{\pi(X)} M}(Z - X) \in T_{\pi(X)} M,
 }
@@ -134,20 +132,22 @@ end list;
 
 A neat result here is that at {d=2} the coefficient is exactly zero. On the round 2-sphere both geometric terms vanish, and ambient DSM recovers the intrinsic score up to only the flat Tweedie bias that every method pays anyway.
 
-This is demonstrated in the top row of the below figure. The bottom row shows the sample complexity gain by using Rao-Blackwellization: at the same training set size, we achieve lower error.
+This is demonstrated in the top row of the below figure. The bottom row shows the sample-complexity gain from Rao-Blackwellization: the RB target gives lower score error at small and moderate training set sizes, with the gap closing as {N} grows.
 
 image:
 src: research/tldr/rb-dsm/langevin_concentration.png;
 width: 95%;
-caption: Bias scales with dimension.
+caption: Top: equilibrium bias grows with dimension (and vanishes on {S^2}). Bottom: score error vs. training set size.
 end image;
 
-Ambient diffusion models tend to work quite well on data that naturally lives on {S^2}, such as climate and weather data, even though the theory says the problem shouldn't be well posed there at all. The {\alpha_2 = 0} cancellation is why! On the 2-sphere specifically, everything happens to cancel out nicely.
+Ambient DSM is often observed to work about as well as intrinsic methods on data living on {S^2} (e.g. earth-science event data like earthquake or wildfire locations), even though score matching on manifold-supported data is ill-posed. The {\alpha_2 = 0} cancellation offers an explanation: on the round 2-sphere, the leading-order geometric bias vanishes, so ambient and intrinsic methods agree up to the Tweedie term.
+
+**P.S.** Apparently some account also made one of those AI generated reels of voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
 
 [^mit_notes]: See e.g. [these notes](https://math.mit.edu/classes/18.952/spring2012/Chapter4-18.952.pdf) for an example of a very formal definition.
 [^manifold_structure_comment]: If you're interested in how exactly they are useful for representing structures, take a look at Lie theory: a good intro is in [these notes](https://www.cis.upenn.edu/~cis6100/cis610-23-sl4.pdf).
 [^sufficiency_why]: Conditioning on *any* summary keeps the estimator unbiased, but if the leftover randomness still depends on the quantity we're estimating, then so does the conditional expectation, and we end up with an "estimator" we can't actually compute without already knowing the answer.
-[^orange]: Maybe this isn't the most natural example, but it came to mind since I'm eating an orange as I write this; I'll go back and replace this with a better example if I think of one.
+[^orange]: Maybe this isn't the most natural example, but it came to mind since I'm eating an orange as I write this.
 [^curvature_ops]: For anyone who wants the actual objects: the operator is {\tfrac{1}{2} W_{H} - \mathrm{Ric}^\sharp}, built from the Weingarten map (which measures extrinsic curvature) and the Ricci endomorphism (which measures intrinsic curvature). Both are linear maps on the tangent space, which is what lets us compare them and apply them directly to the score. do Carmo ref@doCarmo1992 is a fantastic reference.
 [^parallel_embed]: Formally, this term is linear in {\nabla^\perp II}, the covariant derivative of the second fundamental form, and an embedding with {\nabla^\perp II \equiv 0} is called parallel.
 [^correction_caveat]: Strictly speaking, the score estimate does have to be reasonably accurate at the points where we apply the correction. But we never need access to {q} itself, which is usually the real obstacle.
