@@ -4,6 +4,7 @@ date: June 1, 2026;
 desc: How simple can an optimal learner be?;
 emoji: 3️⃣;
 paper_link: https://arxiv.org/abs/2606.13614;
+visibility: hidden;
 
 For quite a while, a major goal in statistical learning theory was determining the optimal error rate for a PAC[^pac] learner. This was solved in 2016 by Hanneke ref@Steve2016TheOptimalSampleComplexityofPACLearning, who provided the first algorithm to reach the optimal error rate. However, his algorithm was rather complicated and the analysis quite involved, so a new line of work emerged with the goal of determining the simplest optimal PAC learner. The [majority-of-three learner](https://arxiv.org/abs/2403.08831) was proposed in 2024 ref@AAHLZ24 and proven to be optimal in expectation. However, it was not proven to be optimal in high probability[^high-prob]. In particular, there was an extra {\log\log} factor in the original paper that was conjectured to be an artifact of their analysis. In this short note, we provide a better analysis and prove that the algorithm is in fact an optimal PAC learner.
 

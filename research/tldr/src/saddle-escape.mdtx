@@ -4,7 +4,7 @@ date: May 04, 2026;
 desc: What happens when neural networks are initialized with small weights?;
 emoji: 🐎;
 paper_link: https://arxiv.org/abs/2605.01288;
-visibility: visible;
+visibility: hidden;
 
 Training deep networks from small initialization has a characteristic pattern: long plateaus where the loss barely moves, then sharp drops as new features are learned. This "saddle-to-saddle" structure is well understood for linear networks, where an exact conservation law makes the training flow tractable. For nonlinear activations, the conservation law that underlies much of the deep linear network literature breaks, and it isn't clear what should replace it, or what controls how long each plateau lasts. In this work, we identify the right replacement: an exact identity governing the imbalance between adjacent layer norms, valid for any smooth activation and any differentiable loss. The identity is used to determine that escape time depends not on the total depth, but only on the number of bottleneck layers.[^grq]
 
