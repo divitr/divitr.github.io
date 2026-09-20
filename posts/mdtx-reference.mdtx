@@ -48,6 +48,17 @@ Use `#` symbols for headings:
 #### Subsubsection Heading
 ```
 
+Headings from `##` to `####` are given an `id` and a permalink automatically. The
+slug comes from the heading text, with math read from its TeX source, so
+`## A Happy Coincidence on {S^2}` becomes `#a-happy-coincidence-on-s2`. Repeats
+are numbered (`#setup`, `#setup-2`).
+
+To keep a link working after rewording a heading, pin its slug:
+
+```
+## Imbalance Identity {#imbalance}
+```
+
 ## Text Formatting
 
 ### Emphasis

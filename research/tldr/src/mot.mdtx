@@ -4,111 +4,159 @@ date: June 1, 2026;
 desc: How simple can an optimal learner be?;
 emoji: 3️⃣;
 paper_link: https://arxiv.org/abs/2606.13614;
-visibility: hidden;
+visibility: visible;
 
-For quite a while, a major goal in statistical learning theory was determining the optimal error rate for a PAC[^pac] learner. This was solved in 2016 by Hanneke ref@Steve2016TheOptimalSampleComplexityofPACLearning, who provided the first algorithm to reach the optimal error rate. However, his algorithm was rather complicated and the analysis quite involved, so a new line of work emerged with the goal of determining the simplest optimal PAC learner. The [majority-of-three learner](https://arxiv.org/abs/2403.08831) was proposed in 2024 ref@AAHLZ24 and proven to be optimal in expectation. However, it was not proven to be optimal in high probability[^high-prob]. In particular, there was an extra {\log\log} factor in the original paper that was conjectured to be an artifact of their analysis. In this short note, we provide a better analysis and prove that the algorithm is in fact an optimal PAC learner.
+Generally in learning theory, we are concerned with a notion of statistical optimality: given {n} samples, how little error can a learner incur on the true distribution? Generally, we know some lower bound, and the main challenge is designing an algorithm that matches that lower bound. In the theory of PAC (probably approximately correct) learning, the first algorithm to achieve the optimal statistical rate was given in 2016 ref@Steve2016TheOptimalSampleComplexityofPACLearning. However, the algorithm was based around a very sophisticated splitting of the dataset and carefully designed overlaps, and its analysis was similarly quite involved. Thus, a new line of work emerged with a different goal: find the *simplest* optimal PAC learner. In particular, one such proposed algorithm was [majority-of-three](https://arxiv.org/abs/2403.08831), proposed by ref@AAHLZ24 and proven to be optimal in expectation (i.e. on average it achieves the optimal rate). It was not, however, proven optimal with high probability[^high-prob] -- an extra {\log\log} factor remained in their analysis, and it was conjectured that it could be removed to prove that majority-of-three is indeed optimal with high probability. In this short note, we give a better analysis and prove that the algorithm is an optimal PAC learner.
 
-main-results:
- - We prove that the Majority-of-Three algorithm achieves the optimal error rate {P(\mathcal{E}_{\text{Maj}}) \le \frac{C(d + \log(1/\delta))}{n}} with probability {1 - \delta}.
- - That's kinda it.
-end main-results;
+## Setup
 
-**[NOTE]** The argument given in the note is actually a simplified version discovered (partially) by an LLM! The original argument (which will also be discussed here) was fully human-generated, upon reviewing it, we experimented with LLMs and found that given hints they were able to streamline the proof. (Interestingly, LLMs were not able to complete the proof of the conjecture on their own, they required the original proof as scaffolding, but were helpful in compressing the proof to the minimal necessary steps.) This is discussed a bit more in Appendix A of the note. My original proof is outlined in Appendix B, or the full version is available [here](https://divitr.github.io/assets/mot.pdf).
+### Supervised Learning, Hypothesis Classes, and VC Dimension
 
-## Background and Majority-of-Three Algorithm
+Generally, the supervised learning setup is as follows: some true function {f^\star} exists, we see it applied to some finite set of samples drawn i.i.d. from some unknown distribution {P}, and we must then predict the rule. Let's introduce some notation: we see {(\mathcal X, \mathcal Y)}, where {\mathcal X} is our training set, and {\mathcal Y = f^\star(\mathcal X)} are the labels. Let's assume all the labels are binary, i.e. either {-1} or {+1} (one can also use {0} and {1}, or really anything, it doesn't matter). Further, let us assume that we know that the true function {f^\star} is a member of some class of functions {\mathcal F}. Immediately, this is helpful; our learner need not search over all functions, only over {\mathcal F}.
 
-In PAC (Probably Approximately Correct) learning, we want to guarantee that our learned hypothesis has error at most {\varepsilon} with probability at least {1 - \delta}. Standard Empirical Risk Minimization (ERM)[^erm] works well but can sometimes fail catastrophically on the worst-case sample. To get optimal high-probability bounds, we usually need complex algorithms.
+We call {\mathcal F} our hypothesis class. Knowing that we need only search over {\mathcal F} is helpful, but intuitively, if {\mathcal F} is a very complex function class, our learning problem is much harder. In order to quantify this, we use the VC dimension. The VC dimension {d} is just the largest number of samples that {\mathcal F} can label in every possible way. It might help to think of this as a game: assume you're playing against some adversary who wants to make the learning problem as hard as possible for you. Since the adversary knows that you both know the search space is {\mathcal F}, the adversary can choose to give you points that are compatible with *every* function {f} in {\mathcal F} to effectively ensure you get no usable information. Knowing the VC dimension of {\mathcal F} is {d} then just says that for any {d+1} points, there is at least one labeling that no {f} in {\mathcal F} can produce.
 
-The Majority-of-Three algorithm is a comparably simple alternative:
+A good example here is the hypothesis class of thresholds: functions {f_a(x)} that predict {+1} if {x \geq a} and {-1} if {x < a}. It is clear that the VC dimension of this class is 1: every possible labeling of a single point is realizable by just choosing a threshold above or below {x}, and we can construct a labeling of 2 points that is not realizable. Indeed, for {x_1, x_2} such that {x_1 < x_2}, set the label of {x_1} to {+1} and the label of {x_2} to {-1} -- no threshold function can realize this labeling (if you're not convinced, try drawing it out!).
+
+### PAC Learning
+
+Recall that we see {n} samples drawn i.i.d. from some probability distribution {P}, along with their labels. So, from that, we want to do well on the entire distribution {P}. In PAC learning, we basically want that most of the time (the *probably*) we are pretty close to the right answer (the *approximately correct*). To make this more formal, we want that for some {\varepsilon} and {\delta}, we are within error {\varepsilon} at least {1-\delta} of the time. More formally, define {\operatorname{err}(f) \doteq P(f(x) \neq f^\star(x))}. Then, PAC learning wants
+{
+  \Pr[\operatorname{err}(f) > \varepsilon] \leq \delta.
+}
+
+We can attain this trivially by setting {\varepsilon=1}, so assume {n} and {\delta} are fixed. Now we ask how small {\varepsilon} can be. For realizable PAC learning (the setting we've been working in where we know the answer is in our family {\mathcal F}),[^realizable] the answer is
+{
+  \varepsilon = \Theta\left( \frac{d + \log(1/\delta)}{n} \right),
+}
+where the {\Theta} notation indicates scaling up to a constant (this is the matching upper and lower bounds thing we discussed earlier). Reading the above relation, we can think of the {d/n} term as what we pay for the expressiveness of the class (a more complex class is harder to get right) and the {\log (1/\delta) / n} term as the price of guaranteeing that it holds over unlucky samples. Our focus will be on the second term.
+
+Finally, let us make a remark on in-expectation vs. high-probability bounds. Bounding error in expectation is a much simpler ask: we need only show that *on average* {\operatorname{err}(f) < \varepsilon}. On the other hand, showing a high-probability bound requires showing that the tails decay sufficiently fast; we might be optimal in expectation, but have fat tails.
+
+### Empirical Risk Minimization
+
+By this point, all this machinery probably feels overly complex; surely the right answer is simply to minimize the error on our training set. Since we're in the realizable regime, there is at least one rule that gets every training point right, so just output one of those rules! This is empirical risk minimization (ERM), simply understood as "output any rule consistent with the data."
+
+Note the use of the word "any." ERM is a family of algorithms since when several rules are consistent, nothing tells us which to pick. Formally, we just fix some deterministic tie-breaking rule upfront and assume nothing else about it.[^selector] Because of this, one can actually show that ERM is suboptimal and does not achieve the optimal rate, hence the interest (and difficulty) in developing optimal algorithms.
+
+Let's also make one observation here, for use later. Every statement we've made here has been about symmetric differences with the target, so we can relabel so that the target is the empty set (this just means we can relabel so that {f^\star} is the function which assigns {0} to every sample).[^wlog] Once we've done this, a consistent hypothesis (meaning a hypothesis that matches the training data we've seen) is just a set containing none of the training points, and its error is just the probability mass that the distribution {P} assigns to it. So going forward, ERM gives us a set avoiding the sample, and we want to prove that that set is small.
+
+### The Majority-of-Three Rule
+
+The majority-of-three algorithm is about as simple as an algorithm could possibly be:
+
 list[o]:
- -  Split the sample {S} of size {n} into three independent blocks {S^{(1)}, S^{(2)}, S^{(3)}} of size {m = \lfloor n/3 \rfloor}.
- -  Run ERM on each block to get three hypotheses {h_1, h_2, h_3}.
- -  The final prediction is the majority vote: {\text{Maj}(h_1(x), h_2(x), h_3(x))}.[^bagging]
+- Split the sample {S} of size {n} into three independent blocks {S^{(1)}, S^{(2)}, S^{(3)}} of size {m = \lfloor n/3 \rfloor}.
+- Run ERM on each block to get three hypotheses {h_1, h_2, h_3}.
+- The final prediction is the majority vote: {\text{Maj}(h_1(x), h_2(x), h_3(x))}.[^bagging]
 end list;
-It was known that this algorithm works, but it was an open conjecture whether it achieved the theoretically optimal rate of {O(\frac{d + \log(1/\delta)}{n})} in the realizable[^realizable] setting (where {d} is the VC dimension[^vc_dim]).
 
-## The Original Proof
+The open problem was whether this algorithm achieves the theoretically optimal rate of {O\left(\frac{d + \log(1/\delta)}{n}\right)}, or whether it incurs an extra {\log\log(1/\delta)} (left by previous analysis).
 
-Here we provide the original proof, in the next section we'll go over the recursive proof and point out differences.
+**[NOTE]** From here it gets a bit more technical -- some background in probability will likely be useful.
 
-The main hurdle in proving the conjecture is that ERM is a rather finicky process. When you condition an ERM on the event that it makes an error on a specific point, its behavior on the rest of the distribution can change wildly. The original proof of our optimal rate bypasses this by breaking the problem into a multiscale analysis of "inclusion probabilities."
+## Reducing to an Overlap Problem
 
-### ERM Overlap
-
-Instead of trying to track the performance of the majority vote directly, we can make use of a basic fact: if the target concept is empty, an ERM hypothesis is just a set avoiding the sample. The majority vote fails only when a test point falls into at least two of the three ERM error regions. By union bounding, the error of the majority vote is entirely dictated by the pairwise overlap of two independent ERM outputs: {P(h_1 \cap h_2)}.
-
-If we assume without loss of generality that the target concept is empty ({f^\star = \varnothing}), then an ERM hypothesis is simply a set that contains no training points. The majority vote makes an error exactly when a test point {x} is contained in at least two of the three ERM positive regions.
-
-Thus, the error region is:
+With the target relabeled to the empty set, each {h_a} is an error region, so the majority vote is wrong at {x} exactly when at least two of the three sets contain {x}. Writing this in set notation:
 {
-    \mathcal{E}_{\text{Maj}} = (h_1 \cap h_2) \cup (h_2 \cap h_3) \cup (h_3 \cap h_1).
+    \mathcal{E}_{\text{Maj}} = (h_1 \cap h_2) \cup (h_2 \cap h_3) \cup (h_3 \cap h_1),
 }
-By the union bound, the error is at most the sum of the pairwise intersections {P(h_1 \cap h_2) + P(h_2 \cap h_3) + P(h_3 \cap h_1)}.
+and by the union bound the error is at most {P(h_1 \cap h_2) + P(h_2 \cap h_3) + P(h_3 \cap h_1)}. Since the blocks are independent, each of those three terms has the same law and we've reduced our problem into bounding the overlaps of two ERM outputs.
 
-### Chain Rule
-
-To bound the overlap, we study its {q}-th moments. We show that the {q}-th moment of the overlap probability is exactly the expected squared probability that a single ERM contains a specific test tuple {X = (x_1, \dots, x_q)}.
-
-We write this inclusion probability as {p_X}, and factor it using the chain rule (of conditional probabilities, not calculus):
+Remember, the whole point of this is to get high-probability bounds, and the standard way to get these is through the method of moments.[^moments] Write {Y \doteq P(A(S) \cap A(T))} for the overlap of the ERM outputs on two independent samples and study
 {
-  p_X = \prod_{\ell=1}^q q_{X_{\lt \ell}}(x_\ell).
+    R_q \doteq \mathbb{E}_{S,T}\bigl[Y^q\bigr].
 }
-Here, {q_{X_{\lt \ell}}(x_\ell)} is the *conditional* probability that the ERM contains {x_\ell}, given that it already contains all the previous points in the tuple.
-
-### Dyadic Scales
-
-Conditioning on the prefix {X_{\lt \ell}} changes the distribution of the ERM. To handle this, we categorize the points into a "dyadic profile." For each point {x_\ell}, we look at its conditional inclusion probability and assign it to a dyadic bucket {k_\ell}, where {2^{-k_\ell-1} \lt q_{X_{\lt \ell}}(x_\ell) \le 2^{-k_\ell}}.
-
-Dyadic buckets allow us to invoke classical VC dimension bounds; specifically the {\varepsilon}-net theorem ref@Wel12 and Sauer's lemma on each level set. We prove a structural lemma showing that the probability mass of the {k}-th dyadic level decays exponentially: roughly {\approx 2^{-k}}. Importantly, the VC dimension penalty only costs a {d(k+1)} factor, meaning the anchor points don't blow up the complexity.
-
-### Closing it Out
-
-By converting the conditioning rarity into a deterministic function of the profile, we can bound the probability of any given profile occurring. We iterate Fubini's theorem up the chain, effectively showing that "bad" profiles (where the ERM has high overlap) are exponentially unlikely. Summing over all possible dyadic profiles yields the optimal moment bound:
+Raising the overlap to the {q}-th power is the same as asking for {q} independent test points to all land in the overlap, and a point lands in the overlap exactly when both ERMs contain it. So if we write {X = (x_1, \dots, x_q)} for an ordered tuple of {q} test points and
 {
-  R_q \le \left(\frac{C(d+q)}{m}\right)^q.
+    p_X \doteq \Pr_S\bigl[X \subseteq A(S)\bigr]
 }
-A quick application of Minkowski's and Markov's inequalities takes this moment bound to the conjectured optimal high-probability rate, {O\left(\frac{d + \log(1/\delta)}{n}\right)}.
-
-## A Shorter, Recursive Proof
-
-While the original dyadic profiling argument successfully proved the conjecture, it was a bit heavy on bookkeeping. With some LLM experimentation, we discovered that the entire multiscale analysis could be collapsed into a single recursion. We still work with the moments:
+for the probability that a single ERM output consumes the entire tuple, then independence of {S} and {T} factors the two ERMs apart and
 {
-  R_q = \mathbb{E}_{S, T}[P(A(S) \cap A(T))^q] = \mathbb{E}_X[p_q(X)^2],
+    R_q = \mathbb{E}_X\bigl[p_X^2\bigr].
 }
-where {p_q(X)} is the probability that a single ERM contains the test tuple {X = (x_1, \dots, x_q)}.
 
-Instead of manually partitioning the space into dyadic buckets, we define a weighted functional {M_k} that tracks the inclusion probability for a prefix of {k} points. To handle the fact that conditioning the ERM makes it behave erratically, we artificially inject a "rarity penalty" into the functional:
+So now, all that remains for us to answer is how likely a single ERM is to contain {q} prescribed points at once.
+
+Ideally, we want a bound of the form
+{
+    R_q \le \left(\frac{C(d+q)}{m}\right)^q.
+}
+Given the above bound, the optimal rate follows immediately. Taking {L^q} norms and applying Minkowski's inequality to the three-term union bound gives {\|P(\mathcal{E}_{\text{Maj}})\|_q \leq 3R_q^{1/q} \leq 3C(d+q)/m}, and then Markov's inequality on the {q}-th moment converts that into a tail bound decaying like {e^{-q}}. Choosing {q = \lceil \log(1/\delta) \rceil} forces the tail to be exactly {\delta}, and since {d + q \le 2(d + \log(1/\delta))}, we are done.
+
+## A Proof by Partitioning into Dyadic Scales
+
+We need to control {p_X}; the chance that one ERM contains a whole tuple. The issue is that ERM is a rather finicky process: conditioning on the event that it already contains {x_1} reweights which samples we are looking at and the conditioned process can behave completely differently.
+
+By the chain rule of conditional probability,
+{
+  p_X = \prod_{\ell=1}^q q_{X_{\lt \ell}}(x_\ell),
+}
+where {q_{X_{\lt \ell}}(x_\ell)} is the conditional probability that the ERM contains {x_\ell} given that it already contains all the earlier points of the tuple.
+
+### Dyadic Profiles
+
+The main trick here is to not evaluate the conditional probabilities, but rather to track their scale. For each point {x_\ell}, let {k_\ell} be the integer with
+{
+    2^{-k_\ell-1} \lt q_{X_{\lt \ell}}(x_\ell) \le 2^{-k_\ell},
+}
+and call the vector {\mathbf{k} = (k_1, \dots, k_q)} the dyadic profile of the tuple. Every tuple has a dyadic profile, and the profile immediately gives {p_X \le 2^{-\sum_\ell k_\ell}}. The profiles are countable, so we can bound each class of tuples separately and sum at the end.
+
+Within a profile class, the {\varepsilon}-net theorem and Sauer's lemma apply to each level set, and give that the set of points whose conditional inclusion probability sits at level {k} has mass at most about
+{
+    \frac{\bigl(d(k+1) + \log(e/p_{\mathbf{a}})\bigr)2^k}{m},
+}
+where {p_{\mathbf{a}}} is the probability of the conditioning event. There are two notable features of the above that drive the proof.
+
+The first is that the level sets balance nicely. A point that is very likely to be included (small {k}) can only live in a very thin slice of the space; a point sitting in a fat slice has to be correspondingly unlikely to be included. Intuitively, the product of "how big is this level set" and "how likely is inclusion at this level" is bounded, so everything is nicely behaved.
+
+The second is a bit more subtle. The VC contribution is {d(k+1)}: it depends on the level, but *not* on how many points we have already conditioned on. Conditioning on a long prefix does not inflate the effective VC dimension. The only cost we pay for conditioning is the rarity term {\log(e/p_{\mathbf{a}})} and rarity is something that a profile already knows since a profile that has large {k}'s at earlier levels has small prefix probability. So, we may rewrite the rarity term as a deterministic function of the profile, and the bound stops depending on the particular prefix entirely!
+
+### Closing It Out
+
+Once the one-step bound is independent of the prefix, every level has the same upper bound regardless of the points that came before it, and we can iterate Fubini's theorem up the chain, integrating out the last point, then the one before it, etc. all the way down to the empty prefix. That gives us a bound on the probability of each profile class, and summing the resulting series over all profiles (more or less just a counting exercise and an application of AM-GM) gives
+{
+  R_q \le \left(\frac{C(d+q)}{m}\right)^q,
+}
+as desired. The optimal rate then follows.
+
+## A Recursive Proof
+
+The dyadic profiling argument is neat, but it required a lot of intermediate machinery. It turns out that the entire multiscale decomposition can be collapsed into a single recursion. In particular, if we track the "rarity the conditioning has accumulated so far," we never need the levels at all.
+
+Concretely, instead of partitioning the space, define a weighted functional {M_k} on prefixes of length {k}, with the rarity penalty built into the weight:
 {
   M_k = \mathbb{E}_{X_{1:k}}\left[ p_k(X_{1:k})^2 \left( 64(d+q) + \log\frac{e}{p_k(X_{1:k})} \right)^{q-k} \right].
 }
-Note the endpoints. When {k = q}, the rarity penalty disappears (since the exponent {q-k} is 0), and {M_q} is exactly our target overlap moment {R_q}. When {k = 0}, the probability {p_0 = 1}, and {M_0} is just a deterministic constant roughly equal to {(64(d+q))^q}. In some sense, the functional defined above interpolates between the two.
+At first, this looks pretty magical (at least it did to me), but let's get some intuition for this by looking at the endpoints. At {k = q} the exponent {q-k} is zero, the penalty disappears, and {M_q} is exactly our target overlap moment {R_q}. At {k = 0} the prefix is empty, {p_0 = 1}, and {M_0} is a deterministic constant, roughly {(64(d+q))^q}. So the functional interpolates between the thing we want to bound and something we already know.
 
-To connect {M_k} to {M_{k-1}}, we need to integrate out the last point, {x_k}. The way we do this is via a uniform tail bound on the conditional inclusion probability: if we fix a prefix {z}, what is the probability that the ERM includes a new random test point?
-
-Using classical VC theory, we prove that this conditional probability {\alpha_z(X)} obeys a strict tail bound:
+The step from {M_k} to {M_{k-1}} integrates out the last point, via a uniform tail bound on the conditional inclusion probability {\alpha_z(X)}. Fixing a prefix {z}, classical VC theory gives
 {
-  \Pr(\alpha_z(X) > a) \le \frac{C}{am} \left( d\log\frac{e}{a} + \log\frac{e}{p_z} \right).
+  \Pr(\alpha_z(X) > a) \le \frac{C}{am} \left( d\log\frac{e}{a} + \log\frac{e}{p_z} \right),
 }
-
-By rewriting the expectation over {x_k} as an integral and plugging in our conditional tail bound, a bit of calculus yields that the functional contracts by a factor of {O(1/m)} at every step.
+which is the same {\varepsilon}-net estimate as before, just stated as a tail instead of being applied level by level. Rewriting the expectation over {x_k} as an integral against this tail and doing a bit of calculus gives the contraction:
 {
   M_k \le \frac{960}{m} M_{k-1}.
 }
-The rarity penalty injected into {M_k} exactly absorbs the logarithmic costs generated by the VC tail bound during the integration.
+Note that the {\log(e/p_z)} generated by the tail bound during integration is exactly absorbed by the penalty already sitting in the functional, and the exponent {q-k} increasing by one is what "pays" for it.
 
-With the one-step contraction established, the rest of the proof writes itself. We simply iterate the recursion {q} times -- from the full tuple down to the empty prefix:
+With the one-step contraction established, the rest more or less writes itself. Iterate {q} times, from the full tuple down to the empty prefix:
 {
   R_q = M_q \le \left(\frac{960}{m}\right)^q M_0 \le \left(\frac{C(d+q)}{m}\right)^q.
 }
-We land on the exact same optimal moment bound, which immediately yields the conjectured {O\left(\frac{d + \log(1/\delta)}{n}\right)} high-probability rate via Markov's inequality.
 
+## An Experiment with LLMs
 
-[^pac]: PAC means "probably approximately correct", i.e. our model achieves error {\leq \varepsilon} with probability {\geq 1-\delta}.
-[^high-prob]: This seems like a pretty trivial distinction, but these are actually very very different and being optimal in expectation does not guarantee that an algorithm will be optimal in high probability; see ref@Ishaq2022TheOne-InclusionGraphAlgorithmisnotAlwaysOptimal for example.
-[^erm]: Empirical Risk Minimization is exactly what it sounds like: just minimize the risk on your train set.
-[^bagging]: This is reminiscent of bagging, though here the three learners are trained on disjoint sample splits rather than bootstrap resamples.
+The recursive argument above was found (in part) by an LLM. The original proof was fully human-generated; on reviewing it we experimented with LLMs and found that given hints they were able to streamline it considerably. Interestingly, the models were not able to prove the conjecture on their own and needed the original proof as scaffolding.
+
+This is discussed a bit more in Appendix A of the note. My original proof is outlined in Appendix B, and the full version is available [here](https://divitr.github.io/assets/mot.pdf).
+
+[^high-prob]: This seems like a pretty trivial distinction, but these are actually very very different, and being optimal in expectation does not guarantee that an algorithm will be optimal in high probability; see ref@Ishaq2022TheOne-InclusionGraphAlgorithmisnotAlwaysOptimal for example.
 [^realizable]: Realizable means that the hypothesis class of our learner actually contains the true function {f^\star}. Dealing with agnostic (non-realizable) PAC learning is a whole other deal; hopefully the subject of future work!
-[^vc_dim]: VC dimension is a measure of how "expressive" a learner or hypothesis class is; it basically just tells us how complex of a function a hypothesis class can express.
+[^selector]: Formally, a deterministic measurable selector {A} taking a sample {S} to a hypothesis with {A(S) \cap S = \varnothing}. No other properties are assumed.
+[^wlog]: The reduction is that the class of symmetric differences {\mathcal{F}^\star = \{f \Delta f^\star\}} has the same VC dimension as {\mathcal F}, contains the empty set, and turns consistent hypotheses into sample-avoiding sets. The majority vote commutes with taking symmetric differences, so the error region of the vote is unchanged.
+[^bagging]: This is reminiscent of bagging, though here the three learners are trained on disjoint sample splits rather than bootstrap resamples.
+[^moments]: If a nonnegative random variable has {\|Z\|_q \le \lambda} then Markov's inequality gives {\Pr[Z > e\lambda] \le e^{-q}}, so controlling the {q}-th moment for a single well-chosen {q} gives a tail bound at that scale. Setting {q \asymp \log(1/\delta)} converts a moment bound into a {\delta}-dependent bound; this is the same reason the {q} in {d+q} eventually gives the {\log 1/\delta} in the final rate.f
 
 bibliography:
 @article{AAHLZ24,

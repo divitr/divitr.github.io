@@ -145,6 +145,7 @@ class MDTXCompiler:
         # Root directory is posts/ (one level up from source)
         self.root_dir = self.source_dir.parent
         self._mtimes  = {}
+        self._heading_slugs = {}
 
     def scan(self) -> List[Path]:
         return list(self.source_dir.glob("*.mdtx"))
@@ -675,7 +676,13 @@ class MDTXCompiler:
         if not bib_entries:
             return ""
             
-        parts = ['<div class="references">', '<h2>References</h2>', '<ul>']
+        parts = [
+            '<div class="references">',
+            '<h2 id="references">References'
+            '<a class="heading-anchor" href="#references" '
+            'aria-label="Permalink to this section">#</a></h2>',
+            '<ul>',
+        ]
         sorted_entries = sorted(bib_entries.items(), key=lambda item: alpha_keys.get(item[0], item[0]))
         
         for key, entry in sorted_entries:
@@ -1443,12 +1450,50 @@ class MDTXCompiler:
             return f'<div class="main-results"><strong>Main results.</strong><ul>{lis}</ul></div>'
         return re.sub(r'main-results:\s*\n(.*?)\nend main-results;?', repl, text, flags=re.DOTALL)
 
+    # TeX wrappers that carry no meaning once a heading becomes a slug.
+    _SLUG_TEX_NOISE = re.compile(
+        r'\\(?:mathcal|mathbb|mathbf|mathrm|mathsf|mathfrak|boldsymbol|operatorname'
+        r'|text(?:rm|bf|it)?|displaystyle|left|right|bigg?l?|quad|qquad)\b'
+    )
+
+    def slugify_heading(self, text: str) -> str:
+        """Slug from raw heading source, while math markup is still TeX."""
+        text = re.sub(r'<[^>]+>', '', text)                 # emphasis / inline code tags
+        text = re.sub(r'__URL_PLACEHOLDER_\d+__', '', text)
+        text = re.sub(r'\bref@\S+', '', text)
+        text = self._SLUG_TEX_NOISE.sub('', text)
+        text = text.replace('^', '')                        # {S^2} -> s2
+        text = text.replace('\\', '')                       # {\sigma} -> sigma
+        text = re.sub(r'[^A-Za-z0-9]+', '-', text)
+        return text.strip('-').lower() or 'section'
+
+    def unique_slug(self, base: str) -> str:
+        """Suffix repeats so two identically titled sections stay addressable."""
+        count = self._heading_slugs.get(base, 0) + 1
+        self._heading_slugs[base] = count
+        return base if count == 1 else f'{base}-{count}'
+
     def process_headings(self, text: str) -> str:
         out = []
         for L in text.splitlines():
             if L.startswith('#'):
                 lvl = min(len(L) - len(L.lstrip('#')), 6)
-                out.append(f'<h{lvl}>{L.lstrip("#").strip()}</h{lvl}>')
+                content = L.lstrip('#').strip()
+                # "## Title {#custom-id}" pins the slug across rewordings.
+                override = re.search(r'\s*\{#([A-Za-z][\w-]*)\}\s*$', content)
+                if override:
+                    content = content[:override.start()].rstrip()
+                    slug = self.unique_slug(override.group(1).lower())
+                else:
+                    slug = self.unique_slug(self.slugify_heading(content))
+                if 2 <= lvl <= 4:
+                    out.append(
+                        f'<h{lvl} id="{slug}">{content}'
+                        f'<a class="heading-anchor" href="#{slug}" '
+                        f'aria-label="Permalink to this section">#</a></h{lvl}>'
+                    )
+                else:
+                    out.append(f'<h{lvl}>{content}</h{lvl}>')
             else:
                 out.append(L)
         return "\n".join(out)
@@ -1845,6 +1890,7 @@ class MDTXCompiler:
     def compile_file(self, path: Path):
         is_tldr = "research" in str(path) or "tldr" in str(path)
         raw  = path.read_text(encoding='utf8')
+        self._heading_slugs = {}
         
         # Extract ALL URLs IMMEDIATELY after reading, before any processing
         raw, url_map = self.extract_all_urls(raw)

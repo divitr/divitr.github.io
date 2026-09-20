@@ -1166,6 +1166,14 @@ sup a.footnote-reference-highlighted {
     color: #ceced2;
 }
 
+/* Invert white-background figures; hue-rotate restores original hues,
+   and invert(0.92) maps white to ~#141414 to match the page background. */
+:root[data-theme="dark"] .tldr-post figure.mdtx-figure img,
+:root[data-theme="dark"] .tldr-post .image-grid img {
+    filter: invert(0.92) hue-rotate(180deg);
+    opacity: 1;
+}
+
 /* Citations */
 :root {
     --ref-highlight-bg: rgba(74, 74, 74, 0.12);
@@ -1359,4 +1367,199 @@ a.tldr-paper-link {
 }
 a.tldr-paper-link:hover {
     color: var(--primary-color);
+}
+
+/* ---------------------------------------------------------------------------
+   Heading permalinks
+   IDs are minted by the compiler, so these links survive with or without JS.
+   --------------------------------------------------------------------------- */
+
+.blog-post h2[id],
+.blog-post h3[id],
+.blog-post h4[id] {
+    scroll-margin-top: 1.5rem;
+}
+
+.blog-post .heading-anchor {
+    margin-left: 0.4em;
+    font-size: 0.72em;
+    font-weight: 400;
+    color: var(--primary-color);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.blog-post h2:hover .heading-anchor,
+.blog-post h3:hover .heading-anchor,
+.blog-post h4:hover .heading-anchor,
+.blog-post .heading-anchor:focus-visible {
+    opacity: 0.4;
+}
+
+.blog-post .heading-anchor:hover {
+    opacity: 0.9;
+}
+
+/* ---------------------------------------------------------------------------
+   Table of contents
+   A labelled outline pinned in the left gutter. Its right edge tracks the text
+   column rather than the window, so it stays beside the prose instead of
+   drifting into the corner on a wide screen, and it gives up width as the
+   gutter narrows before dropping out entirely.
+   --------------------------------------------------------------------------- */
+
+#toc {
+    position: fixed;
+    top: 7.5rem;
+    right: calc(50% + 400px + 32px);
+    width: clamp(160px, calc(50% - 400px - 48px), 230px);
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 11rem);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+#toc[data-mode="hidden"] {
+    display: none;
+}
+
+#toc .toc-toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 0 0 0.5rem;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: left;
+    opacity: 0.8;
+    cursor: pointer;
+    transition: opacity 0.18s ease, border-color 0.18s ease;
+}
+
+#toc .toc-toggle:hover {
+    opacity: 1;
+    border-bottom-color: #ddd;
+    border-bottom-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
+}
+
+#toc .toc-toggle:focus-visible {
+    outline: 1px solid var(--primary-color);
+    outline-offset: 3px;
+}
+
+#toc .toc-toggle-state::after {
+    content: '(hide)';
+    font-weight: 400;
+    font-size: 0.78rem;
+    opacity: 0.65;
+}
+
+#toc.collapsed .toc-toggle {
+    border-bottom-color: transparent;
+}
+
+#toc.collapsed .toc-toggle-state::after {
+    content: '(show)';
+}
+
+#toc.collapsed .toc-list {
+    display: none;
+}
+
+#toc .toc-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-left: 2px solid #e4e4e4;
+    border-left-color: color-mix(in srgb, var(--primary-color) 16%, transparent);
+}
+
+#toc .toc-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* A faded edge stands in for the scrollbar: it says the outline continues
+   without putting a second piece of chrome in the margin. */
+#toc .toc-list.fade-top {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
+}
+
+#toc .toc-list.fade-bottom {
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 1.5rem);
+    mask-image: linear-gradient(to top, transparent 0, #000 1.5rem);
+}
+
+#toc .toc-list.fade-top.fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem, #000 calc(100% - 1.5rem), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem, #000 calc(100% - 1.5rem), transparent 100%);
+}
+
+#toc .toc-item {
+    margin: 0;
+    padding: 0;
+    line-height: 1.45;
+}
+
+/* Titles wrap rather than truncate: a section is easier to find by its whole
+   name than by the first twenty-odd characters of it. */
+#toc .toc-link {
+    display: block;
+    margin-left: -2px;
+    padding: 0.4rem 0 0.4rem 0.85rem;
+    border-left: 2px solid transparent;
+    color: var(--primary-color);
+    text-decoration: none;
+    opacity: 0.55;
+    overflow-wrap: break-word;
+    transition: opacity 0.18s ease, border-color 0.18s ease;
+}
+
+#toc .toc-h3 .toc-link {
+    padding-left: 1.6rem;
+    font-size: 0.84rem;
+    opacity: 0.38;
+}
+
+#toc .toc-link:hover {
+    opacity: 1;
+}
+
+#toc .toc-link:focus-visible {
+    outline: 1px solid var(--primary-color);
+    outline-offset: -1px;
+}
+
+#toc .toc-item.in-section > .toc-link {
+    opacity: 0.75;
+    border-left-color: currentColor;
+}
+
+#toc .toc-item.active > .toc-link {
+    opacity: 1;
+    font-weight: 500;
+    border-left-color: currentColor;
+}
+
+@media print {
+    #toc,
+    .blog-post .heading-anchor {
+        display: none;
+    }
 }
