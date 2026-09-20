@@ -140,9 +140,9 @@ def _plain_title_text(text: str) -> str:
 
 class MDTXCompiler:
     def __init__(self, source_dir: str):
-        # Source directory is posts/src/
+        # Source directory holds the .mdtx files, e.g. research/tldr/src/
         self.source_dir = Path(source_dir).resolve()
-        # Root directory is posts/ (one level up from source)
+        # Root directory is where compiled pages land, e.g. research/tldr/
         self.root_dir = self.source_dir.parent
         self._mtimes  = {}
         self._heading_slugs = {}
@@ -2079,7 +2079,7 @@ class MDTXCompiler:
     <script src="/theme.js"></script>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/posts/posts.css">
+    <link rel="stylesheet" href="/lib/mdtx.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{doc_title}</title>
@@ -2102,10 +2102,10 @@ class MDTXCompiler:
         </div>
     </footer>
 
-    <script src="/posts/toc-generator.js"></script>
-    <script src="/posts/footnote-sidebar.js"></script>
-    <script src="/posts/collapsible-proofs.js"></script>
-    <script src="/posts/citations.js"></script>
+    <script src="/lib/toc-generator.js"></script>
+    <script src="/lib/footnote-sidebar.js"></script>
+    <script src="/lib/collapsible-proofs.js"></script>
+    <script src="/lib/citations.js"></script>
 </body>
 </html>"""
 

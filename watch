@@ -1,26 +1,20 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")" || exit 1
 
-C=posts/compile.py
-P=posts/src
+C=lib/compile.py
 T=research/tldr/src
 
 resolve() {
   a="${1%.mdtx}"; a="${a%/}"
   case "$a" in
     tldr|tldrs|research/tldr) echo "$T" ;;
-    post|posts|blog) echo "$P" ;;
     tldr/*|tldrs/*|research/tldr/*) echo "$T/${a##*/}.mdtx" ;;
-    post/*|posts/*|blog/*) echo "$P/${a##*/}.mdtx" ;;
-    *) [ -f "$T/$a.mdtx" ] && echo "$T/$a.mdtx" || echo "$P/$a.mdtx" ;;
+    *) echo "$T/$a.mdtx" ;;
   esac
 }
 
 if [ $# -eq 0 ]; then
-  python3 "$C" "$P" & a=$!
-  python3 "$C" "$T" & b=$!
-  trap 'kill $a $b 2>/dev/null' EXIT INT TERM
-  wait
+  python3 "$C" "$T"
 else
   t=$(resolve "$1")
   [ -e "$t" ] || { echo "no such source: $t" >&2; exit 1; }
