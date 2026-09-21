@@ -759,6 +759,22 @@ sup a.footnote-reference-highlighted {
     }
 }
 
+/* Display math. KaTeX does not line-break display mode, so a wide equation
+   would otherwise overflow the column and drag the whole page sideways.
+   overflow-y is pinned to hidden because overflow-x:auto would otherwise
+   promote it to auto and put scrollbars on tall fractions and big operators;
+   the padding gives those back the few pixels they need (0.5em is the measured
+   floor, 0.6em leaves headroom). Margin is cut by the same amount the padding
+   adds, so the vertical rhythm around equations is unchanged. */
+.blog-post .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-top: 0.6em;
+    padding-bottom: 0.6em;
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
+}
+
 /* Tables */
 .mdtx-table-wrapper {
     overflow-x: auto;
