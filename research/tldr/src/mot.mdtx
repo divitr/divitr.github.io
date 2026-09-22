@@ -14,7 +14,7 @@ Generally in learning theory, we are concerned with a notion of statistical opti
 
 Generally, the supervised learning setup is as follows: some true function {f^\star} exists, we see it applied to some finite set of samples drawn i.i.d. from some unknown distribution {P}, and we must then predict the rule. Let's introduce some notation: we see {(\mathcal X, \mathcal Y)}, where {\mathcal X} is our training set, and {\mathcal Y = f^\star(\mathcal X)} are the labels. Let's assume all the labels are binary, i.e. either {-1} or {+1} (one can also use {0} and {1}, or really anything, it doesn't matter). Further, let us assume that we know that the true function {f^\star} is a member of some class of functions {\mathcal F}. Immediately, this is helpful; our learner need not search over all functions, only over {\mathcal F}.
 
-We call {\mathcal F} our hypothesis class. Knowing that we need only search over {\mathcal F} is helpful, but intuitively, if {\mathcal F} is a very complex function class, our learning problem is much harder. In order to quantify this, we use the VC dimension. The VC dimension {d} is just the largest number of samples that {\mathcal F} can label in every possible way. It might help to think of this as a game: assume you're playing against some adversary who wants to make the learning problem as hard as possible for you. Since the adversary knows that you both know the search space is {\mathcal F}, the adversary can choose to give you points that are compatible with *every* function {f} in {\mathcal F} to effectively ensure you get no usable information. Knowing the VC dimension of {\mathcal F} is {d} then just says that for any {d+1} points, there is at least one labeling that no {f} in {\mathcal F} can produce.
+We call {\mathcal F} our hypothesis class. Knowing that we need only search over {\mathcal F} is helpful, but intuitively, if {\mathcal F} is a very complex function class, our learning problem is much harder. In order to quantify this, we use the VC dimension. The VC dimension {d} is just the largest number of samples that {\mathcal F} can label in every possible way. It might help to think of this as a game: assume you're playing against some adversary who wants to make the learning problem as hard as possible for you. Since the adversary knows that you both know the search space is {\mathcal F}, the adversary can choose points on which *every* possible labeling is produced by some {f} in {\mathcal F}, so no labeling can be ruled out in advance and you get no usable information. Knowing the VC dimension of {\mathcal F} is {d} then just says that for any {d+1} points, there is at least one labeling that no {f} in {\mathcal F} can produce.
 
 A good example here is the hypothesis class of thresholds: functions {f_a(x)} that predict {+1} if {x \geq a} and {-1} if {x < a}. It is clear that the VC dimension of this class is 1: every possible labeling of a single point is realizable by just choosing a threshold above or below {x}, and we can construct a labeling of 2 points that is not realizable. Indeed, for {x_1, x_2} such that {x_1 < x_2}, set the label of {x_1} to {+1} and the label of {x_2} to {-1} -- no threshold function can realize this labeling (if you're not convinced, try drawing it out!).
 
@@ -37,7 +37,7 @@ Finally, let us make a remark on in-expectation vs. high-probability bounds. Bou
 
 By this point, all this machinery probably feels overly complex; surely the right answer is simply to minimize the error on our training set. Since we're in the realizable regime, there is at least one rule that gets every training point right, so just output one of those rules! This is empirical risk minimization (ERM), simply understood as "output any rule consistent with the data."
 
-Note the use of the word "any." ERM is a family of algorithms since when several rules are consistent, nothing tells us which to pick. Formally, we just fix some deterministic tie-breaking rule upfront and assume nothing else about it.[^selector] Because of this, one can actually show that ERM is suboptimal and does not achieve the optimal rate, hence the interest (and difficulty) in developing optimal algorithms.
+Note the use of the word "any." ERM is a family of algorithms since when several rules are consistent, nothing tells us which to pick. Formally, we just fix some deterministic tie-breaking rule upfront and assume nothing else about it.[^selector] Because of this, one can actually show that some consistent rules are suboptimal and miss the optimal rate, hence the interest (and difficulty) in developing optimal algorithms.
 
 Let's also make one observation here, for use later. Every statement we've made here has been about symmetric differences with the target, so we can relabel so that the target is the empty set (this just means we can relabel so that {f^\star} is the function which assigns {0} to every sample).[^wlog] Once we've done this, a consistent hypothesis (meaning a hypothesis that matches the training data we've seen) is just a set containing none of the training points, and its error is just the probability mass that the distribution {P} assigns to it. So going forward, ERM gives us a set avoiding the sample, and we want to prove that that set is small.
 
@@ -51,7 +51,7 @@ list[o]:
 - The final prediction is the majority vote: {\text{Maj}(h_1(x), h_2(x), h_3(x))}.[^bagging]
 end list;
 
-The open problem was whether this algorithm achieves the theoretically optimal rate of {O\left(\frac{d + \log(1/\delta)}{n}\right)}, or whether it incurs an extra {\log\log(1/\delta)} (left by previous analysis).
+The open problem was whether this algorithm achieves the theoretically optimal rate of {O\left(\frac{d + \log(1/\delta)}{n}\right)}, or whether it incurs the extra {\log\log\left(\min\{n/d, 1/\delta\}\right)} left by previous analysis.
 
 **[NOTE]** From here it gets a bit more technical -- some background in probability will likely be useful.
 
@@ -82,7 +82,7 @@ Ideally, we want a bound of the form
 {
     R_q \le \left(\frac{C(d+q)}{m}\right)^q.
 }
-Given the above bound, the optimal rate follows immediately. Taking {L^q} norms and applying Minkowski's inequality to the three-term union bound gives {\|P(\mathcal{E}_{\text{Maj}})\|_q \leq 3R_q^{1/q} \leq 3C(d+q)/m}, and then Markov's inequality on the {q}-th moment converts that into a tail bound decaying like {e^{-q}}. Choosing {q = \lceil \log(1/\delta) \rceil} forces the tail to be exactly {\delta}, and since {d + q \le 2(d + \log(1/\delta))}, we are done.
+Given the above bound, the optimal rate follows immediately. Taking {L^q} norms and applying Minkowski's inequality to the three-term union bound gives {\|P(\mathcal{E}_{\text{Maj}})\|_q \leq 3R_q^{1/q} \leq 3C(d+q)/m}, and then Markov's inequality on the {q}-th moment converts that into a tail bound decaying like {e^{-q}}. Choosing {q = \lceil \log(1/\delta) \rceil} forces the tail down to {\delta}, and since {d + q \le 2(d + \log(1/\delta))}, we are done.
 
 ## A Proof by Partitioning into Dyadic Scales
 
@@ -147,7 +147,7 @@ With the one-step contraction established, the rest more or less writes itself. 
 
 ## An Experiment with LLMs
 
-The recursive argument above was found (in part) by an LLM. The original proof was fully human-generated; on reviewing it we experimented with LLMs and found that given hints they were able to streamline it considerably. Interestingly, the models were not able to prove the conjecture on their own and needed the original proof as scaffolding.
+The recursive argument above was found (in part) by an LLM. The original proof was worked out by hand, with an LLM used only to check intermediate calculations and look for local simplifications; on reviewing it we experimented further and found that, given a prompt of hints distilled from that proof, the models were able to streamline it considerably. Interestingly, they were not able to prove the conjecture from the problem statement alone.
 
 This is discussed a bit more in Appendix A of the note. My original proof is outlined in Appendix B, and the full version is available [here](https://divitr.github.io/assets/mot.pdf).
 
