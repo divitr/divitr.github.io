@@ -8,6 +8,23 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤷‍♂️</text></svg>">
     <script src="/theme.js"></script>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 4rem);
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .fine-print {
+            margin: 3rem 0 0;
+            padding: 0;
+            font-size: 0.65rem;
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const expandableItems = document.querySelectorAll('.expandable-item');
@@ -61,6 +78,10 @@
             <li><a href="../assets/focaccia.jpg" rel="noopener noreferrer">focaccia</a></li>
         </ul>
     </main>
+
+    <footer class="footer fine-print">
+        <a href="/cookies.html">(cookie policy)</a>
+    </footer>
 </body>
 
 </html>
