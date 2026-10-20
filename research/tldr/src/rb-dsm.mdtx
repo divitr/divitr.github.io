@@ -1,7 +1,7 @@
 req: math, stats;
 title: Rao-Blackwellized Score Matching on Manifolds;
 date: May 04, 2026;
-desc: What do generative modeling techniques actually recover, and can we do it better?;
+desc: What do generative modeling techniques actually recover on structured data?;
 emoji: 🔇;
 paper_link: https://arxiv.org/abs/2605.25567;
 
@@ -27,7 +27,7 @@ Thus, the natural question is *What exactly is this method learning*?
 
 So far, we know that score matching is a way of approximating a distribution by matching its derivatives and that manifolds are some type of mathematical way of representing structured data. Now, let's take a brief detour into statistics to study the Rao-Blackwell Theorem.
 
-Consider the following setup: we have a (possibly unfair) coin that lands heads with probability {p}. Given that we observe {n} flips of the coin, we wish to estimate {p}. Any rule that takes in these {n} observations and outputs a prediction {\hat{p}} is an *estimator*. There's two main desirable properties that we want from an estimator: 
+Consider the following setup: we have a (possibly unfair) coin that lands heads with probability {p}. Given that we observe {n} flips of the coin, we wish to estimate {p}. Any rule that takes in these {n} observations and outputs a prediction {\hat{p}} is an *estimator*. There are two main desirable properties that we want from an estimator: 
 
 list[u]:
  - *Unbiasedness*, i.e. it should be correct on average;
@@ -64,6 +64,7 @@ The first step is to identify our analog of a sufficient statistic here. Recalli
 
 image:
 src: research/tldr/rb-dsm/hero_diagram.png;
+alt: Noisy points in the ambient space mapped by nearest-point projection back onto a curved manifold.;
 width: 80%;
 caption: Projecting points back onto the manifold.
 end image;
@@ -84,6 +85,7 @@ In fact, this reduces the variance just like in the Rao-Blackwell Theorem. {\pi(
 
 image:
 src: research/tldr/rb-dsm/variance_collapse.png;
+alt: Variance of the Rao-Blackwellized target staying well below the non-Rao-Blackwellized target as the noise scale shrinks.;
 width: 80%;
 caption: Rao-Blackwellization reduces variance.
 end image;
@@ -94,7 +96,7 @@ The main benefit here is that we are able to estimate what we want with signific
 
 We now have a target that has low variance, but we still have not answered the question we posed earlier. Because we had to corrupt the data to make score matching well defined at all, we aren't learning the true law, we're learning some corrupted surrogate. So, what's the surrogate?
 
-One can show (via a *lot* of tedious math), that expanding {r_\sigma(z)} as a power series in the noise level {\sigma} gives
+One can show (via a *lot* of tedious math) that expanding {r_\sigma(z)} as a power series in the noise level {\sigma} gives
 {
     r_\sigma(z) = \nabla_M \log q(z) + \sigma^2\bigl[b_q(z) + g_M^{\text{ext}}(z) + g_M^{\text{inh}}(z)\bigr] + O(\sigma^4).
 }
@@ -136,13 +138,14 @@ This is demonstrated in the top row of the below figure. The bottom row shows th
 
 image:
 src: research/tldr/rb-dsm/langevin_concentration.png;
+alt: Top row, equilibrium bias rising with dimension and vanishing on the round 2-sphere; bottom row, the Rao-Blackwellized target giving lower score error than ambient DSM across training set sizes.;
 width: 95%;
 caption: Top: equilibrium bias grows with dimension (and vanishes on {S^2}). Bottom: score error vs. training set size.
 end image;
 
 Ambient DSM is often observed to work about as well as intrinsic methods on data living on {S^2} (e.g. earth-science event data like earthquake or wildfire locations), even though score matching on manifold-supported data is ill-posed. The {\alpha_2 = 0} cancellation offers an explanation: on the round 2-sphere, the leading-order geometric bias vanishes, so ambient and intrinsic methods agree up to the Tweedie term.
 
-**P.S.** Apparently some account also made one of those AI generated reels of voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/?utm_source=ig_web_copy_link) :).
+**P.S.** Apparently some account also made one of those AI generated reels of voiceovers with Minecraft gameplay in the background, if that's more your style, you can check it out [here](https://www.instagram.com/reel/DY8UrONseKo/) :).
 
 [^mit_notes]: See e.g. [these notes](https://math.mit.edu/classes/18.952/spring2012/Chapter4-18.952.pdf) for an example of a very formal definition.
 [^manifold_structure_comment]: If you're interested in how exactly they are useful for representing structures, take a look at Lie theory: a good intro is in [these notes](https://www.cis.upenn.edu/~cis6100/cis610-23-sl4.pdf).

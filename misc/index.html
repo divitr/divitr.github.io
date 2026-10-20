@@ -7,7 +7,7 @@
     <title>Misc.</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤷‍♂️</text></svg>">
     <script src="/theme.js"></script>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="/style.css">
     <style>
         body {
             display: flex;
@@ -33,7 +33,8 @@
                 const trigger = item.querySelector('.expand-trigger');
                 const nestedList = item.querySelector('.nested-list');
 
-                // Click to expand/collapse
+                if (!trigger || !nestedList) return;
+
                 trigger.addEventListener('click', function() {
                     if (nestedList.style.display === 'none') {
                         nestedList.style.display = 'block';
@@ -59,20 +60,10 @@
         <h1>Misc.</h1>
         <ul class="misc-list">
             <li class="expandable-item"><a href="/notes">crib sheets and notes</a></li>
-            <!-- <li class="expandable-item">
-                <span class="expand-trigger">some other pages</span>
-
-                <ul class="nested-list" style="display: block;">
-                    
-                </ul>
-            </li> -->
             <li class="expandable-item">
                 <span class="expand-trigger">some software</span>
                 <ul class="nested-list" style="display: block;">
-                    <li class="nested-header"><a href="https://github.com/divitr/bibtexcopy" target="_blank" rel="noopener noreferrer">chrome extension to copy bibtex to clipboard</a></li>
-                    <!-- <li class="nested-header"><a href="https://github.com/divitr/assignment-tracker" target="_blank" rel="noopener noreferrer">cli tool for tracking gradescope and canvas assignments</a></li> -->
-                    <!-- <li class="nested-header"><a href="https://github.com/divitr/todo" target="_blank" rel="noopener noreferrer">vibecoded todo app</a></li> -->
-                    <li class="nested-header"><a href="https://github.com/divitr/reels-pip" target="_blank" rel="noopener noreferrer">chrome extension to autoscroll reels in a PiP window</a></li>
+                    <li class="nested-header"><a href="https://github.com/divitr/bibtexcopy" target="_blank" rel="noopener noreferrer">chrome extension to copy bibtex to clipboard</a></li>                    <li class="nested-header"><a href="https://github.com/divitr/reels-pip" target="_blank" rel="noopener noreferrer">chrome extension to autoscroll reels in a PiP window</a></li>
                     <li class="nested-header"><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">(partially vibecoded) prediction market for distributions over continuous outcomes</a></li>
                 </ul>
             </li>

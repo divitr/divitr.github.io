@@ -171,34 +171,6 @@ a:hover {
     color: #ccc;
 }
 
-.contact-item {
-    display: flex;
-    align-items: baseline;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #eee;
-}
-
-.contact-label {
-    font-size: 1rem;
-    color: #666;
-    min-width: 100px;
-    flex-shrink: 0;
-}
-
-.contact-value {
-    font-size: 1rem;
-    color: #4a4a4a;
-    flex-grow: 1;
-    text-align: right;
-}
-
-
-.news {
-    margin-bottom: 0.5rem;
-    border-top: 1px solid #eee;
-    padding-top: 1.2rem;
-}
-
 .section-label {
     font-size: 1rem;
     font-weight: 600;
@@ -207,41 +179,10 @@ a:hover {
     margin-bottom: 0.4rem;
 }
 
-.news-items {
-    display: flex;
-    flex-direction: column;
-}
-
-.news-item {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    padding: 0.2rem 0;
-}
-
-.news-date {
-    font-size: 0.82rem;
-    color: #aaa;
-    flex-shrink: 0;
-    font-style: italic;
-    min-width: 4.5rem;
-}
-
-.news-content {
-    font-size: 0.95rem;
-    color: var(--primary-color);
-    line-height: 1.5;
-}
-
 .selected-work {
     margin-bottom: 0.5rem;
     border-top: 1px solid #eee;
     padding-top: 1.2rem;
-}
-
-.section-note {
-    font-weight: normal;
-    color: #999;
 }
 
 .selected-work-items {
@@ -296,28 +237,6 @@ a:hover {
     color: #777;
 }
 
-.news-controls {
-    margin-top: 0.5rem;
-    text-align: center;
-}
-
-.news-btn {
-    background: none;
-    border: none;
-    color: #bbb;
-    padding: 0;
-    font-size: 0.85rem;
-    font-style: italic;
-    cursor: pointer;
-    font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
-    transition: color 0.2s;
-}
-
-.news-btn:hover {
-    color: #888;
-}
-
-/* Notes page styling */
 .notes-filter {
     background: none;
     border: none;
@@ -375,11 +294,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Misc page styling */
-.misc-section {
-    margin-bottom: 3rem;
-}
-
 .misc-list {
     list-style: none;
     padding: 0;
@@ -400,7 +314,6 @@ a:hover {
     color: #4a4a4a;
 }
 
-/* Expandable items */
 .expandable-item {
     cursor: default;
 }
@@ -448,7 +361,6 @@ a:hover {
     padding-left: 0;
 }
 
-/* Research page styling */
 .current-work-section {
     margin-bottom: 3rem;
 }
@@ -458,30 +370,12 @@ a:hover {
     font-size: 1.5rem;
 }
 
-.research-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.tldr-series-note {
+    opacity: 0.6;
+    font-size: 0.75em;
+    margin-top: 1rem;
 }
 
-.research-list {
-    margin-left: 2rem;
-}
-
-.research-list li {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.research-list li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: #4a4a4a;
-}
-
-/* Papers page styling */
 .papers-section {
     margin-top: 2rem;
     border-top: 1px solid #eee;
@@ -502,12 +396,6 @@ a:hover {
     border-bottom: 1px solid #eee;
 }
 
-.projects-page .papers-section,
-.projects-page .paper-item,
-.projects-page .paper-item:last-child {
-    border: 0;
-}
-
 .paper-content {
     flex-grow: 1;
 }
@@ -526,46 +414,11 @@ a:hover {
     margin-bottom: 0.3rem;
 }
 
-.paper-links {
-    font-size: 0.9rem;
-    color: #aaa;
-}
-
 @media (min-width: 600px) {
-    .paper-authors, 
-    .paper-venue, 
-    .paper-links,
-    .paper-summary-container {
+    .paper-authors,
+    .paper-venue {
         padding-left: 1.25rem;
     }
-}
-
-.paper-links a {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
-.paper-links a:hover {
-    text-decoration: underline;
-}
-
-.paper-abstract {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
-    opacity: 0;
-    margin-top: 0;
-    font-size: 0.875rem;
-    color: #666;
-    line-height: 1.6;
-    font-style: italic;
-    white-space: pre-wrap;
-}
-
-.paper-abstract.open {
-    max-height: 800px;
-    opacity: 1;
-    margin-top: 0.6rem;
 }
 
 .papers-section {
@@ -582,48 +435,6 @@ a:hover {
     font-weight: 600;
 }
 
-.paper-key-note {
-    font-size: 0.82rem;
-    color: #777;
-    margin: -0.45rem 0 0.75rem;
-    line-height: 1.4;
-}
-
-.paper-meta {
-    font-size: 0.9rem;
-    color: #666;
-    line-height: 1.4;
-}
-
-.paper-meta a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.paper-meta a:hover {
-    text-decoration: underline;
-}
-
-.contribution-note {
-    font-style: italic;
-    color: #999;
-}
-
-.contributions-note {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 1.5rem;
-}
-
-.contribution-note::before {
-    content: '(';
-}
-
-.contribution-note::after {
-    content: ')';
-}
-
-/* Paper Author Styling - Added Jan 2026 */
 .paper-authors {
     font-size: 0.95rem;
     color: #444;
@@ -648,21 +459,13 @@ a:hover {
     color: var(--primary-color);
 }
 
-.author-order-note {
-    font-size: 0.86em;
-    color: #777;
-    font-style: italic;
-}
-
 :root[data-theme="dark"] {
-    --primary-color: #ceced2;     /* Softer cream-silver paper (much less harsh) */
-    --background-color: #151516;  /* Deep, premium warm-charcoal matte */
+    --primary-color: #ceced2;
+    --background-color: #151516;
     --hover-color: #1c1c1d;
 }
 
 :root[data-theme="dark"] {
-
-    /* Core layout typography & canvas */
     body {
         color: var(--primary-color);
         background: var(--background-color);
@@ -671,17 +474,14 @@ a:hover {
     a {
         color: var(--primary-color);
     }
-    
-    /* Academic border lines & dividers */
-    header, 
-    .contact-item, 
-    .news, 
+
+    header,
     .selected-work,
     .notes-item, 
     .papers-section, 
     .paper-item, 
     .last-updated {
-        border-color: #323235 !important; /* Slightly brighter, more defined borders */
+        border-color: #323235 !important;
     }
 
     .last-updated a,
@@ -692,27 +492,15 @@ a:hover {
     .last-updated a:hover {
         color: #a8a8ad !important;
     }
-    
-    /* Muted academic metadata text - raised for better contrast */
-    .contact-label, 
-    .paper-venue, 
-    .paper-abstract, 
-    .paper-meta, 
-    .paper-key-note,
-    .author-order-note,
-    .contributions-note {
+
+    .paper-venue {
         color: #a8a8ad !important;
     }
-    
-    /* Subtly hidden dates and document actions - raised for readability */
-    .news-date, 
-    .paper-links, 
-    .paper-links a, 
+
     .notes-no-results {
         color: #86868b !important;
     }
 
-    .section-note,
     .selected-work-meta {
         color: #a8a8ad !important;
     }
@@ -737,23 +525,11 @@ a:hover {
     .footer a:hover {
         color: #b2b2b7 !important;
     }
-    
-    .contribution-note {
-        color: #98989d !important;
-    }
-    
+
     .nested-header {
         color: #86868b !important;
     }
-    
-    .news-btn {
-        color: #86868b !important;
-    }
-    .news-btn:hover {
-        color: #b2b2b7 !important;
-    }
-    
-    /* Coursework notes filter input */
+
     .notes-filter {
         color: var(--primary-color);
         border-bottom-color: #323235;
@@ -765,7 +541,6 @@ a:hover {
         border-color: #98989d;
     }
 
-    /* Authors details */
     .paper-authors {
         color: #cfcfd2 !important;
     }
@@ -779,7 +554,6 @@ a:hover {
         text-decoration-color: var(--primary-color);
     }
 
-    /* Soften image luminance under dark-adapted lighting */
     .profile-img {
         opacity: 0.84;
         transition: opacity 0.25s ease;
@@ -788,8 +562,7 @@ a:hover {
         opacity: 1;
     }
 
-    /* KaTeX Math block overrides */
-    .katex-display, 
+    .katex-display,
     .katex {
         background: transparent !important;
         background-color: transparent !important;

@@ -1,172 +1,3 @@
-/* Visualize toggle button — matches tag-filter look but excluded from filter logic */
-.viz-btn {
-    padding: 0.3rem 0.5rem;
-    background: transparent;
-    border: none;
-    font-size: 0.9rem;
-    font-family: inherit;
-    line-height: 1;
-    min-height: 1.5rem;
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    transition: color 0.15s ease;
-    color: #999;
-    margin-left: auto;
-    white-space: nowrap;
-}
-.viz-btn:hover  { color: var(--primary-color); }
-.viz-btn.active { color: var(--primary-color); font-weight: 600; }
-
-/* Constellation image caption — matches post figcaption style */
-.constellation-caption {
-    text-align: center;
-    color: #777;
-    font-size: 0.84rem;
-    line-height: 1.45;
-    font-style: italic;
-    margin-top: 0.55rem;
-    margin-bottom: 0;
-}
-
-/* Constellation tooltip */
-.constellation-tooltip {
-    position: absolute;
-    z-index: 20;
-    max-width: 240px;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border: 0;
-    box-shadow: none;
-    outline: none;
-    border-radius: 4px;
-    isolation: isolate;
-    padding: 0.75rem 1rem;
-    font-family: Charter, 'Bitstream Charter', Cambria, Georgia, serif;
-    font-size: 0.85rem;
-    color: #4a4a4a;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    line-height: 1.4;
-}
-
-.constellation-tooltip::before {
-    content: "";
-    position: absolute;
-    inset: -16px;
-    border-radius: 10px;
-    background: rgba(250, 250, 250, 0.14);
-    backdrop-filter: blur(8px) saturate(1.02);
-    -webkit-backdrop-filter: blur(8px) saturate(1.02);
-    -webkit-mask-image: radial-gradient(ellipse 125% 112% at 50% 50%,
-        rgba(0, 0, 0, 0.82) 36%,
-        rgba(0, 0, 0, 0.48) 62%,
-        rgba(0, 0, 0, 0.2) 80%,
-        rgba(0, 0, 0, 0.06) 90%,
-        transparent 98%);
-    mask-image: radial-gradient(ellipse 125% 112% at 50% 50%,
-        rgba(0, 0, 0, 0.82) 36%,
-        rgba(0, 0, 0, 0.48) 62%,
-        rgba(0, 0, 0, 0.2) 80%,
-        rgba(0, 0, 0, 0.06) 90%,
-        transparent 98%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.constellation-tooltip > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* Tag filter buttons */
-.tag-filters {
-    display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0 1.5rem 0;
-    flex-wrap: wrap;
-}
-
-.tag-filter {
-    padding: 0.3rem 0.75rem;
-    background: transparent;
-    border: none;
-    font-size: 0.9rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #999;
-    text-decoration: none;
-}
-
-.tag-filter:hover {
-    color: var(--primary-color);
-}
-
-.tag-filter.active {
-    color: #555;
-    font-weight: 525;
-}
-
-#active-filter-status {
-    font-size: 0.8rem;
-    color: #bbb;
-    min-height: 1.2em;
-    margin-top: 0.25rem;
-}
-
-/* Post tags */
-.post-tags {
-    margin-top: 0.5rem;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.post-tags .tag {
-    font-size: 0.8rem;
-    padding: 0;
-    background: transparent;
-    border: none;
-    color: #999;
-    cursor: default;
-    transition: color 0.2s ease;
-    pointer-events: none;
-}
-
-.post-tags .tag::before {
-    content: '#';
-    color: #ccc;
-    margin-right: 0.1rem;
-    transition: color 0.2s ease;
-}
-
-.post-tags .tag.highlighted {
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-.post-tags .tag.highlighted::before {
-    color: var(--primary-color);
-}
-
-/* No hover effects on tags */
-.post-tags .tag:hover {
-    background: transparent;
-    color: inherit;
-}
-
-/* Empty state message */
-.empty-state-message {
-    padding: 2rem 0;
-    text-align: center;
-    color: #999;
-    font-size: 0.9rem;
-}
-
-/* Blog index styles */
 .blog-posts {
     margin-top: 2rem;
 }
@@ -224,17 +55,6 @@
     font-size: 0.875rem;
 }
 
-.blog-analysis-section {
-    margin: 2rem 0;
-}
-
-.blog-analysis-section .toggle-analysis {
-    display: inline;
-}
-
-
-/* Override main site header styling for blog pages */
-body #header-placeholder header,
 body header {
     display: flex !important;
     justify-content: space-between !important;
@@ -244,12 +64,10 @@ body header {
     border-bottom: 1px solid #eee !important;
 }
 
-/* Reduce footer spacing for blog posts */
 .blog-post + .footer {
     margin: 2rem auto 1rem !important;
 }
 
-/* Lighter color for footer links */
 .footer a,
 footer a {
     color: #888;
@@ -266,22 +84,6 @@ footer a:hover {
 
 .blog-post.hidden {
     display: none;
-}
-
-@media (max-width: 768px) {
-    .blog-analysis-section .toggle-analysis {
-        display: none;
-    }
-
-    .blog-analysis-section .analysis-section {
-        display: none !important;
-    }
-}
-
-.date {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 2rem;
 }
 
 .blog-post {
@@ -307,17 +109,6 @@ footer a:hover {
     margin: 0 0 0.5rem 0;
 }
 
-.blog-post .intro .post-tags {
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.blog-post .intro .date {
-    font-size: 0.9rem;
-    color: #999;
-    margin: 0;
-}
-
 .blog-post .intro .desc {
     font-size: 1rem;
     color: #666;
@@ -328,12 +119,6 @@ footer a:hover {
 .blog-post h1 {
     font-size: 2rem;
     color: var(--primary-color, #4a4a4a);
-}
-
-.blog-post-date {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 2rem;
 }
 
 .blog-post h2 {
@@ -351,7 +136,6 @@ footer a:hover {
     text-decoration: underline;
 }
 
-/* Code block styling */
 .blog-post pre {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
@@ -381,7 +165,6 @@ footer a:hover {
     color: #d73a49;
 }
 
-/* Blog post list styling - match main site style */
 .blog-post ul {
     list-style: none;
     padding: 0;
@@ -412,7 +195,6 @@ footer a:hover {
     line-height: 1.65;
 }
 
-/* Ensure all text elements have proper fonts */
 .blog-post p {
     line-height: 1.65;
     color: var(--primary-color);
@@ -474,15 +256,6 @@ footer a:hover {
     padding: 10px;
     border-radius: 5px;
     font-family: monospace;
-}
-
-.example-box-completion {
-    margin: 10px 0;
-}
-
-.example-box-description {
-    color: #666;
-    font-size: 0.8em;
 }
 
 .blog-post figure.mdtx-figure {
@@ -572,7 +345,6 @@ footer a:hover {
     justify-content: center;
 }
 
-/* Reset mdtx-figure flex layout so images center correctly in grid cells */
 .image-grid figure.mdtx-figure {
     display: flex;
     flex-direction: column;
@@ -600,8 +372,6 @@ footer a:hover {
     text-align: center;
 }
 
-
-/* Footnote styling */
 .footnotes {
     margin-top: 2rem;
     padding-top: 1rem;
@@ -646,7 +416,6 @@ footer a:hover {
     color: var(--primary-color);
 }
 
-/* Inline footnote references */
 sup a {
     text-decoration: none;
     color: var(--primary-color);
@@ -658,7 +427,6 @@ sup a:hover {
     text-decoration: underline;
 }
 
-/* Sidenote (RHS footnotes for wide viewports) */
 .footnote-sidenote {
     position: absolute;
     width: 220px;
@@ -699,7 +467,6 @@ sup a:hover {
     }
 }
 
-/* Footnote tooltip on hover */
 .footnote-tooltip {
     position: fixed;
     max-width: 400px;
@@ -730,7 +497,6 @@ sup a:hover {
     color: var(--primary-color);
 }
 
-/* Hover effect on footnote reference */
 sup a {
     transition: background 0.2s ease;
     padding: 0 2px;
@@ -742,12 +508,10 @@ sup a:hover {
     background: #faf9f6;
 }
 
-/* Reciprocal highlight when the corresponding footnote is hovered. */
 sup a.footnote-reference-highlighted {
     font-weight: 600;
 }
 
-/* Responsive design for mobile */
 @media (max-width: 768px) {
     .image-grid {
         grid-template-columns: 1fr;
@@ -759,13 +523,6 @@ sup a.footnote-reference-highlighted {
     }
 }
 
-/* Display math. KaTeX does not line-break display mode, so a wide equation
-   would otherwise overflow the column and drag the whole page sideways.
-   overflow-y is pinned to hidden because overflow-x:auto would otherwise
-   promote it to auto and put scrollbars on tall fractions and big operators;
-   the padding gives those back the few pixels they need (0.5em is the measured
-   floor, 0.6em leaves headroom). Margin is cut by the same amount the padding
-   adds, so the vertical rhythm around equations is unchanged. */
 .blog-post .katex-display {
     overflow-x: auto;
     overflow-y: hidden;
@@ -775,7 +532,6 @@ sup a.footnote-reference-highlighted {
     margin-bottom: 0.4em;
 }
 
-/* Tables */
 .mdtx-table-wrapper {
     overflow-x: auto;
     margin: 1.5rem 0;
@@ -820,7 +576,6 @@ sup a.footnote-reference-highlighted {
     border-top: 1px solid #d0d0d0;
 }
 
-/* For theorem, lemma, etc. */
 .env-box {
     margin: 1.5rem 0;
     padding: 0;
@@ -840,11 +595,6 @@ sup a.footnote-reference-highlighted {
     font-style: italic;
 }
 
-.env-box-title .env-title {
-    font-weight: normal;
-}
-
-/* Proof box styling with subtle left border */
 .proof-box {
     border-left: 2px solid #e0e0e0;
     padding-left: 1.5rem;
@@ -859,7 +609,6 @@ sup a.footnote-reference-highlighted {
     gap: 0.5rem;
 }
 
-/* Make links in proof titles subtle */
 .proof-box-title a {
     color: inherit;
     text-decoration: none !important;
@@ -893,7 +642,6 @@ sup a.footnote-reference-highlighted {
     background: rgba(74, 74, 74, 0.1);
 }
 
-/* Collapsed state */
 .proof-box.collapsed {
     padding-bottom: 0;
 }
@@ -914,7 +662,6 @@ sup a.footnote-reference-highlighted {
 }
 
 :root[data-theme="dark"] {
-    /* Code pre and inline styling */
     .blog-post pre {
         background: #1c1c1e !important;
         border-color: #323235 !important;
@@ -924,15 +671,9 @@ sup a.footnote-reference-highlighted {
     }
     .blog-post code {
         background: #2c2c2e !important;
-        color: #ff7b72 !important; /* Elegant warm coral inline code highlight */
+        color: #ff7b72 !important;
     }
 
-    /* Muted blog layout dates and backlink actions */
-    .blog-post-date {
-        color: #86868b !important;
-    }
-    
-    /* Dynamic tooltips (footnotes) */
     .footnote-tooltip {
         background: #1c1c1e !important;
         border-color: #323235 !important;
@@ -950,7 +691,6 @@ sup a.footnote-reference-highlighted {
         color: #b2b2b7 !important;
     }
 
-    /* Keep inline footnote-reference hover feedback compatible with dark mode. */
     sup a:hover {
         background: rgba(226, 226, 229, 0.12) !important;
     }
@@ -970,8 +710,7 @@ sup a.footnote-reference-highlighted {
     .footnote-sidenote.highlighted .sidenote-number {
         color: #98989d !important;
     }
-    
-    /* Mathematical proofs & environment layouts */
+
     .proof-box {
         border-left-color: #323235 !important;
     }
@@ -985,89 +724,19 @@ sup a.footnote-reference-highlighted {
         background: rgba(226, 226, 229, 0.1) !important;
     }
 
-    /* Tag filters & list indices */
-    .tag-filter {
-        color: #86868b !important;
-    }
-    .tag-filter:hover {
-        color: var(--primary-color) !important;
-    }
-    .tag-filter.active {
-        color: var(--primary-color) !important;
-    }
-    #active-filter-status {
-        color: #555559 !important;
-    }
-    
     .blog-post-item {
         border-color: #323235 !important;
     }
     .blog-post-item .post-date {
         color: #86868b !important;
     }
-    
-    .post-tags .tag {
-        color: #86868b !important;
-    }
-    .post-tags .tag::before {
-        color: #48484a !important;
-    }
-    .post-tags .tag.highlighted {
-        color: var(--primary-color) !important;
-    }
-    .post-tags .tag.highlighted::before {
-        color: var(--primary-color) !important;
-    }
 
-    /* Visual buttons (TOC / Graph controls) */
-    .viz-btn {
-        color: #86868b !important;
-    }
-    .viz-btn:hover {
-        color: var(--primary-color) !important;
-    }
-    .viz-btn.active {
-        color: var(--primary-color) !important;
-    }
-
-    /* Interactive Graph Constellation HUD */
-    .constellation-tooltip {
-        color: var(--primary-color) !important;
-    }
-    .constellation-tooltip::before {
-        background: rgba(21, 21, 22, 0.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
-    }
-
-    /* Interactive Graph Constellation & Drift SVGs Overrides */
-    #constellation-container {
-        border-bottom-color: #323235 !important;
-    }
-    #constellation-container svg rect[fill="#fafafa"] {
-        fill: var(--background-color) !important;
-    }
-    #constellation-container svg circle[stroke="#fafafa"] {
-        stroke: var(--background-color) !important;
-    }
-    #constellation-container svg text[stroke="#fafafa"] {
-        stroke: var(--background-color) !important;
-    }
-    #constellation-container svg text[fill="white"] {
-        fill: var(--background-color) !important;
-    }
-    #constellation-container svg text[fill="#666"] {
-        fill: var(--primary-color) !important;
-    }
-
-    /* KaTeX Math block overrides */
-    .katex-display, 
+    .katex-display,
     .katex {
         background: transparent !important;
         background-color: transparent !important;
     }
 
-    /* Example box block overrides */
     .example-box {
         background-color: #1c1c1e !important;
         border-left-color: var(--primary-color) !important;
@@ -1076,15 +745,11 @@ sup a.footnote-reference-highlighted {
     .example-box-title {
         color: var(--primary-color) !important;
     }
-    .example-box-description {
-        color: #86868b !important;
-    }
     .example-box ul li::before {
         color: var(--primary-color) !important;
     }
 }
 
-/* Minimal Static Abstract Styling */
 .abstract-text {
     font-style: italic;
     font-size: 0.98rem;
@@ -1099,35 +764,6 @@ sup a.footnote-reference-highlighted {
     color: #aaa;
 }
 
-/* TLDR Split-Row Top Navigation Bar */
-.tldr-nav-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.8rem;
-    margin-top: 0.5rem;
-}
-
-.tldr-nav-back,
-.tldr-nav-paper {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.tldr-nav-back:hover,
-.tldr-nav-paper:hover {
-    text-decoration: underline;
-}
-
-[data-theme="dark"] .tldr-nav-row {
-    border-bottom-color: #323235;
-}
-
-/* Walkthrough-specific layout and styles (TLDR) */
 .tldr-post .intro {
     border-bottom: none !important;
     margin-bottom: 2rem !important;
@@ -1138,12 +774,6 @@ sup a.footnote-reference-highlighted {
     font-size: 1.85rem !important;
     font-weight: 600 !important;
     line-height: 1.35 !important;
-}
-
-.tldr-post .intro .date {
-    color: #777 !important;
-    margin-top: 0.5rem !important;
-    font-size: 0.9rem !important;
 }
 
 .tldr-post .intro .desc {
@@ -1168,11 +798,6 @@ sup a.footnote-reference-highlighted {
     font-style: normal;
 }
 
-/* Dark mode overrides */
-:root[data-theme="dark"] .tldr-post .intro .date {
-    color: #888 !important;
-}
-
 :root[data-theme="dark"] .tldr-post .intro .desc {
     color: #98989d !important;
 }
@@ -1182,15 +807,12 @@ sup a.footnote-reference-highlighted {
     color: #ceced2;
 }
 
-/* Invert white-background figures; hue-rotate restores original hues,
-   and invert(0.92) maps white to ~#141414 to match the page background. */
 :root[data-theme="dark"] .tldr-post figure.mdtx-figure img,
 :root[data-theme="dark"] .tldr-post .image-grid img {
     filter: invert(0.92) hue-rotate(180deg);
     opacity: 1;
 }
 
-/* Citations */
 :root {
     --ref-highlight-bg: rgba(74, 74, 74, 0.12);
 }
@@ -1276,8 +898,6 @@ sup a.footnote-reference-highlighted {
     100% { background-color: transparent; }
 }
 
-
-/* Tooltips */
 .citation-tooltip {
     position: fixed;
     max-width: 360px;
@@ -1313,7 +933,6 @@ sup a.footnote-reference-highlighted {
     color: #888;
 }
 
-/* Dark mode overrides for citations and tooltips */
 :root[data-theme="dark"] .citation-ref {
     color: var(--primary-color);
 }
@@ -1385,11 +1004,6 @@ a.tldr-paper-link:hover {
     color: var(--primary-color);
 }
 
-/* ---------------------------------------------------------------------------
-   Heading permalinks
-   IDs are minted by the compiler, so these links survive with or without JS.
-   --------------------------------------------------------------------------- */
-
 .blog-post h2[id],
 .blog-post h3[id],
 .blog-post h4[id] {
@@ -1416,14 +1030,6 @@ a.tldr-paper-link:hover {
 .blog-post .heading-anchor:hover {
     opacity: 0.9;
 }
-
-/* ---------------------------------------------------------------------------
-   Table of contents
-   A labelled outline pinned in the left gutter. Its right edge tracks the text
-   column rather than the window, so it stays beside the prose instead of
-   drifting into the corner on a wide screen, and it gives up width as the
-   gutter narrows before dropping out entirely.
-   --------------------------------------------------------------------------- */
 
 #toc {
     position: fixed;
@@ -1510,8 +1116,6 @@ a.tldr-paper-link:hover {
     display: none;
 }
 
-/* A faded edge stands in for the scrollbar: it says the outline continues
-   without putting a second piece of chrome in the margin. */
 #toc .toc-list.fade-top {
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
     mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
@@ -1533,8 +1137,6 @@ a.tldr-paper-link:hover {
     line-height: 1.45;
 }
 
-/* Titles wrap rather than truncate: a section is easier to find by its whole
-   name than by the first twenty-odd characters of it. */
 #toc .toc-link {
     display: block;
     margin-left: -2px;
@@ -1578,4 +1180,38 @@ a.tldr-paper-link:hover {
     .blog-post .heading-anchor {
         display: none;
     }
+}
+
+#back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: none;
+    border: none;
+    color: #999;
+    font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, color 0.2s ease;
+    z-index: 999;
+}
+
+#back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#back-to-top:hover {
+    color: #555;
+}
+
+:root[data-theme="dark"] #back-to-top:hover {
+    color: var(--primary-color);
+}
+
+.footnote-sidenote.tucked {
+    opacity: 0.25;
 }

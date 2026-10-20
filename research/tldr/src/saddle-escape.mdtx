@@ -183,16 +183,6 @@ bibliography:
       url={https://arxiv.org/abs/1312.6120},
 }
 
-@misc{kunin2024richquickexactsolutions,
-      title={Get rich quick: exact solutions reveal how unbalanced initializations promote rapid feature learning},
-      author={Daniel Kunin and Allan Raventós and Clémentine Dominé and Feng Chen and David Klindt and Andrew Saxe and Surya Ganguli},
-      year={2024},
-      eprint={2406.06158},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2406.06158},
-}
-
 @misc{du2018balanced,
       title={Algorithmic regularization in learning deep homogeneous models: layers are automatically balanced},
       author={Simon S. Du and Wei Hu and Jason D. Lee},

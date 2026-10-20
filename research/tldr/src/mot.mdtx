@@ -6,7 +6,7 @@ emoji: 3️⃣;
 paper_link: https://arxiv.org/abs/2606.13614;
 visibility: visible;
 
-Generally in learning theory, we are concerned with a notion of statistical optimality: given {n} samples, how little error can a learner incur on the true distribution? Generally, we know some lower bound, and the main challenge is designing an algorithm that matches that lower bound. In the theory of PAC (probably approximately correct) learning, the first algorithm to achieve the optimal statistical rate was given in 2016 ref@Steve2016TheOptimalSampleComplexityofPACLearning. However, the algorithm was based around a very sophisticated splitting of the dataset and carefully designed overlaps, and its analysis was similarly quite involved. Thus, a new line of work emerged with a different goal: find the *simplest* optimal PAC learner. In particular, one such proposed algorithm was [majority-of-three](https://arxiv.org/abs/2403.08831), proposed by ref@AAHLZ24 and proven to be optimal in expectation (i.e. on average it achieves the optimal rate). It was not, however, proven optimal with high probability[^high-prob] -- an extra {\log\log} factor remained in their analysis, and it was conjectured that it could be removed to prove that majority-of-three is indeed optimal with high probability. In this short note, we give a better analysis and prove that the algorithm is an optimal PAC learner.
+Generally in learning theory, we are concerned with a notion of statistical optimality: given {n} samples, how little error can a learner incur on the true distribution? Usually, we know some lower bound, and the main challenge is designing an algorithm that matches that lower bound. In the theory of PAC (probably approximately correct) learning, the first algorithm to achieve the optimal statistical rate was given in 2016 ref@Steve2016TheOptimalSampleComplexityofPACLearning. However, the algorithm was based around a very sophisticated splitting of the dataset and carefully designed overlaps, and its analysis was similarly quite involved. Thus, a new line of work emerged with a different goal: find the *simplest* optimal PAC learner. In particular, one such proposed algorithm was [majority-of-three](https://arxiv.org/abs/2403.08831), proposed by ref@AAHLZ24 and proven to be optimal in expectation (i.e. on average it achieves the optimal rate). It was not, however, proven optimal with high probability[^high-prob] -- an extra {\log\log} factor remained in their analysis, and it was conjectured that it could be removed to prove that majority-of-three is indeed optimal with high probability. In this short note, we give a better analysis and prove that the algorithm is an optimal PAC learner.
 
 ## Setup
 
@@ -102,7 +102,7 @@ The main trick here is to not evaluate the conditional probabilities, but rather
 }
 and call the vector {\mathbf{k} = (k_1, \dots, k_q)} the dyadic profile of the tuple. Every tuple has a dyadic profile, and the profile immediately gives {p_X \le 2^{-\sum_\ell k_\ell}}. The profiles are countable, so we can bound each class of tuples separately and sum at the end.
 
-Within a profile class, the {\varepsilon}-net theorem and Sauer's lemma apply to each level set, and give that the set of points whose conditional inclusion probability sits at level {k} has mass at most about
+Within a profile class, the {\varepsilon}-net theorem ref@Wel12 and Sauer's lemma apply to each level set, and give that the set of points whose conditional inclusion probability sits at level {k} has mass at most about
 {
     \frac{\bigl(d(k+1) + \log(e/p_{\mathbf{a}})\bigr)2^k}{m},
 }
@@ -156,7 +156,7 @@ This is discussed a bit more in Appendix A of the note. My original proof is out
 [^selector]: Formally, a deterministic measurable selector {A} taking a sample {S} to a hypothesis with {A(S) \cap S = \varnothing}. No other properties are assumed.
 [^wlog]: The reduction is that the class of symmetric differences {\mathcal{F}^\star = \{f \Delta f^\star\}} has the same VC dimension as {\mathcal F}, contains the empty set, and turns consistent hypotheses into sample-avoiding sets. The majority vote commutes with taking symmetric differences, so the error region of the vote is unchanged.
 [^bagging]: This is reminiscent of bagging, though here the three learners are trained on disjoint sample splits rather than bootstrap resamples.
-[^moments]: If a nonnegative random variable has {\|Z\|_q \le \lambda} then Markov's inequality gives {\Pr[Z > e\lambda] \le e^{-q}}, so controlling the {q}-th moment for a single well-chosen {q} gives a tail bound at that scale. Setting {q \asymp \log(1/\delta)} converts a moment bound into a {\delta}-dependent bound; this is the same reason the {q} in {d+q} eventually gives the {\log 1/\delta} in the final rate.f
+[^moments]: If a nonnegative random variable has {\|Z\|_q \le \lambda} then Markov's inequality gives {\Pr[Z > e\lambda] \le e^{-q}}, so controlling the {q}-th moment for a single well-chosen {q} gives a tail bound at that scale. Setting {q \asymp \log(1/\delta)} converts a moment bound into a {\delta}-dependent bound; this is the same reason the {q} in {d+q} eventually gives the {\log 1/\delta} in the final rate.
 
 bibliography:
 @article{AAHLZ24,
