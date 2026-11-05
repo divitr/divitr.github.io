@@ -1,12 +1,11 @@
 req: math, stats;
 title: A Theory of Saddle Escape in Deep Nonlinear Networks;
-date: May 04, 2026;
+date: May 05, 2026;
 desc: When do neural networks first learn features?;
 emoji: 🐎;
 paper_link: https://arxiv.org/abs/2605.01288;
-visibility: hidden;
 
-Generally, when a network is trained from small initialization (i.e. all its weights are initially very small), we tend to see a pretty characteristic pattern: long plateaus where loss barely drops, with sharp drops as new features are acquired. This "saddle-to-saddle" structure is pretty well understood for deep linear networks (where the activation function is {\operatorname{Id}: x \mapsto x}). For nonlinear functions, why this happens remains mysterious; here we try to provide a result that shows that deep nonlinear networks are not that different than their linear counterparts.
+Generally, when a network is trained from small initialization (i.e. all its weights are initially very small), we tend to see a pretty characteristic pattern: long plateaus where loss barely drops, with sharp drops as new features are acquired. This "saddle-to-saddle" structure is pretty well understood for deep linear networks (where the activation function is {\operatorname{Id}: x \mapsto x}). For nonlinear networks, why this happens remains mysterious; here we try to provide a result that shows that deep nonlinear networks are not that different than their linear counterparts.
 
 image:
 src: research/tldr/saddle-escape/saddle-to-saddle.png;
@@ -19,19 +18,19 @@ end image;
 
 ### Deep Linear Networks
 
-Much (I'd even say most) of the existing theory for optimization dynamics is based in the deep linear network model: an {L}-layer network without any activation function, just a long chain of matrix multiplications[^matfac] {\hat y = W_L \cdots W_1 x}. Although the model is simple, deep linear networks exhibit surprisingly nontrivial dynamics during gradient flow ({\dot W = - \nabla_W \mathcal L}) and many features of deep learning (e.g. saddle-to-saddle structure, low-rank bias, progressive feature learning) appear here in an analytically tractable form ref@saxe2014exactsolutionsnonlineardynamics.
+Much of the existing theory for optimization dynamics is based in the deep linear network model: an {L}-layer network without any activation function, just a long chain of matrix multiplications {\hat y = W_L \cdots W_1 x}. Although the model is simple, deep linear networks exhibit surprisingly nontrivial dynamics during gradient flow ({\dot W = - \nabla_W \mathcal L}) and many features of deep learning (e.g. saddle-to-saddle structure, low-rank bias, progressive feature learning) appear here in an analytically tractable form ref@saxe2014exactsolutionsnonlineardynamics.
 
 A lot of the reason deep linear networks are so nice to analyze is due to the conservation law of the imbalance of the weight matrix norms between adjacent layers:
 {
     \Delta_\ell \doteq \|W_{\ell+1}\|_F^2 - \|W_\ell\|_F^2.
 }
-For linear networks, one can show {\dot \Delta_\ell = 0} for all {\ell} ref@du2018balanced. Intuitively, the network only ever sees the composition {W_{\ell+1}\,\sigma(W_\ell h)}, so if {\sigma} is linear we can shrink {W_\ell} by any factor {c} and grow {W_{\ell+1}} by {1/c} without changing the output function. The loss then has a flat direction, and so gradient flow cannot move along a direction in which the loss doesn't change, so whatever that rescaling moves is frozen.
+For linear networks, one can show {\dot \Delta_\ell = 0} for all {\ell} ref@du2018balanced. Intuitively, the network only ever sees the composition {W_{\ell+1}\sigma(W_\ell h)}, so if {\sigma} is linear we can shrink {W_\ell} by any factor {c} and grow {W_{\ell+1}} by {1/c} without changing the output function. The loss then has a flat direction, and gradient flow cannot move along a direction in which the loss doesn't change, so whatever that rescaling moves is frozen.
 
-In a broader sense, this follows for any activation function that satisfies Euler's homogeneity identity: {z \cdot \sigma'(z) = \sigma(z)} for {\sigma(z) = z}.[^linear_euler] So, if we define the functional 
+In a broader sense, this follows for any activation function that satisfies Euler's homogeneity identity: {z \cdot \sigma'(z) = \sigma(z)}, e.g. for {\sigma(z) = z} or ReLU.[^linear_euler] So, if we define the functional 
 {
     \varphi_\sigma(z) \doteq z\sigma'(z) - \sigma(z),
 }
-for a homogeneous function, it vanishes exactly. This is actually a much bigger deal than it seems; this conserved quantity is what makes linear network analysis work, and later we will use the physicist's favorite trick of Taylor expanding about the origin to show a nonlinear analog of this!
+for a 1-homogeneous function, it vanishes exactly. This is actually a much bigger deal than it seems; this conserved quantity is what makes linear network analysis work!
 
 ### Nonlinear Activations
 
@@ -39,11 +38,11 @@ For a general nonlinear activation {\sigma}, {\varphi_\sigma \not\equiv 0} and o
 
 To remedy this, let us study the Taylor expansion of {\varphi_\sigma} near zero. Writing {\sigma(u) = \alpha u + a_q u^q + O(u^{q+1})} with {\alpha = \sigma'(0) > 0}, the linear part cancels in {\varphi_\sigma} (that is what Euler's identity says), and the first surviving term has order {q}:
 {
-    \varphi_\sigma(z) = (q-1)\,a_q z^q + O(z^{q+1}).
+    \varphi_\sigma(z) = (q-1)a_q z^q + O(z^{q+1}).
 }
-For {\operatorname{tanh}}, {\sigma(z) \approx z - z^3/3}, so {\varphi_{\tanh}(z) = z\,\mathrm{sech}^2(z) - \tanh(z) \approx -\tfrac{2}{3}z^3}, giving {q = 3}. For a quadratic activation {\sigma(z) = z + \alpha z^2} one gets {\varphi_\sigma(z) = \alpha z^2}, so {q = 2}.
+For {\operatorname{tanh}}, {\sigma(z) \approx z - z^3/3}, so {\varphi_{\tanh}(z) = z\mathrm{sech}^2(z) - \tanh(z) \approx -\tfrac{2}{3}z^3}, giving {q = 3}. For a quadratic activation {\sigma(z) = z + a_2 z^2} one gets {\varphi_\sigma(z) = a_2 z^2}, so {q = 2}.
 
-That's kinda the main thing. Near the origin (where our network is initialized since we take initialization tending to zero), the pre-activations (i.e. the values passed into the activation) are small, so {\varphi_\sigma(z) \approx c_q z^q} is *high order* small. Thus, the conservation law is only "slightly broken" and we can track exactly its drift to order {q}, which gives us enough control to do what we want to with our analysis. A similar argument in principle is the physics small angle approximation; {\sin\theta \neq \theta}, but the error is cubic, so for small swings we may use the linear theory and carry a correction to be bounded later.
+That's kinda the main idea underlying the whole paper. Near the origin (where our network is initialized, since we take initialization tending to zero), the pre-activations (i.e. the values passed into the activation) are small, so {\varphi_\sigma(z) \approx c_q z^q} is *high order* small. Thus, the conservation law is only "slightly broken" and we can track exactly its drift to order {q}, which gives us enough control to do what we want to with our analysis. A similar argument in principle is the physics small angle approximation; {\sin\theta \neq \theta}, but the error is cubic, so for small swings we may use the linear theory and carry a correction to be bounded later.
 
 ## Imbalance and Drift
 
@@ -52,47 +51,47 @@ Consider an {L}-layer network {\hat y = W_L \sigma(W_{L-1} \cdots \sigma(W_1 x) 
 theorem[imbalance-identity]:
 For any smooth activation {\sigma} and any differentiable loss {\mathcal{L}},
 {
-    \frac{d\Delta_\ell}{dt} = 2\,\mathbb{E}\!\left[\bigl\langle W_{\ell+1}^\top \nabla_{z_{\ell+1}} \mathcal{L},\; \varphi_\sigma(z_\ell) \bigr\rangle\right].
+    \frac{d\Delta_\ell}{dt} = 2\mathbb{E}\left[\bigl\langle W_{\ell+1}^\top \nabla_{z_{\ell+1}} \mathcal{L}, \varphi_\sigma(z_\ell) \bigr\rangle\right].
 }
 end theorem;
 
 The proof is quite natural; it follows by considering scaling before and after activation is applied; we outline it below.
 
-Scaling layer {\ell} and scaling layer {\ell+1} both act on the same object {z_{\ell+1} = W_{\ell+1}\sigma(z_\ell)}, but they come in different places: one multiplies the argument of {\sigma}, the other multiplies its output. Differentiating each at {s=0},
+Scaling layer {\ell} and scaling layer {\ell+1} both act on the same object {z_{\ell+1} = W_{\ell+1}\sigma(z_\ell)}, but they enter in different places; one multiplies the argument of {\sigma}, the other multiplies its output. Differentiating each at {s=0},
 {
-    \frac{d}{ds}\Big[W_{\ell+1}\,\sigma\bigl((1+s)z_\ell\bigr)\Big] = W_{\ell+1}\bigl(z_\ell \odot \sigma'(z_\ell)\bigr), \qquad \frac{d}{ds}\Big[(1+s)W_{\ell+1}\,\sigma(z_\ell)\Big] = W_{\ell+1}\,\sigma(z_\ell).
+    \frac{d}{ds}\Big[W_{\ell+1}\sigma\bigl((1+s)z_\ell\bigr)\Big] = W_{\ell+1}\bigl(z_\ell \odot \sigma'(z_\ell)\bigr), \qquad \frac{d}{ds}\Big[(1+s)W_{\ell+1}\sigma(z_\ell)\Big] = W_{\ell+1}\sigma(z_\ell).
 }
 Subtracting gives that the difference is {\varphi_\sigma}. The imbalance drifts at the rate by which {\sigma} fails to commute with scaling.
 
 Some important comments on the above: (1) the identity is exact and assumes basically nothing, and (2) the right-hand side is a correlation between the upstream gradient at layer {\ell+1} and {\varphi_\sigma} applied to the pre-activations at layer {\ell}. When {\varphi_\sigma \equiv 0} we recover exact conservation; when it doesn't vanish, the drift is controlled by how large {\varphi_\sigma(z_\ell)} is, and near the saddle that is {O(\varepsilon^q)}.[^matrix_version]
 
-Note that we are using an approximation that is valid near the origin in order to analyze the event whose entire purpose is to take the network *away* from the origin. The resolution is that "escape" is declared at a small fixed threshold rather than at the end of training, and the time integral we take is dominated by its earliest part, where the network is deepest inside the regime the approximation covers.[^threshold] Most of the actual work in the paper is showing that the defect stays negligible along the entire trajectory, and not just at initialization.
+Note that we are using an approximation that is valid near the origin in order to analyze the event which is fundamentally defined as taking the network away from the origin (learning features). So, "escape" is declared at a small fixed threshold rather than at the end of training. Then the time integral we take is dominated by the early part, where the network is deepest inside the regime the approximation covers.[^threshold] Most of the actual work in the paper is showing that this defect stays negligible along the entire trajectory, and not just at initialization.
 
-## Reducing to One Number
+## Reducing the ODE
 
-Approximate conservation buys us what exact conservation bought the linear theory, with a controlled error. If the bottleneck layers start at comparable scales, they stay comparable for the whole escape, so instead of tracking {r} matrices we can track one scalar: their shared gain.
+Approximate conservation now gives us the same thing the linear theory has, plus an error we need to control. If the bottleneck layers (those initialized at scale {\varepsilon}) start at comparable scales, they will stay comparable for the whole escape, so instead of tracking {r} matrices we can reduce the problem to only tracking their shared gain.
 
-This is the conservation law doing its job. Those layer gains have no particular reason to agree with each other, and once the escape is over they visibly don't, but through the transition itself they move as one.
+Note that these layer gains have no real reason to agree with each other, and once the escape is over they definitely don't, but through the transition itself they move in unison.
 
-The other half of the reduction is that near the saddle every layer's gradient collapses to rank one, and every layer points along the *same* rank-one direction. The network is not being pushed in many directions at once; it is being pushed in one. So the right scalar to track alongside the gain is the network's overlap with that direction, call it {\gamma}, and the two of them chase each other:
+The other neat reduction we will want to make is that near the saddle every layer's gradient collapses to rank one, and every layer points along the *same* rank-one direction. So, we also want to track the network's overlap with the one direction it's being pushed in; call it {\gamma}. Then, we have the following relation between the layer gain and the overlap:
 {
-    \dot Y \asymp \Gamma\,\gamma, \qquad \dot\gamma \gtrsim \Gamma\, Y^{\,r-1},
+    \dot Y \asymp \Gamma\gamma, \qquad \dot\gamma \gtrsim \Gamma Y^{r-1},
 }
-where {Y} is the first bottleneck gain and {\Gamma} is the strength of the signal the data presents (we will pin it down in a moment). This is a feedback loop, and it reads like one: the network can only grow its channel as fast as it is correlated with the target, and it can only become correlated with the target as fast as the channel lets signal through.[^loop] Near the origin both are tiny, which is the entire reason the plateau exists. Integrating the loop is what gives the escape time.
+where {Y} is the squared gain of the first bottleneck layer and {\Gamma} is the strength of the signal the data presents (we'll pin it down in a moment). This is fundamentally a feedback loop! The network can only grow its channel as fast as it is correlated with the target, and it can only become correlated with the target as fast as the channel lets signal through.[^loop] Near the origin both are tiny, which is what causes the plateau. Integrating this loop gives us the main escape time law.
 
-## The Critical-Depth Law
+## Critical-Depth Law
 
-Suppose {r} of the {L} layers initialize at scale {\varepsilon \to 0^+} (call these the bottleneck layers) and the remaining {L - r} initialize at scale {\Theta(1)}. By the reduction above, all {r} bottleneck layers share a magnitude {y(t)}.
+Suppose {r} of the {L} layers initialize at scale {\varepsilon \to 0^+} (call these the bottleneck layers) and the remaining {L - r} initialize at scale {\Theta(1)}. By the reduction above, all {r} bottleneck layers share a magnitude {y(t)}, with {Y = y^2}.
 
-Here is the point. The gradient driving any one bottleneck layer is the product of the signals passing through all of the *other* bottleneck layers, so it scales as {y^{r-1}}, not {y^r}: a layer does not appear in its own gradient. The {L-r} full-size layers contribute {O(1)} factors and only move the prefactor. So the scalar ODE for the shared bottleneck magnitude is
+Now, note that the gradient driving any one bottleneck layer is the product of the signals passing through all of the *other* bottleneck layers, so it scales as {y^{r-1}} (a layer does not appear in its own gradient). The {L-r} full-size layers contribute {O(1)} factors and only really change the prefactor. So the scalar ODE for the shared bottleneck magnitude is
 {
-    \dot y \asymp \Gamma\, y^{\,r-1},
+    \dot y \asymp \Gamma y^{r-1},
 }
-and the time to get from {y(0) = \varepsilon} out to a small fixed threshold {\vartheta} is one integral:
+and the time to get from {y(0) = \varepsilon} out to a small fixed threshold {\vartheta} is given by
 {
-    \tau \asymp \frac{1}{\Gamma}\int_\varepsilon^\vartheta y^{-(r-1)}\,dy.
+    \tau \asymp \frac{1}{\Gamma}\int_\varepsilon^\vartheta y^{-(r-1)}dy.
 }
-Everything follows from whether that integral is finite at {0}, log divergent, or power divergent.
+Then, everything we need follows immediately from the behavior of that integral!
 
 theorem[critical-depth][Critical-Depth Escape Law]:
 As {\varepsilon \to 0^+}, the escape time satisfies
@@ -101,7 +100,7 @@ As {\varepsilon \to 0^+}, the escape time satisfies
 }
 end theorem;
 
-The {-(r-2)} exponent has a pretty neat interpretation: one power of {\varepsilon} is consumed because each layer's gradient is {y^{r-1}} rather than {y^r}, and a second is absorbed by the integral. The threshold at {r=2} is special, since it is the minimal bottleneck for which the escape time diverges at all as {\varepsilon \to 0}; one small layer is asymptotically free, and two cost you only a logarithm, which is the familiar statement that growth proportional to current size is just compound interest.
+The {-(r-2)} exponent has a pretty neat interpretation: one power of {\varepsilon} is consumed because each layer's gradient is {y^{r-1}} rather than {y^r}, and a second is absorbed by the integral. The threshold at {r=2} is pretty interesting since it's the minimal bottleneck for which the escape time diverges at all as {\varepsilon \to 0}.
 
 image:
 src: research/tldr/saddle-escape/critical_depth.png;
@@ -110,32 +109,29 @@ caption: Critical depth predicts escape time. Left: escape times under populatio
 width: 95%;
 end image;
 
-It is worth putting numbers on this. Take {\varepsilon = 0.01} and {\vartheta = 0.1}. The integral evaluates to about {0.09}, {2.3}, {90}, and {4950} for {r = 1, 2, 3, 4}. Going from two small layers to four, at the same initialization scale and with everything else held fixed, costs you a factor of more than two thousand in wall-clock time.
+It is also worth remarking on the absence of width or total depth in the asymptotic theorem. In addition, the escape time law does not depend on the activation or number of features in the target. At first, this is somewhat surprising: width multiplies the number of directions the flow could move in, extra depth multiplies the number of compositions, and changing the activation changes the loss landscape. However, none of these matter because of the rank-one structure from the earlier section; since we can reduce the high-dimensional ODE to a 1D ODE, the only things that matter are the quantities given in the escape law.
 
-Now look at what is *absent* from that theorem. The width does not appear. The total depth {L} does not appear. The particular smooth activation does not appear. The number of distinct features in the target does not appear. None of these are obviously irrelevant: width multiplies the number of directions the flow could move in, extra depth multiplies the number of compositions, and swapping the activation reshapes the loss landscape. They are absent anyway, and the reason is the rank-one structure from the previous section. The escape from the saddle is not a high-dimensional event. It is a one-dimensional one wearing a high-dimensional costume, and the only things that survive the reduction are an integer and a scalar.
+## Data Contribution
 
-## What the Data Contributes
-
-That leaves {\Gamma}, and there is a clean argument for what it has to be. Near the origin the activations are all evaluated close to zero, where {\sigma(u) \approx \alpha u}, so the network *is* a linear map to leading order. A linear map can only correlate with the linear part of the target. Everything else about the target, every nonlinearity in it, is invisible to the network until it has already moved. So the only property of the data that can possibly set the initial clock is the plain input-output correlation:
+Near the origin the activations are all evaluated close to zero, where {\sigma(u) \approx \alpha u}, so the network *is* a linear map to leading order. A linear map can only correlate with the linear part of the target, so every nonlinearity in the target is invisible to the network until it has already moved. So the only property of the data that can possibly set the initial clock is the input-output correlation
 {
     \Gamma = \bigl\|\mathbb{E}[yx]\bigr\|.
 }
-One vector moment. Not the input dimension, not how many features the target has, not how nonlinear they are.
 
-The part of this that is genuinely counterintuitive is that {\Gamma} is a *vector* sum. If the target is built from several features {v_k} with amplitudes {\beta_k}, each one contributes a vector {\propto \beta_k u_k \hat a_k}, where {\hat a_k} is the direction of {\Sigma v_k}, and these add with signs:
+It is important to note that {\Gamma} is the norm of a *vector* sum. If the target is built from several features {v_k} with amplitudes {\beta_k}, each one contributes a vector {\propto \beta_k u_k \hat a_k}, where {\hat a_k} is the direction of {\Sigma v_k}, and these add with signs:
 {
     \Gamma = h_\sigma\Bigl\|\textstyle\sum_k \beta_k u_k \hat a_k\Bigr\|.
 }
-Two features whose covariance images point in opposing directions partially cancel one another. Rotate them toward cancellation and {\Gamma} falls, and the network sits on the plateau proportionally longer, even though neither feature has become any weaker on its own. Any summary that scored the features independently and added up their strengths would predict no change at all. This is also the one place where the input covariance really earns its keep: a teacher direction that is misaligned with {\Sigma} gets presented to the network *more* strongly than its own variance would suggest.[^uk]
+Here {\Sigma = \mathbb{E}[xx^\top]} is the input covariance, the target is {y = \sum_k \beta_k \sigma(v_k^\top x/s_k)} for unit vectors {v_k} with {s_k^2 = v_k^\top \Sigma v_k}, {u_k = \|\Sigma v_k\|/s_k}, and {h_\sigma = \mathbb{E}[g\sigma(g)]} is the linear part of {\sigma} for a standardized input {g}. Thus, two features whose covariance images point in opposing directions partially cancel one another. If you rotate them in favor of them cancelling out, {\Gamma} decreases, and the network sits on the plateau proportionally longer, even though neither feature has become any weaker on its own. This also has the interesting consequence that a teacher direction that is misaligned with {\Sigma} gets presented to the network *more* strongly than its own variance would suggest.[^uk]
 
 image:
 src: research/tldr/saddle-escape/signal_geometry.png;
 alt: Escape slowdown as two teacher modes rotate toward cancellation;
-caption: {\Gamma} predicts escape time. Left: the slowdown as two equally weighted features rotate toward cancellation, against the vector prediction (solid) and a baseline that ignores the angle between them (dashed). Right: predicted against observed under input anisotropy and mode interference, with the prefactor fixed once on a separate isotropic single-mode condition.
+caption: {\Gamma} predicts escape time. Left: slowdown as two equally weighted features rotate toward cancellation, against the vector prediction (solid) and a baseline that ignores the angle between them (dashed). Right: predicted against observed under input anisotropy and mode interference, with the prefactor fixed once on a separate isotropic single-mode condition.
 width: 95%;
 end image;
 
-The practical consequence is nicer than the theory strictly requires. Because {\Gamma} is just a correlation, you never need to decompose the target into features to compute it, and nothing in the definition cares whether the expectation is over a population or a finite sample. On a real dataset it is {\hat\Gamma = n^{-1}\sum_i y_i x_i}, which is one line of numpy, and in the paper that empirical quantity predicts escape times on fixed MNIST and CIFAR-10 covariates across datasets, targets, and initialization scales, with a single prefactor calibrated once.
+Because {\Gamma} is just a correlation, you never really need to decompose the target into features to compute it, and nothing in the definition dictates whether expectation is over a population or a finite sample. So, on a real dataset it is {\hat\Gamma = \bigl\|n^{-1}\sum_i y_i x_i\bigr\|}, which is computable from real data without any knowledge of the true data-generating function.
 
 image:
 src: research/tldr/saddle-escape/real_covariates.png;
@@ -144,33 +140,17 @@ caption: The same predictions on real covariates. Left and center: predicted aga
 width: 95%;
 end image;
 
-## Do Features Arrive One at a Time?
+## Feature Arrival Timing
 
-The staircase in the opening figure invites an obvious reading: one step, one feature. Our theory says *when* the network leaves the first saddle, but the picture above makes it tempting to assume that departure is really several departures, one per feature, that we have averaged together. It isn't.
+Looking at the first figure (the loss staircase), the obvious interpretation is that a single step corresponds to a single feature being learned. Our theory says *when* the network leaves the first saddle, but the picture above makes it tempting to assume that departure is really several departures, one per feature, that are averaged together. This isn't necessarily the case, however!
 
-With a scalar output, the network near the origin is driven along a single direction, so it cannot grow several independent channels for the simple reason that it is not being pushed along several independent directions. Every feature overlap grows through one common amplitude, and the *ratios* between them are fixed in advance by the target and the input covariance, independent of how the network was initialized. In the paper we take the measured trajectory of one feature, multiply by the predicted ratios, and get the trajectories of the others with nothing fitted.
+This part is a bit difficult to explain why without getting quite technical, but if you're interested, this is covered in Section 5 of the paper.
 
-image:
-src: research/tldr/saddle-escape/multimode.png;
-alt: Mode overlaps growing through a single shared amplitude;
-caption: The modes share one escape. Left: the Mode 2 and Mode 3 overlaps (dots and bands) against predictions built from the observed Mode 1 trajectory and the Gram ratios alone (lines); neither predicted curve is fitted to the mode it predicts. Right: predicted against observed mode ratios at escape, across teacher geometries and initialization scales.
-width: 95%;
-end image;
-
-The cleanest way to say what is going on is by contrast with deep linear networks, where staged learning is a textbook phenomenon. There the input-output correlation is a *matrix*, with several singular directions, and different singular values escape at different times. Staging in that setting is a statement about rank. Here the output is scalar, so {\mathbb{E}[yx]} is one vector no matter how many nonlinear features the target contains, and there is exactly one direction available to grow. **Nonlinearity on its own does not buy you staged learning. Rank does.**
-
-Two honest caveats. This covers the first escape only, and only the linear overlaps during it. Once the network leaves the small-signal region, the nonlinear part of the target can start driving directions that were invisible to {\mathbb{E}[yx]} the entire time, and whether *those* undergo their own critical-depth delays is exactly the question we don't answer.[^residual] And the whole story needs {\Gamma > 0}: the target has to present some first-order correlation. If the linear part of the target vanishes identically, the leading-order drive is empty, and escape (if it happens) happens at higher order on a different clock entirely.
-
-So, to summarize: small initialization does not impose some uniform tax on deep networks. The number of small layers fixes the exponent, the input-output correlation fixes the timescale, and the rank of the presented signal fixes how many directions are allowed to grow at once. Three quantities, two of which you can read off your dataset and your initialization scheme before training starts.[^predict]
-
-[^matfac]: This is actually related to matrix factorization in some ways.
-[^linear_euler]: This is quite easy to verify yourself.
-[^matrix_version]: The scalar identity controls the relative *size* of adjacent layers, which isn't enough on its own, we can in fact lift the theorem to a matrix version, which is what we actually use.
-[^threshold]: It also means "escape time" is defined up to the choice of threshold, which sounds worse than it is: the threshold moves the constant, not the exponent. The appendix checks this against several thresholds, as well as against discrete gradient descent and minibatch SGD rather than gradient flow.
-[^loop]: The control-theoretic reading of this (a loop gain, and the question of when it exceeds one) comes largely out of a discussion in one of my classes, summed up really nicely in ref@rechtblog.
-[^uk]: Concretely, writing {s_k^2 = v_k^\top \Sigma v_k} for the variance along the direction {v_k}, Cauchy-Schwarz gives {u_k = \|\Sigma v_k\|/s_k \geq s_k}, with equality exactly when {v_k} is an eigenvector of {\Sigma}. The gap is {\operatorname{Var}_{\mu_k}(\lambda)/s_k^2}, i.e. it is precisely the spread of {v_k} across the eigenvalues of the covariance.
-[^residual]: There is a reason to suspect something is there. The bounds we prove control operator norms, which pin down the one rank-one path the escape travels but say very little about the transverse directions, and those can remain far smaller than the escape threshold. They are exactly the directions the nonlinear residual would later want to use.
-[^predict]: With the caveat that the prefactor is genuinely not predicted, so what you get is a scaling, not a stopwatch. Calibrate once and the rest is held out, which is how every comparison in the paper is set up.
+[^linear_euler]: This should be quite easy to verify yourself.
+[^matrix_version]: The scalar relation controls the relative *size* of adjacent layers, which isn't enough on its own; we can in fact lift the theorem to a matrix version, which is what we actually use.
+[^threshold]: It also means "escape time" is defined up to the choice of threshold. Changing the threshold only affects the constant, not the exponent.
+[^loop]: The control-theoretic reading of this (a loop gain, and the question of determining when it exceeds one) is largely inspired by a discussion in one of my classes, summed up really nicely in ref@rechtblog.
+[^uk]: Concretely, writing {s_k^2 = v_k^\top \Sigma v_k} for the variance along the unit direction {v_k}, Cauchy-Schwarz gives {u_k = \|\Sigma v_k\|/s_k \geq s_k}, with equality exactly when {v_k} is an eigenvector of {\Sigma}. The gap {u_k^2 - s_k^2} is {\operatorname{Var}_{\mu_k}(\lambda)/s_k^2}, where {\mu_k} weights each eigenvalue {\lambda} of {\Sigma} by the squared component of {v_k} along its eigenvector, i.e. the spread of {v_k} across the eigenvalues of the covariance.
 
 bibliography:
 @misc{saxe2014exactsolutionsnonlineardynamics,

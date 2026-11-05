@@ -39,11 +39,11 @@ By this point, all this machinery probably feels overly complex; surely the righ
 
 Note the use of the word "any." ERM is a family of algorithms since when several rules are consistent, nothing tells us which to pick. Formally, we just fix some deterministic tie-breaking rule upfront and assume nothing else about it.[^selector] Because of this, one can actually show that some consistent rules are suboptimal and miss the optimal rate, hence the interest (and difficulty) in developing optimal algorithms.
 
-Let's also make one observation here, for use later. Every statement we've made here has been about symmetric differences with the target, so we can relabel so that the target is the empty set (this just means we can relabel so that {f^\star} is the function which assigns {0} to every sample).[^wlog] Once we've done this, a consistent hypothesis (meaning a hypothesis that matches the training data we've seen) is just a set containing none of the training points, and its error is just the probability mass that the distribution {P} assigns to it. So going forward, ERM gives us a set avoiding the sample, and we want to prove that that set is small.
+Let's also make one observation here that we will use later. Every statement we've made so far has been about symmetric differences with the target, so we can relabel so that the target is the empty set (this just means we can relabel so that {f^\star} is the function which assigns {0} to every sample).[^wlog] Once we've done this, a consistent hypothesis (meaning a hypothesis that matches the training data we've seen) is just a set containing none of the training points, and its error is just the probability mass that the distribution {P} assigns to it. So going forward, ERM gives us a set avoiding the sample, and we want to prove that that set is small.
 
 ### The Majority-of-Three Rule
 
-The majority-of-three algorithm is about as simple as an algorithm could possibly be:
+The majority-of-three algorithm is the simplest conceivable algorithm[^codes]:
 
 list[o]:
 - Split the sample {S} of size {n} into three independent blocks {S^{(1)}, S^{(2)}, S^{(3)}} of size {m = \lfloor n/3 \rfloor}.
@@ -57,21 +57,21 @@ The open problem was whether this algorithm achieves the theoretically optimal r
 
 ## Reducing to an Overlap Problem
 
-With the target relabeled to the empty set, each {h_a} is an error region, so the majority vote is wrong at {x} exactly when at least two of the three sets contain {x}. Writing this in set notation:
+With the target relabeled to the empty set, each {h_a} is an error region, so the majority vote is wrong at {x} iff at least two of the three sets contain {x}. In set notation,
 {
     \mathcal{E}_{\text{Maj}} = (h_1 \cap h_2) \cup (h_2 \cap h_3) \cup (h_3 \cap h_1),
 }
 and by the union bound the error is at most {P(h_1 \cap h_2) + P(h_2 \cap h_3) + P(h_3 \cap h_1)}. Since the blocks are independent, each of those three terms has the same law and we've reduced our problem into bounding the overlaps of two ERM outputs.
 
-Remember, the whole point of this is to get high-probability bounds, and the standard way to get these is through the method of moments.[^moments] Write {Y \doteq P(A(S) \cap A(T))} for the overlap of the ERM outputs on two independent samples and study
+Remember, the whole point of this is to get high-probability bounds, and the standard way to get these is through the method of moments.[^moments] Write {Y \doteq P(A(S) \cap A(T))} for the overlap of the ERM outputs on two independent samples. We will study
 {
     R_q \doteq \mathbb{E}_{S,T}\bigl[Y^q\bigr].
 }
-Raising the overlap to the {q}-th power is the same as asking for {q} independent test points to all land in the overlap, and a point lands in the overlap exactly when both ERMs contain it. So if we write {X = (x_1, \dots, x_q)} for an ordered tuple of {q} test points and
+Raising the overlap to the {q}-th power is the same as asking for {q} independent test points to all land in the overlap, and recall that a point lands in the overlap iff both ERMs contain it. So if we write {X = (x_1, \dots, x_q)} for an ordered tuple of {q} test points and
 {
     p_X \doteq \Pr_S\bigl[X \subseteq A(S)\bigr]
 }
-for the probability that a single ERM output consumes the entire tuple, then independence of {S} and {T} factors the two ERMs apart and
+for the probability that a single ERM output consumes the entire tuple, then independence of {S} and {T} lets us factor the two ERMs apart and
 {
     R_q = \mathbb{E}_X\bigl[p_X^2\bigr].
 }
@@ -82,13 +82,13 @@ Ideally, we want a bound of the form
 {
     R_q \le \left(\frac{C(d+q)}{m}\right)^q.
 }
-Given the above bound, the optimal rate follows immediately. Taking {L^q} norms and applying Minkowski's inequality to the three-term union bound gives {\|P(\mathcal{E}_{\text{Maj}})\|_q \leq 3R_q^{1/q} \leq 3C(d+q)/m}, and then Markov's inequality on the {q}-th moment converts that into a tail bound decaying like {e^{-q}}. Choosing {q = \lceil \log(1/\delta) \rceil} forces the tail down to {\delta}, and since {d + q \le 2(d + \log(1/\delta))}, we are done.
+Given the above bound, the optimal rate follows immediately. Taking {L^q} norms and applying Minkowski's inequality to the three-term union bound gives {\|P(\mathcal{E}_{\text{Maj}})\|_q \leq 3R_q^{1/q} \leq 3C(d+q)/m}, and then Markov's inequality on the {q}-th moment converts that into a tail bound decaying like {e^{-q}}. Choosing {q = \lceil \log(1/\delta) \rceil} forces the tail down to {\delta}, and since {d + q \le 2(d + \log(1/\delta))}, we are done. Below, we will show two ways to obtain the desired bound.
 
 ## A Proof by Partitioning into Dyadic Scales
 
-We need to control {p_X}; the chance that one ERM contains a whole tuple. The issue is that ERM is a rather finicky process: conditioning on the event that it already contains {x_1} reweights which samples we are looking at and the conditioned process can behave completely differently.
+We need to control {p_X}: the chance that one ERM contains a whole tuple. The issue is that ERM is a rather finicky process: conditioning on the event that it already contains {x_1} reweights which samples we are looking at and then the conditioned process can behave differently.
 
-By the chain rule of conditional probability,
+By the chain rule of conditional probability, we may write
 {
   p_X = \prod_{\ell=1}^q q_{X_{\lt \ell}}(x_\ell),
 }
@@ -96,7 +96,7 @@ where {q_{X_{\lt \ell}}(x_\ell)} is the conditional probability that the ERM con
 
 ### Dyadic Profiles
 
-The main trick here is to not evaluate the conditional probabilities, but rather to track their scale. For each point {x_\ell}, let {k_\ell} be the integer with
+The main trick here is not to evaluate the conditional probabilities. Instead, if we track their scales, for each point {x_\ell}, let {k_\ell} be the integer with
 {
     2^{-k_\ell-1} \lt q_{X_{\lt \ell}}(x_\ell) \le 2^{-k_\ell},
 }
@@ -106,15 +106,15 @@ Within a profile class, the {\varepsilon}-net theorem ref@Wel12 and Sauer's lemm
 {
     \frac{\bigl(d(k+1) + \log(e/p_{\mathbf{a}})\bigr)2^k}{m},
 }
-where {p_{\mathbf{a}}} is the probability of the conditioning event. There are two notable features of the above that drive the proof.
+where {p_{\mathbf{a}}} is the probability of the conditioning event. There are two notable features of the above that are useful for our proof.
 
-The first is that the level sets balance nicely. A point that is very likely to be included (small {k}) can only live in a very thin slice of the space; a point sitting in a fat slice has to be correspondingly unlikely to be included. Intuitively, the product of "how big is this level set" and "how likely is inclusion at this level" is bounded, so everything is nicely behaved.
+The first is that the level sets balance nicely. A point that is very likely to be included (small {k}) can only live in a very thin slice of the space; similarly, a point sitting in a fat slice has to be unlikely to be included. Intuitively, the product of "how big is this level set" and "how likely is inclusion at this level" is bounded, so everything is nicely behaved.
 
-The second is a bit more subtle. The VC contribution is {d(k+1)}: it depends on the level, but *not* on how many points we have already conditioned on. Conditioning on a long prefix does not inflate the effective VC dimension. The only cost we pay for conditioning is the rarity term {\log(e/p_{\mathbf{a}})} and rarity is something that a profile already knows since a profile that has large {k}'s at earlier levels has small prefix probability. So, we may rewrite the rarity term as a deterministic function of the profile, and the bound stops depending on the particular prefix entirely!
+The second is a bit more subtle. The VC contribution is {d(k+1)}: it depends on the level, but *not* on how many points we have already conditioned on. Conditioning on a long prefix does not inflate the effective VC dimension. The only cost we pay for conditioning is the rarity term {\log(e/p_{\mathbf{a}})} and rarity is something that a profile already knows (since a profile that has large {k}'s at earlier levels has small prefix probability). So, we may rewrite the rarity term as a deterministic function of the profile, and the bound stops depending on the particular prefix!
 
 ### Closing It Out
 
-Once the one-step bound is independent of the prefix, every level has the same upper bound regardless of the points that came before it, and we can iterate Fubini's theorem up the chain, integrating out the last point, then the one before it, etc. all the way down to the empty prefix. That gives us a bound on the probability of each profile class, and summing the resulting series over all profiles (more or less just a counting exercise and an application of AM-GM) gives
+Once the one-step bound is independent of the prefix, every level has the same upper bound regardless of the points that came before it, and we can iterate Fubini's theorem up the whole chain, integrating out the last point, then the one before it, etc. all the way down to the empty prefix. That gives us a bound on the probability of each profile class, and summing the resulting series over all profiles (more or less just a counting exercise and an application of AM-GM) gives
 {
   R_q \le \left(\frac{C(d+q)}{m}\right)^q,
 }
@@ -155,8 +155,9 @@ This is discussed a bit more in Appendix A of the note. My original proof is out
 [^realizable]: Realizable means that the hypothesis class of our learner actually contains the true function {f^\star}. Dealing with agnostic (non-realizable) PAC learning is a whole other deal; hopefully the subject of future work!
 [^selector]: Formally, a deterministic measurable selector {A} taking a sample {S} to a hypothesis with {A(S) \cap S = \varnothing}. No other properties are assumed.
 [^wlog]: The reduction is that the class of symmetric differences {\mathcal{F}^\star = \{f \Delta f^\star\}} has the same VC dimension as {\mathcal F}, contains the empty set, and turns consistent hypotheses into sample-avoiding sets. The majority vote commutes with taking symmetric differences, so the error region of the vote is unchanged.
+[^codes]: In fact, a procedure that also takes the majority of three independent predictions provides a very simple error correcting code; [triple modular redundancy](https://en.wikipedia.org/wiki/Triple_modular_redundancy).
 [^bagging]: This is reminiscent of bagging, though here the three learners are trained on disjoint sample splits rather than bootstrap resamples.
-[^moments]: If a nonnegative random variable has {\|Z\|_q \le \lambda} then Markov's inequality gives {\Pr[Z > e\lambda] \le e^{-q}}, so controlling the {q}-th moment for a single well-chosen {q} gives a tail bound at that scale. Setting {q \asymp \log(1/\delta)} converts a moment bound into a {\delta}-dependent bound; this is the same reason the {q} in {d+q} eventually gives the {\log 1/\delta} in the final rate.
+[^moments]: If a nonnegative random variable has {\|Z\|_q \le \lambda} then Markov's inequality gives {\Pr[Z > e\lambda] \le e^{-q}}, so controlling the {q}-th moment for one well-chosen {q} gives a tail bound at that scale. Setting {q \asymp \log(1/\delta)} then gives a {\delta}-dependent bound. This is the same reason the {q} in {d+q} becomes the {\log 1/\delta} in the final rate.
 
 bibliography:
 @article{AAHLZ24,
