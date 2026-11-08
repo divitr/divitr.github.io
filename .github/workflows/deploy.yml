@@ -19,15 +19,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Install KaTeX
         working-directory: lib
         run: npm ci
 
-      - name: Compile TLDRs
+      - name: Restore compiled TLDRs
+        uses: actions/cache@v4
+        with:
+          path: research/tldr/*/index.html
+          key: tldr-html-${{ github.sha }}
+          restore-keys: tldr-html-
+
+      - name: Compile updated TLDRs
         env:
           TZ: America/Los_Angeles
-        run: python3 lib/compile.py --once research/tldr/src
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: bash .github/scripts/compile-changed.sh
 
       - name: Remove build-only files
         run: rm -rf lib/node_modules
