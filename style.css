@@ -57,6 +57,11 @@ header {
     color: var(--primary-color);
 }
 
+nav {
+    display: flex;
+    align-items: center;
+}
+
 nav a {
     margin-left: 1.5rem;
     text-decoration: none;

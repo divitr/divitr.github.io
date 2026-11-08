@@ -5,6 +5,8 @@ desc: When do neural networks first learn features?;
 emoji: 🐎;
 paper_link: https://arxiv.org/abs/2605.01288;
 
+**[NOTE]** Still a work in progress; some parts are rough.
+
 Generally, when a network is trained from small initialization (i.e. all its weights are initially very small), we tend to see a pretty characteristic pattern: long plateaus where loss barely drops, with sharp drops as new features are acquired. This "saddle-to-saddle" structure is pretty well understood for deep linear networks (where the activation function is {\operatorname{Id}: x \mapsto x}). For nonlinear networks, why this happens remains mysterious; here we try to provide a result that shows that deep nonlinear networks are not that different than their linear counterparts.
 
 image:
@@ -26,7 +28,7 @@ A lot of the reason deep linear networks are so nice to analyze is due to the co
 }
 For linear networks, one can show {\dot \Delta_\ell = 0} for all {\ell} ref@du2018balanced. Intuitively, the network only ever sees the composition {W_{\ell+1}\sigma(W_\ell h)}, so if {\sigma} is linear we can shrink {W_\ell} by any factor {c} and grow {W_{\ell+1}} by {1/c} without changing the output function. The loss then has a flat direction, and gradient flow cannot move along a direction in which the loss doesn't change, so whatever that rescaling moves is frozen.
 
-In a broader sense, this follows for any activation function that satisfies Euler's homogeneity identity: {z \cdot \sigma'(z) = \sigma(z)}, e.g. for {\sigma(z) = z} or ReLU.[^linear_euler] So, if we define the functional 
+In a broader sense, this follows for any activation function that satisfies Euler's homogeneity identity: {z \cdot \sigma'(z) = \sigma(z)}, e.g. for {\sigma(z) = z} or ReLU.[^linear_euler] So, if we define the functional
 {
     \varphi_\sigma(z) \doteq z\sigma'(z) - \sigma(z),
 }
