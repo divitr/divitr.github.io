@@ -1710,7 +1710,7 @@ class MDTXCompiler:
 
 <body>
     <header>
-        <div class="monogram"><a href="/">DR</a></div>
+        <div class="monogram"><a href="/">Divit Rawal</a></div>
         <nav>
             <a href="/research/tldr">TLDRs</a>
         </nav>
@@ -1718,8 +1718,7 @@ class MDTXCompiler:
     <main class="blog-post tldr-post">
         <section class="intro">
             <h1>{title}</h1>
-{desc_html}            <p class="tldr-series-note">(Part of a <a href="/research/tldr/">series</a> of short writeups covering recent work.)</p>
-        </section>
+{desc_html}        </section>
 
 {body}
     </main>

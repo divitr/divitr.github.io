@@ -42,14 +42,11 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #eee;
+    margin-bottom: 3rem;
 }
 
 .monogram {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1rem;
 }
 
 .monogram a {
@@ -60,6 +57,7 @@ header {
 nav {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
 nav a {
@@ -76,9 +74,9 @@ nav a:hover {
 
 .intro {
     display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    grid-template-columns: 200px 1fr;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
     align-items: start;
 }
 
@@ -89,7 +87,7 @@ nav a:hover {
 
 .profile-img {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 3px;
     display: block;
 }
 
@@ -110,14 +108,26 @@ nav a:hover {
 
 .bio h1 {
     margin-top: 0;
-    margin-bottom: 0;
-    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+    font-size: 2.1rem;
+    font-weight: normal;
     line-height: 1;
+}
+
+h1 {
+    font-weight: normal;
+}
+
+main > h1 {
+    font-size: 1.6rem;
 }
 
 a {
     color: var(--primary-color);
     text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.2s ease;
 }
 
 a:visited {
@@ -126,6 +136,7 @@ a:visited {
 
 a:hover {
     color: var(--primary-color);
+    text-decoration-color: currentColor;
 }
 
 @media (max-width: 768px) {
@@ -134,11 +145,11 @@ a:hover {
     }
 
     .profile-img-container {
-        max-width: 250px;
+        max-width: 140px;
     }
 
     .profile-img {
-        max-width: 250px;
+        max-width: 140px;
     }
 
     .footer {
@@ -178,24 +189,20 @@ a:hover {
 
 .section-label {
     font-size: 1rem;
-    font-weight: 600;
-    color: var(--primary-color);
+    font-weight: normal;
+    font-style: italic;
+    color: #777;
     margin-top: 0;
     margin-bottom: 0.4rem;
 }
 
 .selected-work {
     margin-bottom: 0.5rem;
-    border-top: 1px solid #eee;
-    padding-top: 1.2rem;
 }
 
 .selected-work-items {
     display: flex;
     flex-direction: column;
-    border-left: 1px solid #eee;
-    padding-left: 0.9rem;
-    margin-left: 0.35rem;
 }
 
 .selected-work-item {
@@ -207,7 +214,7 @@ a:hover {
 }
 
 .selected-work-title {
-    font-size: 0.95rem;
+    font-size: 1rem;
     line-height: 1.45;
 }
 
@@ -226,7 +233,7 @@ a:hover {
 .last-updated {
     text-align: center;
     font-size: .75rem;
-    color: #77777777;
+    color: #888;
     padding: 1rem 0;
     background-color: var(--background-color);
     border-top: 1px solid #eee;
@@ -235,170 +242,60 @@ a:hover {
 
 .last-updated a,
 .last-updated a:visited {
-    color: #777777aa;
-}
-
-.last-updated a:hover {
-    color: #777;
-}
-
-.notes-filter {
-    background: none;
-    border: none;
-    border-bottom: 1px solid #ddd;
-    outline: none;
-    font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
-    font-size: 0.9rem;
-    color: var(--primary-color);
-    padding: 0.2rem 0;
-    width: 120px;
-    transition: border-color 0.2s, width 0.3s ease;
-    display: block;
-    margin-top: 0.75rem;
-}
-
-.notes-filter::placeholder {
-    color: #bbb;
-    font-style: italic;
-}
-
-.notes-filter:focus {
-    border-color: #aaa;
-    width: 200px;
-}
-
-.notes-no-results {
-    color: #aaa;
-    font-size: 0.9rem;
-    font-style: italic;
-    margin-top: 2rem;
-    display: none;
-}
-
-.notes-section {
-    margin-top: 2rem;
-}
-
-.notes-section h2 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-.notes-item {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #eee;
-}
-
-.notes-item a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-size: 1rem;
-}
-
-.notes-item a:hover {
-    text-decoration: underline;
-}
-
-.misc-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    margin-left: 2rem;
-}
-
-.misc-list li {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.misc-list li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: #4a4a4a;
-}
-
-.expandable-item {
-    cursor: default;
-}
-
-.expand-trigger {
-    cursor: pointer;
-    transition: color 0.2s;
-    position: relative;
-}
-
-.expand-trigger:hover {
-    color: #4a4a4a;
-}
-
-.nested-list {
-    list-style: none;
-    padding: 0;
-    margin: 0.5rem 0 0 0;
-    margin-left: 1.5rem;
-}
-
-.nested-list li {
-    padding: 0.4rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.nested-list li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: #4a4a4a;
-}
-
-.nested-header {
-    font-style: italic;
     color: #888;
 }
 
-.nested-header::before {
-    content: '' !important;
+.last-updated a:hover {
+    color: var(--primary-color);
 }
 
-.nested-list li.nested-header {
-    padding-left: 0;
+.notes-section {
+    margin-top: 1.75rem;
+}
+
+.notes-item {
+    padding: 0.2rem 0;
+}
+
+.misc-section {
+    margin-bottom: 1.75rem;
+}
+
+.misc-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.misc-items li {
+    padding: 0.2rem 0;
 }
 
 .current-work-section {
     margin-bottom: 3rem;
 }
 
-.current-work-section h2 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
+.research-links {
+    font-size: 0.9rem;
+    color: #777;
 }
 
-.tldr-series-note {
-    opacity: 0.6;
-    font-size: 0.75em;
-    margin-top: 1rem;
+.research-links a,
+.research-links a:visited {
+    color: #777;
+}
+
+.research-links a:hover {
+    color: var(--primary-color);
 }
 
 .papers-section {
     margin-top: 2rem;
-    border-top: 1px solid #eee;
-    padding-top: 1.2rem;
-}
-
-.papers-section h2 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
 }
 
 .paper-item {
-    padding: 1.25rem 0;
+    padding: 0.8rem 0;
     border-bottom: 0;
-}
-
-.paper-item:last-child {
-    border-bottom: 1px solid #eee;
 }
 
 .paper-content {
@@ -406,7 +303,6 @@ a:hover {
 }
 
 .paper-title {
-    font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.2rem;
     line-height: 1.4;
@@ -426,6 +322,17 @@ a:hover {
     }
 }
 
+.paper-venue.paper-sub {
+    padding-left: 1.25rem;
+    font-size: 0.85rem;
+}
+
+@media (min-width: 600px) {
+    .paper-venue.paper-sub {
+        padding-left: 2.5rem;
+    }
+}
+
 .papers-section {
     margin-top: 2.5rem;
 }
@@ -436,8 +343,8 @@ a:hover {
 
 .papers-section h2 {
     margin-bottom: 1rem;
-    font-size: 1.8rem;
-    font-weight: 600;
+    font-size: 1.3rem;
+    font-weight: normal;
 }
 
 .paper-authors {
@@ -460,7 +367,10 @@ a:hover {
 }
 
 .paper-authors .me {
-    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.paper-award {
     color: var(--primary-color);
 }
 
@@ -478,6 +388,11 @@ a:hover {
 
     a {
         color: var(--primary-color);
+        text-decoration-color: #555559;
+    }
+
+    a:hover {
+        text-decoration-color: currentColor;
     }
 
     header,
@@ -489,6 +404,7 @@ a:hover {
         border-color: #323235 !important;
     }
 
+    .last-updated,
     .last-updated a,
     .last-updated a:visited {
         color: #86868b !important;
@@ -502,18 +418,11 @@ a:hover {
         color: #a8a8ad !important;
     }
 
-    .notes-no-results {
-        color: #86868b !important;
-    }
-
-    .selected-work-meta {
+    .selected-work-meta,
+    .section-label {
         color: #a8a8ad !important;
     }
 
-    .selected-work-items {
-        border-color: #323235;
-    }
-    
     .footer .separator {
         color: #323235 !important;
     }
@@ -523,27 +432,19 @@ a:hover {
     }
 
     .footer a,
-    .footer a:visited {
+    .footer a:visited,
+    .research-links,
+    .research-links a,
+    .research-links a:visited {
         color: #86868b !important;
+    }
+
+    .research-links a:hover {
+        color: #b2b2b7 !important;
     }
 
     .footer a:hover {
         color: #b2b2b7 !important;
-    }
-
-    .nested-header {
-        color: #86868b !important;
-    }
-
-    .notes-filter {
-        color: var(--primary-color);
-        border-bottom-color: #323235;
-    }
-    .notes-filter::placeholder {
-        color: #555559;
-    }
-    .notes-filter:focus {
-        border-color: #98989d;
     }
 
     .paper-authors {

@@ -1,73 +1,14 @@
 (function () {
   'use strict';
 
-  const saved = sessionStorage.getItem('theme');
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  if (saved === 'dark' || (!saved && systemDark)) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.setAttribute('data-theme', 'light');
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function apply(dark) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const nav = document.querySelector('header nav');
-    if (!nav) return;
-
-    const toggleBtn = document.createElement('a');
-    toggleBtn.href = '#';
-    toggleBtn.id = 'theme-toggle';
-    toggleBtn.className = 'theme-toggle';
-    toggleBtn.setAttribute('aria-label', 'Toggle theme');
-    toggleBtn.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; margin-left: 1.25rem; vertical-align: middle; transition: opacity 0.2s ease; cursor: pointer; color: var(--primary-color); opacity: 0.75;';
-
-    toggleBtn.addEventListener('mouseenter', () => toggleBtn.style.opacity = '1');
-    toggleBtn.addEventListener('mouseleave', () => toggleBtn.style.opacity = '0.75');
-
-    const sunSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
-        <circle cx="12" cy="12" r="4.5"></circle>
-        <circle cx="12" cy="3.5" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="12" cy="20.5" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="3.5" cy="12" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="20.5" cy="12" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="6" cy="6" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="6" cy="18" r="1" fill="currentColor" stroke="none"></circle>
-        <circle cx="18" cy="18" r="1" fill="currentColor" stroke="none"></circle>
-      </svg>
-    `;
-
-    const moonSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
-        <path d="M12 3a6.5 6.5 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-      </svg>
-    `;
-
-    function updateIcon() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      toggleBtn.innerHTML = currentTheme === 'dark' ? moonSvg : sunSvg;
-    }
-
-    nav.appendChild(toggleBtn);
-    updateIcon();
-
-    toggleBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      
-      document.documentElement.setAttribute('data-theme', newTheme);
-      sessionStorage.setItem('theme', newTheme);
-      updateIcon();
-    });
-
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-      if (!sessionStorage.getItem('theme')) {
-        const newTheme = e.matches ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        updateIcon();
-      }
-    });
+  apply(media.matches);
+  media.addEventListener('change', function (e) {
+    apply(e.matches);
   });
 })();

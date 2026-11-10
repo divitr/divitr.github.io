@@ -25,31 +25,11 @@
             font-size: 0.75rem;
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const expandableItems = document.querySelectorAll('.expandable-item');
-
-            expandableItems.forEach(item => {
-                const trigger = item.querySelector('.expand-trigger');
-                const nestedList = item.querySelector('.nested-list');
-
-                if (!trigger || !nestedList) return;
-
-                trigger.addEventListener('click', function() {
-                    if (nestedList.style.display === 'none') {
-                        nestedList.style.display = 'block';
-                    } else {
-                        nestedList.style.display = 'none';
-                    }
-                });
-            });
-        });
-    </script>
 </head>
 
 <body>
     <header>
-        <div class="monogram"><a href="/">DR</a></div>
+        <div class="monogram"><a href="/">Divit Rawal</a></div>
         <nav>
             <a href="/research">Research</a>
             <a href="/misc">Misc.</a>
@@ -58,17 +38,28 @@
 
     <main>
         <h1>Misc.</h1>
-        <ul class="misc-list">
-            <li class="expandable-item"><a href="/notes">crib sheets and notes</a></li>
-            <li class="expandable-item">
-                <span class="expand-trigger">some software</span>
-                <ul class="nested-list" style="display: block;">
-                    <li class="nested-header"><a href="https://github.com/divitr/bibtexcopy" target="_blank" rel="noopener noreferrer">chrome extension to copy bibtex to clipboard</a></li>                    <li class="nested-header"><a href="https://github.com/divitr/reels-pip" target="_blank" rel="noopener noreferrer">chrome extension to autoscroll reels in a PiP window</a></li>
-                    <li class="nested-header"><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">(partially vibecoded) prediction market for distributions over continuous outcomes</a></li>
-                </ul>
-            </li>
-            <li><a href="../assets/focaccia.jpg" rel="noopener noreferrer">focaccia</a></li>
-        </ul>
+        <section class="misc-section">
+            <h2 class="section-label">Notes</h2>
+            <ul class="misc-items">
+                <li><a href="/notes">crib sheets and notes</a></li>
+            </ul>
+        </section>
+
+        <section class="misc-section">
+            <h2 class="section-label">Software</h2>
+            <ul class="misc-items">
+                <li><a href="https://github.com/divitr/bibtexcopy" target="_blank" rel="noopener noreferrer">chrome extension to copy bibtex to clipboard</a></li>
+                <li><a href="https://github.com/divitr/reels-pip" target="_blank" rel="noopener noreferrer">chrome extension to autoscroll reels in a PiP window</a></li>
+                <li><a href="https://foresight-pi.vercel.app" target="_blank" rel="noopener noreferrer">(partially vibecoded) prediction market for distributions over continuous outcomes</a></li>
+            </ul>
+        </section>
+
+        <section class="misc-section">
+            <h2 class="section-label">Other</h2>
+            <ul class="misc-items">
+                <li><a href="../assets/focaccia.jpg" rel="noopener noreferrer">focaccia</a></li>
+            </ul>
+        </section>
     </main>
 
     <footer class="footer fine-print">
