@@ -45,10 +45,6 @@ header {
     margin-bottom: 3rem;
 }
 
-.monogram {
-    font-size: 1rem;
-}
-
 .monogram a {
     text-decoration: none;
     color: var(--primary-color);
