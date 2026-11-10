@@ -1699,7 +1699,6 @@ class MDTXCompiler:
 
 <head>
     <meta charset="UTF-8">
-    <script src="/theme.js"></script>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/lib/mdtx.css">
